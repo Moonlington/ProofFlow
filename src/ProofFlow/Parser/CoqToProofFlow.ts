@@ -45,11 +45,33 @@ function coqdocToMarkDown(text: string): string {
 
   const regList = /^\s*-/;
 
+  const regItalics = /([., \t\r\n]+)_([., \t\r\n]+)/gi;
+
+  const regCodeStart = /^\s*(.|\n)*\<\</;
+  const regCodeEnd = /\>\>/;
+
+  let open = false;
   text = text.substring(4, index);
   text.split(/(?:\r\n?|\n){2,}/).forEach((block) => {
     if (block) {
+      console.log(block);
+      if (open || block.match(regCodeStart)) {
+        block = block.replace('<<', '```');
+        open = true;
+        if (block.match(regCodeEnd)) {
+          console.log(block);
+          block = block.replace('>>', '```');
+          console.log(block);
+          open = false;
+        }
+        result += block + '\n\n';
+        return;
+      }
       block.split(/(?:\r\n?|\n)/).forEach((line) => {
         line = line.trimStart();
+        line = line.replaceAll('[', '`');
+        line = line.replaceAll(']', '`');
+        line = line.replace(regItalics, '*');
         if (line.match(regHead1)) {
           if (line.match(regHead5)) {
             line = line.replace(regHead5, '#####');
@@ -68,6 +90,7 @@ function coqdocToMarkDown(text: string): string {
         }
         result += line + '\n';
       });
+      result += '\n';
     }
   });
   return result;
