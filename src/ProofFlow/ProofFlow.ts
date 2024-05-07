@@ -4,7 +4,7 @@ import { Schema, DOMParser } from 'prosemirror-model';
 import { schema } from 'prosemirror-schema-basic';
 import { addListNodes } from 'prosemirror-schema-list';
 import { exampleSetup } from 'prosemirror-example-setup';
-import { parseToProofFlow } from './Parser/CoqToProofFlow';
+import { parseToProofFlow, domFromText } from './Parser/CoqToProofFlow';
 import { Area } from './Parser/Area';
 
 declare global {
@@ -27,10 +27,9 @@ export function createTextBlock(initialText: string) {
   editor.id = 'editor' + count.toString();
   editor.className = 'editor';
   document.body.appendChild(editor);
-  let content = document.createElement('p');
+  let content = domFromText(initialText);
   content.id = 'content' + count.toString();
   content.className = 'content';
-  content.textContent = initialText;
 
   window.view = new EditorView(editor, {
     state: EditorState.create({

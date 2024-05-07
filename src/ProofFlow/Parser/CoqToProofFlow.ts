@@ -1,5 +1,25 @@
 import { Area, AreaType } from './Area';
 
+// Parses text into an HTML div to then be rendered by ProseMirror
+export function domFromText(text: string): HTMLDivElement {
+  const dom = document.createElement("div");
+  text.split(/(?:\r\n?|\n){2,}/).forEach(block => {
+      let p = dom.appendChild(document.createElement("p"));
+      if (block) {
+          block.split(/(?:\r\n?|\n)/).forEach(line => {
+              console.log(line);
+              if (line) {
+                  line = line.replace(/ /g, '\u00A0') // Replaces space with special character, otherwise it is removed
+                  if (p.hasChildNodes()) p.appendChild(document.createElement('br'));
+                  p.appendChild(document.createTextNode(line));
+              }
+          });
+      }
+      dom.appendChild(p);
+  });
+  return dom;
+};
+
 // Parses the text into areas and converts coqdoc into markdown
 export function parseToProofFlow(text: string): Area[] {
   let areas = parseToAreas(text);
