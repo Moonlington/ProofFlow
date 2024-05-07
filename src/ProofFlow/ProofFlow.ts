@@ -5,11 +5,27 @@ import { schema } from 'prosemirror-schema-basic';
 import { addListNodes } from 'prosemirror-schema-list';
 import { exampleSetup } from 'prosemirror-example-setup';
 import { parseToProofFlow, domFromText } from './Parser/CoqToProofFlow';
-import { Area } from './Parser/Area';
+import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
+import { Area, AreaType } from './Parser/Area';
 
 declare global {
   interface Window {
     view?: EditorView;
+  }
+}
+
+class MarkdownView {
+  private view: EditorView;
+  private index: number;
+
+  constructor(public target: HTMLElement, content: string, index : number) {
+    this.index = index;
+    this.view = new EditorView(target, {
+      state: EditorState.create({
+        doc: defaultMarkdownParser.parse(content)!,
+        plugins: exampleSetup({ schema }) //(adds the plugin bar when uncommented, not needed)
+      })
+    });
   }
 }
 
@@ -22,7 +38,24 @@ const mySchema = new Schema({
 
 // Creates new text block at the bottom of the page
 let count = 0;
+
 export function createTextBlock(initialText: string) {
+  let editor = document.createElement('div');
+  editor.id = 'editor' + count.toString();
+  editor.className = 'editor';
+  document.body.appendChild(editor);
+
+  let view = new EditorView(editor, {
+    state: EditorState.create({
+      doc: defaultMarkdownParser.parse(initialText)!,
+      plugins: exampleSetup({ schema }) //(adds the plugin bar when uncommented, not needed)
+    })
+  });
+  views.push(view);
+  count++;
+}
+
+export function createCodeBlock(initialText: string) {
   let editor = document.createElement('div');
   editor.id = 'editor' + count.toString();
   editor.className = 'editor';
@@ -31,12 +64,13 @@ export function createTextBlock(initialText: string) {
   content.id = 'content' + count.toString();
   content.className = 'content';
 
-  window.view = new EditorView(editor, {
+  let view = new EditorView(editor, {
     state: EditorState.create({
       doc: DOMParser.fromSchema(mySchema).parse(content!),
       plugins: exampleSetup({ schema: mySchema }),
     }),
   });
+  views.push(view);
   count++;
 }
 
@@ -44,6 +78,12 @@ export function createTextBlock(initialText: string) {
 export function openOriginalCoqFile(text: string) {
   let areas: Area[] = parseToProofFlow(text);
   for (let area of areas) {
-    createTextBlock(area.text);
+    if (area.areaType == AreaType.Markdown) {
+      createTextBlock(area.text);
+    } else if (area.areaType == AreaType.Code) {
+      createCodeBlock(area.text);
+    }
   }
 }
+
+let views : EditorView[] = new Array();

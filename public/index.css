@@ -330,7 +330,9 @@ img.ProseMirror-separator {
   border-radius: 4px;
   border: 2px solid rgba(0, 0, 0, 0.2);
   padding: 5px 0;
-  margin-bottom: 23px;
+  margin: auto;
+  margin-bottom: 2px;
+  max-width: 90%;
 }
 
 .ProseMirror p:first-child,
