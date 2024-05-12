@@ -13,6 +13,18 @@
   height: 540px;
 }
 
+codecell {
+  outline: 2px solid #00ff2f;
+}
+
+markdown {
+  outline: 2px solid #ff0000;
+}
+
+math-display {
+  outline: 2px solid #f6ff00;
+}
+
 .ProseMirror {
   position: relative;
 }
