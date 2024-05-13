@@ -338,17 +338,6 @@ img.ProseMirror-separator {
   margin-top: 5px;
   display: none;
 }
-#editor, .editor {
-  background: white;
-  color: black;
-  background-clip: padding-box;
-  border-radius: 4px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  padding: 5px 0;
-  margin: auto;
-  margin-bottom: 2px;
-  max-width: 90%;
-}
 
 .ProseMirror p:first-child,
 .ProseMirror h1:first-child,
@@ -367,3 +356,46 @@ img.ProseMirror-separator {
 }
 
 .ProseMirror p { margin-bottom: 1em }
+
+#editor {
+  background-color: #f0f0f0; 
+  float: left; 
+}
+
+#content {
+  background-color: #e0e0e0;
+  float: right;
+}
+
+#editor, #content {
+  width: 49.5%;
+  height: 98vh;
+  background-clip: padding-box;
+  border-color: black;
+  border-width: 1px;
+  border-style: solid;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.button-bar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+  padding: 8px;
+}
+
+.button-bar button {
+  margin-right: 8px;
+  padding: 8px 16px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.button-bar button:hover {
+  background-color: #e0e0e0;
+}

@@ -4,6 +4,7 @@ import { EditorState, EditorStateConfig } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { createPlugins } from "./Plugins";
 import { mathSerializer } from "@benrbray/prosemirror-math";
+import { ButtonBar } from "./ButtonBar";
 
 // CSS
 
@@ -32,5 +33,8 @@ export class ProofFlow {
     };
 
     let editorView = new EditorView(this._editorElem, directEditorProps);
+
+    const buttonBar = new ButtonBar(this._schema, editorView);
+    buttonBar.render(this._editorElem);
   }
 }
