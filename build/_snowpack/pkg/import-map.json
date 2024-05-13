@@ -1,8 +1,0 @@
-{
-  "imports": {
-    "prosemirror-example-setup": "./prosemirror-example-setup.js",
-    "prosemirror-markdown": "./prosemirror-markdown.js",
-    "prosemirror-state": "./prosemirror-state.js",
-    "prosemirror-view": "./prosemirror-view.js"
-  }
-}
