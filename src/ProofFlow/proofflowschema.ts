@@ -1,7 +1,7 @@
 import { Node, Schema } from "prosemirror-model";
 import { node as codeMirrorNode } from "./CodeMirror";
 
-const cell = "(markdown | math_display | codecell)";
+const cell = "(markdown | math_display | code_mirror)";
 
 export const Proofflowschema: Schema = new Schema({
   nodes: {

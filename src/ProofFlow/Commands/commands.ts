@@ -1,4 +1,4 @@
-import { Schema } from "prosemirror-model";
+import { Proofflowschema } from "../proofflowschema.ts";
 import { Command } from "prosemirror-state";
 import { InsertionPlace, insertAbove, insertUnder } from "./helpers";
 import {
@@ -12,7 +12,7 @@ function getInsertionFunction(place: InsertionPlace) {
 }
 
 export function cmdInsertCode(
-  schema: Schema,
+  schema: typeof Proofflowschema,
   insertionPlace: InsertionPlace,
 ): Command {
   const codeblockNodeType = schema.nodes["code_mirror"];
@@ -23,7 +23,7 @@ export function cmdInsertCode(
 }
 
 export function cmdInsertMarkdown(
-  schema: Schema,
+  schema: typeof Proofflowschema,
   insertionPlace: InsertionPlace,
 ): Command {
   const mdNodeType = schema.nodes["markdown"];
@@ -31,7 +31,7 @@ export function cmdInsertMarkdown(
 }
 
 export function cmdInsertMath(
-  schema: Schema,
+  schema: typeof Proofflowschema,
   insertionPlace: InsertionPlace,
 ): Command {
   const mathNodeType = schema.nodes["math_display"];
