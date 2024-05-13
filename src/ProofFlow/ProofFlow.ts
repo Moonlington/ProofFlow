@@ -46,6 +46,9 @@ export class ProofFlow {
 
 
     this.editorView = new EditorView(this._editorElem, directEditorProps);
+
+    const buttonBar = new ButtonBar(this._schema, this.editorView);
+    buttonBar.render(this._editorElem);
   }
 
   // Parses an original Coq file and creates a block for each area
@@ -86,8 +89,5 @@ export class ProofFlow {
     console.log(trans);
     this.editorState = this.editorState.apply(trans);
     this.editorView.updateState(this.editorState);
-
-    const buttonBar = new ButtonBar(this._schema, this.editorView);
-    buttonBar.render(this._editorElem);
   }
 }
