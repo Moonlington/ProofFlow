@@ -22,7 +22,6 @@ export class ProofFlow {
   private _editorElem: HTMLElement;
   private _contentElem: HTMLElement;
 
-  private editorState: EditorState;
   private editorView: EditorView;
 
   constructor(editorElem: HTMLElement, contentElement: HTMLElement) {
@@ -36,9 +35,9 @@ export class ProofFlow {
       plugins: createPlugins(this._schema),
     };
 
-    this.editorState = EditorState.create(editorStateConfig);
+    let editorState = EditorState.create(editorStateConfig);
     let directEditorProps: DirectEditorProps = {
-      state: this.editorState,
+      state: editorState,
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
@@ -63,6 +62,10 @@ export class ProofFlow {
     buttonBar.render(this._editorElem);
   }
 
+  private getState(): EditorState {
+    return this.editorView.state;
+  }
+
   // Parses an original Coq file and creates a block for each area
   public openOriginalCoqFile(text: string): void {
     let areas: Area[] = parseToProofFlow(text);
@@ -76,30 +79,28 @@ export class ProofFlow {
   }
 
   public createTextArea(text: string): void {
-    let trans: Transaction = this.editorState.tr;
-    let counter = this.editorState.doc.content.size;
+    let trans: Transaction = this.getState().tr;
+    let counter = this.getState().doc.content.size;
     const textblockNodeType = ProofFlowSchema.nodes["markdown"];
     let textNode: Node = textblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
-    trans = trans.setSelection(Selection.atEnd(this.editorState.doc));
+    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
     trans = trans.insert(counter, textNode);
     console.log(trans);
-    this.editorState = this.editorState.apply(trans);
-    this.editorView.updateState(this.editorState);
+    this.editorView.dispatch(trans);
   }
 
   public createCodeArea(text: string): void {
-    let trans: Transaction = this.editorState.tr;
-    let counter = this.editorState.doc.content.size;
+    let trans: Transaction = this.getState().tr;
+    let counter = this.getState().doc.content.size;
     const codeblockNodeType = ProofFlowSchema.nodes["codecell"];
     let codeNode: Node = codeblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
-    trans = trans.setSelection(Selection.atEnd(this.editorState.doc));
+    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
     trans = trans.insert(counter, codeNode);
     console.log(trans);
-    this.editorState = this.editorState.apply(trans);
-    this.editorView.updateState(this.editorState);
+    this.editorView.dispatch(trans);
   }
 }
