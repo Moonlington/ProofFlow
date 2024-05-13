@@ -1,0 +1,48 @@
+.left-panel {
+    background-color: #f0f0f0; 
+    float: left; 
+}
+
+.right-panel {
+    background-color: #e0e0e0;
+    float: right;
+}
+
+.left-panel, .right-panel {
+    width: 49.5%;
+    height: 98vh;
+    border-color: black;
+    border-width: 1px;
+    border-style: solid;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.markdown, .code {
+    width: 100%;
+    border-color: black;
+    border-width: 1px;
+    border-style: solid;
+    height: auto;
+}
+
+.add-button {
+    background-color: #431fd0;
+    border: none;
+    color: white;
+    padding: 8px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    align-self: center;
+}
+
+.button-box {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 12px;
+    border-top: 1px solid gray;
+}
