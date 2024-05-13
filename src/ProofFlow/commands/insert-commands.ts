@@ -1,8 +1,5 @@
 import { NodeType } from "prosemirror-model";
-import {
-  allowedToInsert,
-  InsertionFunction,
-} from "./helpers";
+import { allowedToInsert, InsertionFunction } from "./helpers";
 import { Command, EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 
