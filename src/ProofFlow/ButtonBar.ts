@@ -29,6 +29,10 @@ export class ButtonBar {
     const bar = document.createElement("div");
     bar.className = "button-bar";
 
+    /**
+     * Array of button commands.
+     * Each command object contains a name and a command function.
+     */
     const buttonCommands = [
       {
         name: "Markdown",
@@ -45,6 +49,7 @@ export class ButtonBar {
       { name: "Delete", command: deleteSelection },
     ];
 
+    // Create a button for each command
     buttonCommands.forEach(({ name, command }) => {
       const button = document.createElement("button");
       button.textContent = name;
