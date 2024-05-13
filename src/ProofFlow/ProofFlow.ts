@@ -13,7 +13,7 @@ import { mathSerializer } from "@benrbray/prosemirror-math";
 import { Area, AreaType } from "./parser/area";
 import { parseToProofFlow } from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
-
+import { defaultMarkdownParser } from "prosemirror-markdown";
 
 // CSS
 
@@ -41,6 +41,18 @@ export class ProofFlow {
       state: this.editorState,
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
+      },
+      // Render text to markdown when a markdown cell is double clicked
+      handleDoubleClickOn(view, pos, node, nodePos, event, direct) {
+        if (node.type.name === "markdown" && direct) {
+          let trans: Transaction = view.state.tr;
+          const textblockNodeType = ProofFlowSchema.nodes["markdown"];
+            let textNode: Node = textblockNodeType.create(null, defaultMarkdownParser.parse(node.textContent)!.content);
+          trans = trans.replaceSelectionWith(textNode);
+
+          view.state = view.state.apply(trans);
+          view.updateState(view.state);
+        } 
       },
     };
 
