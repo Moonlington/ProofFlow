@@ -4,7 +4,6 @@ import { EditorState, EditorStateConfig } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { createPlugins } from "./Plugins";
 import { mathSerializer } from "@benrbray/prosemirror-math";
-
 // CSS
 
 export class ProofFlow {

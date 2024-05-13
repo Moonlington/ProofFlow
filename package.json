@@ -16,9 +16,11 @@
   },
   "dependencies": {
     "@benrbray/prosemirror-math": "^1.0.0",
+    "markdown-it": "^14.1.0",
     "prettier": "^3.2.5",
     "prosemirror-commands": "^1.5.2",
     "prosemirror-keymap": "^1.2.2",
+    "prosemirror-markdown": "^1.12.0",
     "prosemirror-model": "^1.21.0",
     "prosemirror-state": "^1.4.3",
     "prosemirror-view": "^1.33.6"
