@@ -15,14 +15,17 @@
 
 codecell {
   outline: 2px solid #00ff2f;
+  display: block;
 }
 
 markdown {
   outline: 2px solid #ff0000;
+  display: block;
 }
 
 math-display {
   outline: 2px solid #f6ff00;
+  display: block;
 }
 
 .ProseMirror {
