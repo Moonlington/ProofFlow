@@ -1,2 +1,2 @@
 # ProofFlow
-SEP Group 14 - 2024 - Waterproof Meets Lean
+SEP Group 12 - 2024 - ProofFlow

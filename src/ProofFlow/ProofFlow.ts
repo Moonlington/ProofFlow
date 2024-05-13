@@ -12,6 +12,8 @@ import { createPlugins } from "./Plugins";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 import { Area, AreaType } from "./parser/area";
 import { parseToProofFlow } from "./parser/coq-to-proofflow";
+import { ButtonBar } from "./ButtonBar";
+
 
 // CSS
 
@@ -41,6 +43,7 @@ export class ProofFlow {
         return mathSerializer.serializeSlice(slice);
       },
     };
+
 
     this.editorView = new EditorView(this._editorElem, directEditorProps);
   }
@@ -83,5 +86,8 @@ export class ProofFlow {
     console.log(trans);
     this.editorState = this.editorState.apply(trans);
     this.editorView.updateState(this.editorState);
+
+    const buttonBar = new ButtonBar(this._schema, this.editorView);
+    buttonBar.render(this._editorElem);
   }
 }
