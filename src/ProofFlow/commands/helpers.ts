@@ -104,6 +104,6 @@ export function getContainingNode(sel: Selection): Node | undefined {
   }
 }
 
-export function allowedToInsert(state: EditorState): boolean {
+export function allowedToInsert(_state: EditorState): boolean {
   return true;
 }

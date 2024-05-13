@@ -13,7 +13,7 @@ export const ProofFlowSchema: Schema = new Schema({
       content: "text*",
       parseDOM: [{ tag: "markdown", preserveWhitespace: "full" }],
       atom: true,
-      toDOM(node) {
+      toDOM(_node) {
         return ["markdown", 0];
       },
     },

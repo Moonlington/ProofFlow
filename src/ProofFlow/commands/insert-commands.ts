@@ -13,7 +13,7 @@ export function getMdInsertCommand(
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     if (!allowedToInsert(state)) return false;
 
@@ -31,7 +31,7 @@ export function getMathInsertCommand(
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     if (!allowedToInsert(state)) return false;
     let trans: Transaction | undefined;
@@ -49,7 +49,7 @@ export function getCodeInsertCommand(
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     if (!allowedToInsert(state)) return false;
     let trans: Transaction | undefined;
