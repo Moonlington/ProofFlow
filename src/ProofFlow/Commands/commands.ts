@@ -1,7 +1,5 @@
 import { Schema } from "prosemirror-model";
-import {
-  Command,
-} from "prosemirror-state";
+import { Command } from "prosemirror-state";
 import { InsertionPlace, insertAbove, insertUnder } from "./helpers";
 import {
   getCodeInsertCommand,
@@ -17,7 +15,7 @@ export function cmdInsertCode(
   schema: Schema,
   insertionPlace: InsertionPlace,
 ): Command {
-  const codeblockNodeType = schema.nodes["codecell"];
+  const codeblockNodeType = schema.nodes["code_mirror"];
   return getCodeInsertCommand(
     getInsertionFunction(insertionPlace),
     codeblockNodeType,

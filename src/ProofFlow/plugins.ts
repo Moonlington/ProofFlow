@@ -8,18 +8,18 @@ import {
   makeBlockMathInputRule,
   REGEX_BLOCK_MATH_DOLLARS,
 } from "@benrbray/prosemirror-math";
-import { ProofFlowSchema } from "./ProofFlowSchema";
+import { Proofflowschema } from "./proofflowschema.ts";
 import {
   cmdInsertCode,
   cmdInsertMarkdown,
   cmdInsertMath,
-} from "./commands/commands";
-import { InsertionPlace } from "./commands/helpers";
+} from "./Commands/commands";
+import { InsertionPlace } from "./Commands/helpers";
 
 // create input rules (using default regex)
 let blockMathInputRule = makeBlockMathInputRule(
   REGEX_BLOCK_MATH_DOLLARS,
-  ProofFlowSchema.nodes.math_display,
+  Proofflowschema.nodes.math_display,
 );
 
 export function createPlugins(schema: Schema): Plugin[] {

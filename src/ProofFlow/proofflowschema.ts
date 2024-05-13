@@ -1,8 +1,9 @@
 import { Node, Schema } from "prosemirror-model";
+import { node as codeMirrorNode } from "./CodeMirror";
 
 const cell = "(markdown | math_display | codecell)";
 
-export const ProofFlowSchema: Schema = new Schema({
+export const Proofflowschema: Schema = new Schema({
   nodes: {
     doc: {
       content: `${cell}*`,
@@ -17,6 +18,8 @@ export const ProofFlowSchema: Schema = new Schema({
         return ["markdown", 0];
       },
     },
+
+    code_mirror: codeMirrorNode,
 
     text: {
       group: "inline",
