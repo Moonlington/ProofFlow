@@ -16,7 +16,7 @@
 .ProseMirror > * {
   padding: 1px 4px 5px 4px;
   display: block;
-  width: 100%;
+  width: 100% - 8px;
   border-bottom: #2701ff13 0.5px solid;
 }
 
