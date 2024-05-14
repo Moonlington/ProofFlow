@@ -98,52 +98,9 @@ export class ButtonBar {
 
     // Event listener to execute the command when the button is clicked
     button.addEventListener("click", () => {
-      const cell = this.getCurrentCell();
-      if (cell) {
-        cmd(this._schema, place)(this._editorView.state, this._editorView.dispatch);
-      }
+      cmd(this._schema, place)(this._editorView.state, this._editorView.dispatch);
     });
 
     return button;
-  }
-
-
-  /**
-   * Retrieves the current cell based on the editor's selection.
-   * If the selection is empty, it returns the last child node of the document.
-   * If there's a selection, it finds the selected node.
-   * If no valid cell is found, it creates a new one at the end of the document.
-   * @returns The current cell node.
-   */
-  private getCurrentCell(): Node {
-    const { $from, empty } = this._editorView.state.selection;
-
-    // If the selection is empty, return the last child node of the document
-    if (empty) {
-      const lastChild = this._editorView.state.doc.lastChild;
-      if (lastChild && lastChild.isTextblock) {
-        return lastChild;
-      } else {
-        // Create a new node at the end of the document
-        const nodeType = this._schema.nodes["codecell"]; // Change to the appropriate node type
-        return nodeType.create();
-      }
-    }
-
-    // If there's a selection, find the selected node
-    for (let depth = $from.depth; depth > 0; depth--) {
-      const node = $from.node(depth);
-      if (
-        node.type.name === "codecell" ||
-        node.type.name === "markdown" ||
-        node.type.name === "math_display"
-      ) {
-        return node;
-      }
-    }
-
-    // If no valid cell is found, create a new one at the end of the document
-    const nodeType = this._schema.nodes["codecell"]; // Change to the appropriate node type
-    return nodeType.create();
   }
 }
