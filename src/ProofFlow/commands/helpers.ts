@@ -82,6 +82,15 @@ export function insertAbove(
       trans = trans.insert(counter, type.create());
       counter++;
     });
+  } else {
+    // If the selection is invalid, add a node at the end of the document
+    const pos = state.doc.content.size;
+    let counter = pos;
+
+    nodeType.forEach((type) => {
+      trans = trans.insert(counter, type.create());
+      counter++;
+    });
   }
 
   return trans;
@@ -134,6 +143,15 @@ export function insertUnder(
       trans = trans.insert(counter, type.create());
       counter++;
     });
+  } else {
+      // If the selection is invalid, add a node at the end of the document
+      const pos = state.doc.content.size;
+      let counter = pos;
+  
+      nodeType.forEach((type) => {
+        trans = trans.insert(counter, type.create());
+        counter++;
+      });
   }
 
   return trans;
