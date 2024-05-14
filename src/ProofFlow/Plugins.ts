@@ -22,6 +22,12 @@ let blockMathInputRule = makeBlockMathInputRule(
   ProofFlowSchema.nodes.math_display,
 );
 
+/**
+ * Creates an array of plugins for the given schema.
+ * 
+ * @param schema - The schema to create plugins for.
+ * @returns An array of plugins.
+ */
 export function createPlugins(schema: Schema): Plugin[] {
   let plugins = new Array<Plugin>();
 
