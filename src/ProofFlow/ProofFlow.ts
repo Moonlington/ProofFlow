@@ -17,13 +17,12 @@ import { ButtonBar } from "./ButtonBar";
 // CSS
 
 export class ProofFlow {
-  // Private fields
-  private _schema: Schema;
-  private _editorElem: HTMLElement;
-  private _contentElem: HTMLElement;
+  private _schema: Schema; // The schema for the editor
+  private _editorElem: HTMLElement; // The HTML element that serves as the editor container
+  private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
 
-  private editorState: EditorState;
-  private editorView: EditorView;
+  private editorState: EditorState; // The state of the editor
+  private editorView: EditorView; // The view of the editor
 
   /**
    * Represents the ProofFlow class.
@@ -32,28 +31,25 @@ export class ProofFlow {
    * @param {HTMLElement} contentElement - The HTML element that contains the initial content for the editor.
    */
   constructor(editorElem: HTMLElement, contentElement: HTMLElement) {
-    // Set the schema, editor element, and content element
-    this._schema = ProofFlowSchema;
-    this._editorElem = editorElem;
-    this._contentElem = contentElement;
+    this._schema = ProofFlowSchema; // Set the schema for the editor
+    this._editorElem = editorElem; // Set the editor element
+    this._contentElem = contentElement; // Set the content element
 
-    // Create the editor
+    // Create the editor state
     let editorStateConfig: EditorStateConfig = {
       schema: ProofFlowSchema,
       doc: DOMParser.fromSchema(ProofFlowSchema).parse(this._contentElem),
       plugins: createPlugins(this._schema),
     };
-
-    // Create the editor state
     this.editorState = EditorState.create(editorStateConfig);
+
+    // Create the editor view
     let directEditorProps: DirectEditorProps = {
       state: this.editorState,
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
     };
-
-    // Create the editor view
     this.editorView = new EditorView(this._editorElem, directEditorProps);
 
     // Create the button bar and render it
@@ -61,7 +57,6 @@ export class ProofFlow {
     buttonBar.render(this._editorElem);
   }
 
-  // Parses an original Coq file and creates a block for each area
   /**
    * Opens the original Coq file and creates text or code areas based on the parsed content.
    *
@@ -103,7 +98,11 @@ export class ProofFlow {
     this.editorView.updateState(this.editorState);
   }
 
-  // TODO Add custom areas + documentation
+  /**
+   * Creates a new code area in the editor and inserts the specified code.
+   *
+   * @param text - The code to be inserted in the code area.
+   */
   public createCodeArea(text: string): void {
     let trans: Transaction = this.editorState.tr;
     let counter = this.editorState.doc.content.size;

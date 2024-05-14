@@ -1,6 +1,10 @@
 import { Area, AreaType } from "./area";
 
-// Parses text into an HTML div to then be rendered by ProseMirror
+/**
+ * Parses text into an HTML div to be rendered by ProseMirror.
+ * @param text - The input text to parse.
+ * @returns The HTML div containing the parsed text.
+ */
 export function domFromText(text: string): HTMLDivElement {
   const dom = document.createElement("div");
   text.split(/(?:\r\n?|\n){2,}/).forEach((block) => {
@@ -19,13 +23,21 @@ export function domFromText(text: string): HTMLDivElement {
   return dom;
 }
 
-// Parses the text into areas and converts coqdoc into markdown
+/**
+ * Parses the text into areas and converts Coqdoc into markdown.
+ * @param text - The input text to parse.
+ * @returns An array of areas representing the parsed text.
+ */
 export function parseToProofFlow(text: string): Area[] {
   let areas = parseToAreas(text);
   return areas;
 }
 
-// Converts a default Coq file into different areas for easier conversion to the Prosemirror format
+/**
+ * Converts a default Coq file into different areas for easier conversion to the Prosemirror format.
+ * @param text - The input text to parse.
+ * @returns An array of areas representing the parsed text.
+ */
 function parseToAreas(text: string): Area[] {
   let areas: Area[] = new Array();
   const regCoqdoc = /^\s*\(\*((.|\n)*?)\*\)\s*/;
@@ -38,7 +50,7 @@ function parseToAreas(text: string): Area[] {
       // For Coqdoc sections
       text = text.replace(regCoqdoc, "");
 
-      // Coqdoc sometimes contains (******) but this does not have any use?
+      // Coqdoc sometimes contains (******) but this does not have any use
       if (coqdoc[0].match(reqCoqdocNoUse)) continue;
 
       area.areaType = AreaType.Markdown;
@@ -49,7 +61,7 @@ function parseToAreas(text: string): Area[] {
     }
     let code = text.match(regCode);
     if (code != null) {
-      //For code sections
+      // For code sections
       text = text.replace(regCode, "");
 
       area.areaType = AreaType.Code;

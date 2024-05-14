@@ -9,12 +9,17 @@ import { EditorView } from "prosemirror-view";
 import { Node } from "prosemirror-model";
 import { deleteSelection } from "prosemirror-commands";
 
+/**
+ * Represents a ButtonBar component.
+ */
 export class ButtonBar {
   private _schema: Schema;
   private _editorView: EditorView;
 
   /**
-   * Represents a ButtonBar component.
+   * Creates a new instance of the ButtonBar class.
+   * @param schema - The schema for the editor.
+   * @param editorView - The editor view.
    */
   constructor(schema: Schema, editorView: EditorView) {
     this._schema = schema;
