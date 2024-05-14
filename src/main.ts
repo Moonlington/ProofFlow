@@ -28,23 +28,22 @@ buttonNewInstance?.addEventListener("click", (e) => {
   while (contentElement.firstChild != null) {
     contentElement.removeChild(contentElement.firstChild);
   }
-  
+
   // Create a new instance of the ProofFlow class
   proofFlow = new ProofFlow(editorElement, contentElement);
 });
 
-// Button to insert "hi" in the editor element 
+// Button to insert "hi" in the editor element
 // TODO remove this button, It's just for testing
 let buttonInsertHi = document.getElementById("insert-hi");
 buttonInsertHi?.addEventListener("click", (e) => {
   proofFlow.createTextArea("hi");
 });
 
-// Input to read file 
+// Input to read file
 document
   .getElementById("file-input")
   ?.addEventListener("change", readSingleFile, false);
-
 
 /**
  * Reads a single file from the input event and processes it.

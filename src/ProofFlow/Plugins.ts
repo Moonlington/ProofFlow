@@ -24,7 +24,7 @@ let blockMathInputRule = makeBlockMathInputRule(
 
 /**
  * Creates an array of plugins for the given schema.
- * 
+ *
  * @param schema - The schema to create plugins for.
  * @returns An array of plugins.
  */

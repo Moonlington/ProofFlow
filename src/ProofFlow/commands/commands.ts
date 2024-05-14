@@ -35,7 +35,7 @@ export function cmdInsertCode(
 
 /**
  * Inserts a markdown node into the schema at the specified insertion place.
- * 
+ *
  * @param schema - The schema to insert the markdown node into.
  * @param insertionPlace - The insertion place where the markdown node should be inserted.
  * @returns The command object representing the insertion of the markdown node.
@@ -50,7 +50,7 @@ export function cmdInsertMarkdown(
 
 /**
  * Inserts a math node into the schema at the specified insertion place.
- * 
+ *
  * @param schema - The schema to insert the math node into.
  * @param insertionPlace - The insertion place where the math node should be inserted.
  * @returns The command to insert the math node.

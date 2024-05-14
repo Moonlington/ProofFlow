@@ -14,7 +14,6 @@ import { Area, AreaType } from "./parser/area";
 import { parseToProofFlow } from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
 
-
 // CSS
 
 export class ProofFlow {
@@ -65,7 +64,7 @@ export class ProofFlow {
   // Parses an original Coq file and creates a block for each area
   /**
    * Opens the original Coq file and creates text or code areas based on the parsed content.
-   * 
+   *
    * @param text - The content of the Coq file.
    */
   public openOriginalCoqFile(text: string): void {
@@ -84,11 +83,11 @@ export class ProofFlow {
 
   /**
    * Creates a new text area in the editor and inserts the specified text.
-   * 
+   *
    * @param text - The text to be inserted in the text area.
    */
   public createTextArea(text: string): void {
-    // Create a new transaction and get the counter 
+    // Create a new transaction and get the counter
     let trans: Transaction = this.editorState.tr;
     let counter = this.editorState.doc.content.size;
 

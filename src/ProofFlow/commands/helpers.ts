@@ -11,8 +11,8 @@ import {
  * Represents the possible places where an insertion can occur.
  */
 export enum InsertionPlace {
-  Above,
-  Underneath,
+  Above, // Insert above the current selection
+  Underneath, // Insert underneath the current selection
 }
 
 /**
@@ -36,14 +36,14 @@ export type InsertionFunction = (
 export function selectionType(sel: Selection) {
   console.log(sel);
   return {
-    isTextSelection: sel instanceof TextSelection,
-    isNodeSelection: sel instanceof NodeSelection,
+    isTextSelection: sel instanceof TextSelection, // True if the selection is a text selection
+    isNodeSelection: sel instanceof NodeSelection, // True if the selection is a node selection
   };
 }
 
 /**
  * Inserts nodes of specified types above the current selection in the editor state.
- * 
+ *
  * @param state - The current editor state.
  * @param tr - The transaction to apply the changes to.
  * @param nodeType - The types of nodes to insert.
@@ -62,22 +62,20 @@ export function insertAbove(
   let trans: Transaction = tr;
 
   if (isNodeSelection) {
-    // To and from point directly to beginning and end of node.
+    // If the selection is a node selection, insert the specified node types above the current selection
     const pos = sel.from;
     let counter = pos;
 
-    // Insert the specified node types above the current selection
     nodeType.forEach((type) => {
       trans = trans.insert(counter, type.create());
       counter++;
     });
   } else if (isTextSelection) {
-    // To and from point directly to beginning and end of node.
+    // If the selection is a text selection, insert the specified node types above the current selection
     const textSel = sel as TextSelection;
     const from = textSel.from - 1;
     let counter = from;
 
-    // Insert the specified node types above the current selection
     nodeType.forEach((type) => {
       trans = trans.insert(counter, type.create());
       counter++;
@@ -98,7 +96,7 @@ export function insertAbove(
 
 /**
  * Inserts nodes under the current selection in the editor state.
- * 
+ *
  * @param state - The current editor state.
  * @param tr - The transaction to apply the changes to.
  * @param nodeType - The node types to insert.
@@ -117,17 +115,16 @@ export function insertUnder(
   let trans: Transaction = tr;
 
   if (isNodeSelection) {
-    // To and from point directly to beginning and end of node.
+    // If the selection is a node selection, insert the specified node types under the current selection
     const pos = sel.to;
     let counter = pos;
 
-    // Insert the specified node types under the current selection
     nodeType.forEach((type) => {
       trans = trans.insert(counter, type.create());
       counter++;
     });
   } else if (isTextSelection) {
-    // To and from point directly to beginning and end of node.
+    // If the selection is a text selection, insert the specified node types under the current selection
     const textSel = sel as TextSelection;
     const to =
       sel.to + (sel.$from.parent.nodeSize - textSel.$from.parentOffset) - 1;
@@ -138,20 +135,18 @@ export function insertUnder(
     }
     let counter = to;
 
-    // Insert the specified node types under the current selection
     nodeType.forEach((type) => {
       trans = trans.insert(counter, type.create());
       counter++;
     });
   } else {
-      // If the selection is invalid, add a node at the end of the document
-      const pos = state.doc.content.size;
-      let counter = pos;
-  
-      nodeType.forEach((type) => {
-        trans = trans.insert(counter, type.create());
-        counter++;
-      });
+    // If the selection is invalid, add a node at the end of the document
+    const pos = state.doc.content.size;
+    let counter = pos;
+    nodeType.forEach((type) => {
+      trans = trans.insert(counter, type.create());
+      counter++;
+    });
   }
 
   return trans;
@@ -159,7 +154,7 @@ export function insertUnder(
 
 /**
  * Retrieves the containing node of the given selection.
- * 
+ *
  * @param sel - The selection object.
  * @returns The containing node of the selection, or undefined if the selection is not valid.
  */

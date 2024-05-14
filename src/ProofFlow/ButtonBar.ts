@@ -38,7 +38,7 @@ export class ButtonBar {
 
     const columnCount = commands.length + 1; // +1 for the delete button
     const columnWidth = 100 / columnCount;
-    
+
     // Create a column for each button
     for (let i = 0; i < columnCount; i++) {
       const column = document.createElement("div");
@@ -62,11 +62,21 @@ export class ButtonBar {
         const bgColor = commands[i].bgColor;
 
         // Insert above button
-        const insertAboveButton = this.createButton(cmd, name, InsertionPlace.Above, bgColor);
+        const insertAboveButton = this.createButton(
+          cmd,
+          name,
+          InsertionPlace.Above,
+          bgColor,
+        );
         buttonGroup.appendChild(insertAboveButton);
 
         // Insert underneath button
-        const insertUnderButton = this.createButton(cmd, name, InsertionPlace.Underneath, bgColor);
+        const insertUnderButton = this.createButton(
+          cmd,
+          name,
+          InsertionPlace.Underneath,
+          bgColor,
+        );
         buttonGroup.appendChild(insertUnderButton);
 
         // Append the button group to the column
@@ -81,24 +91,31 @@ export class ButtonBar {
     parentElement.insertBefore(bar, parentElement.firstChild);
   }
 
-
   /**
    * Creates a button element with the specified properties and event listener.
-   * 
+   *
    * @param cmd - The function to be executed when the button is clicked.
    * @param name - The name of the button.
    * @param place - The insertion place for the button.
    * @param bgColor - The background color of the button.
    * @returns The created button element.
    */
-  createButton(cmd: Function, name: string, place: InsertionPlace, bgColor: string) {
+  createButton(
+    cmd: Function,
+    name: string,
+    place: InsertionPlace,
+    bgColor: string,
+  ) {
     const button = document.createElement("button");
     button.textContent = `${name} ${place === InsertionPlace.Above ? "Above" : "Below"}`;
     button.style.backgroundColor = bgColor;
 
     // Event listener to execute the command when the button is clicked
     button.addEventListener("click", () => {
-      cmd(this._schema, place)(this._editorView.state, this._editorView.dispatch);
+      cmd(this._schema, place)(
+        this._editorView.state,
+        this._editorView.dispatch,
+      );
     });
 
     return button;
