@@ -14,22 +14,22 @@
 }
 
 .ProseMirror > * {
-  padding-bottom: 5px;
-  padding-left: 4px;
+  padding: 1px 4px 5px 4px;
   display: block;
   width: 100%;
+  border-bottom: #2701ff13 0.5px solid;
 }
 
 codecell {
-  background-color: #2701ff13;
+  background-color: #2701ff19;
 }
 
 markdown {
-  background-color: #ff000013;
+  background-color: #ff000019;
 }
 
 math-display {
-  background-color:  #f6ff0013;
+  background-color:  #f6ff0019;
 }
 
 #editor {
@@ -63,12 +63,13 @@ math-display {
 }
 
 .button-bar button {
-  margin-right: 8px;
   padding: 8px 16px;
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 4px;
   cursor: pointer;
+  width: 100px;
+  margin: 4px
 }
 
 .button-bar button:hover {

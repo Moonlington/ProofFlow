@@ -29,41 +29,84 @@ export class ButtonBar {
     const bar = document.createElement("div");
     bar.className = "button-bar";
 
-    /**
-     * Array of button commands.
-     * Each command object contains a name and a command function.
-     */
-    const buttonCommands = [
-      {
-        name: "Markdown",
-        command: cmdInsertMarkdown(this._schema, InsertionPlace.Underneath),
-      },
-      {
-        name: "Code",
-        command: cmdInsertCode(this._schema, InsertionPlace.Underneath),
-      },
-      {
-        name: "Math",
-        command: cmdInsertMath(this._schema, InsertionPlace.Underneath),
-      },
-      { name: "Delete", command: deleteSelection },
+    // Buttons to insert different types of content
+    const commands = [
+      { name: "Markdown", cmd: cmdInsertMarkdown, bgColor: "#ff000019" },
+      { name: "Code", cmd: cmdInsertCode, bgColor: "#2701ff19" },
+      { name: "Math", cmd: cmdInsertMath, bgColor: "#f6ff0019" },
     ];
 
-    // Create a button for each command
-    buttonCommands.forEach(({ name, command }) => {
-      const button = document.createElement("button");
-      button.textContent = name;
-      button.addEventListener("click", () => {
-        const cell = this.getCurrentCell();
-        if (cell) {
-          command(this._editorView.state, this._editorView.dispatch);
-        }
-      });
-      bar.appendChild(button);
-    });
+    const columnCount = commands.length + 1; // +1 for the delete button
+    const columnWidth = 100 / columnCount;
+    
+    // Create a column for each button
+    for (let i = 0; i < columnCount; i++) {
+      const column = document.createElement("div");
+      column.className = "button-column";
+      column.style.width = `${columnWidth}%`;
 
+      if (i === columnCount - 1) {
+        // Last column for the delete button
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", () => {
+          deleteSelection(this._editorView.state, this._editorView.dispatch);
+        });
+        column.appendChild(deleteButton);
+      } else {
+        // Other columns for the insert buttons
+        const buttonGroup = document.createElement("div");
+        buttonGroup.className = "button-group";
+        const cmd = commands[i].cmd;
+        const name = commands[i].name;
+        const bgColor = commands[i].bgColor;
+
+        // Insert above button
+        const insertAboveButton = this.createButton(cmd, name, InsertionPlace.Above, bgColor);
+        buttonGroup.appendChild(insertAboveButton);
+
+        // Insert underneath button
+        const insertUnderButton = this.createButton(cmd, name, InsertionPlace.Underneath, bgColor);
+        buttonGroup.appendChild(insertUnderButton);
+
+        // Append the button group to the column
+        column.appendChild(buttonGroup);
+      }
+
+      // Append the column to the button bar
+      bar.appendChild(column);
+    }
+
+    // Append the button bar to the parent element
     parentElement.insertBefore(bar, parentElement.firstChild);
   }
+
+
+  /**
+   * Creates a button element with the specified properties and event listener.
+   * 
+   * @param cmd - The function to be executed when the button is clicked.
+   * @param name - The name of the button.
+   * @param place - The insertion place for the button.
+   * @param bgColor - The background color of the button.
+   * @returns The created button element.
+   */
+  createButton(cmd: Function, name: string, place: InsertionPlace, bgColor: string) {
+    const button = document.createElement("button");
+    button.textContent = `${name} ${place === InsertionPlace.Above ? "Above" : "Below"}`;
+    button.style.backgroundColor = bgColor;
+
+    // Event listener to execute the command when the button is clicked
+    button.addEventListener("click", () => {
+      const cell = this.getCurrentCell();
+      if (cell) {
+        cmd(this._schema, place)(this._editorView.state, this._editorView.dispatch);
+      }
+    });
+
+    return button;
+  }
+
 
   /**
    * Retrieves the current cell based on the editor's selection.
