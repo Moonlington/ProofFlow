@@ -399,3 +399,7 @@ img.ProseMirror-separator {
 .button-bar button:hover {
   background-color: #e0e0e0;
 }
+
+.ProseMirror > * {
+  margin-bottom: 5px;
+}
