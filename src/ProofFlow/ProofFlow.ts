@@ -1,4 +1,4 @@
-import { Schema, DOMParser } from "prosemirror-model";
+import { Schema, DOMParser, Fragment } from "prosemirror-model";
 import { NodeType, Node } from "prosemirror-model";
 import { ProofFlowSchema } from "./ProofFlowSchema";
 import {
@@ -13,7 +13,7 @@ import { mathSerializer } from "@benrbray/prosemirror-math";
 import { Area, AreaType } from "./parser/area";
 import { parseToProofFlow } from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
-
+import { getContent } from "./outputparser/savefile";
 
 // CSS
 
@@ -24,6 +24,8 @@ export class ProofFlow {
 
   private editorState: EditorState;
   private editorView: EditorView;
+
+  private fileName: string = "file.txt";
 
   constructor(editorElem: HTMLElement, contentElement: HTMLElement) {
     this._schema = ProofFlowSchema;
@@ -43,7 +45,6 @@ export class ProofFlow {
         return mathSerializer.serializeSlice(slice);
       },
     };
-
 
     this.editorView = new EditorView(this._editorElem, directEditorProps);
 
@@ -72,7 +73,6 @@ export class ProofFlow {
     ]);
     trans = trans.setSelection(Selection.atEnd(this.editorState.doc));
     trans = trans.insert(counter, textNode);
-    console.log(trans);
     this.editorState = this.editorState.apply(trans);
     this.editorView.updateState(this.editorState);
   }
@@ -86,8 +86,27 @@ export class ProofFlow {
     ]);
     trans = trans.setSelection(Selection.atEnd(this.editorState.doc));
     trans = trans.insert(counter, codeNode);
-    console.log(trans);
     this.editorState = this.editorState.apply(trans);
     this.editorView.updateState(this.editorState);
+  }
+
+  public setFileName(fileName: string) {
+    this.fileName = fileName;
+  }
+
+  public saveFile() {
+    const content = this.editorState.doc;
+    const result = getContent(content);
+    const blob = new Blob([result], { type: "text" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = this.fileName;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   }
 }

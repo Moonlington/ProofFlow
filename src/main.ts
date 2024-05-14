@@ -28,6 +28,11 @@ buttonInsertHi?.addEventListener("click", (e) => {
   proofFlow.createTextArea("hi");
 });
 
+let buttonSaveFile = document.getElementById("save-file");
+buttonSaveFile?.addEventListener("click", (e) => {
+  proofFlow.saveFile();
+});
+
 // Input to read file
 document
   .getElementById("file-input")
@@ -50,6 +55,7 @@ function readSingleFile(e: Event) {
     if (readerEvent?.target?.result) {
       let result = readerEvent.target.result.toString();
       proofFlow.openOriginalCoqFile(result);
+      proofFlow.setFileName(file.name);
     }
   };
 }
