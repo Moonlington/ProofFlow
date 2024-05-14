@@ -74,7 +74,7 @@ export function insertAbove(
   } else if (isTextSelection) {
     // To and from point directly to beginning and end of node.
     const textSel = sel as TextSelection;
-    const from = sel.from - textSel.$from.parentOffset;
+    const from = textSel.from - 1;
     let counter = from;
 
     // Insert the specified node types above the current selection
