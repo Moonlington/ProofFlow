@@ -67,13 +67,14 @@ export class ProofFlow {
         
           let trans = view.state.tr;
           const textblockNodeType = ProofFlowSchema.nodes["markdown"];
-          
+          console.log(view.state.selection.$from.pos + " " + view.state.selection.$to.pos);
           // Parse the content and create a new markdown node with the parsed content
           const parsedContent = defaultMarkdownParser.parse(view.state.selection.$to.node().textContent);
           if (parsedContent) {
             let newMarkdownNode = textblockNodeType.create(null, parsedContent.content);
             trans = trans.replaceWith(
-              view.state.selection.$from.pos,
+              // Subtract the length of the text content from the $from position to get the correct position
+              view.state.selection.$from.pos - view.state.selection.$to.node().textContent.length - 1,
               view.state.selection.$to.pos,
               newMarkdownNode
             );
