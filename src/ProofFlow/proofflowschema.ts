@@ -1,6 +1,7 @@
 import { Node, Schema } from "prosemirror-model";
+import { node as codeMirrorNode } from "./CodeMirror";
 
-const cell = "(markdown | math_display | codecell)";
+const cell = "(markdown | math_display | code_mirror)";
 
 export const ProofFlowSchema: Schema = new Schema({
   nodes: {
@@ -13,10 +14,12 @@ export const ProofFlowSchema: Schema = new Schema({
       content: "text*",
       parseDOM: [{ tag: "markdown", preserveWhitespace: "full" }],
       atom: true,
-      toDOM(node) {
+      toDOM(_node) {
         return ["markdown", 0];
       },
     },
+
+    code_mirror: codeMirrorNode,
 
     text: {
       group: "inline",

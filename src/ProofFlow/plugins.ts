@@ -8,13 +8,13 @@ import {
   makeBlockMathInputRule,
   REGEX_BLOCK_MATH_DOLLARS,
 } from "@benrbray/prosemirror-math";
-import { ProofFlowSchema } from "./ProofFlowSchema";
+import { ProofFlowSchema } from "./proofflowschema.ts";
 import {
   cmdInsertCode,
   cmdInsertMarkdown,
   cmdInsertMath,
-} from "./commands/commands";
-import { InsertionPlace } from "./commands/helpers";
+} from "./Commands/commands";
+import { InsertionPlace } from "./Commands/helpers";
 
 // create input rules (using default regex)
 let blockMathInputRule = makeBlockMathInputRule(

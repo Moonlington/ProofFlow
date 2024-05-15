@@ -2,6 +2,8 @@ import { NodeType } from "prosemirror-model";
 import { allowedToInsert, InsertionFunction } from "./helpers";
 import { Command, EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
+import { GetPos } from "../CodeMirror/types.ts";
+import { CodeMirrorView } from "../CodeMirror";
 
 export function getMdInsertCommand(
   insertionFunction: InsertionFunction,
