@@ -1,10 +1,16 @@
-// The file types that ProofFlow recognizes
+/**
+ * The file types that ProofFlow recognizes.
+ */
 export enum AcceptedFileTypes {
   Unknown = "",
   Coq = "v",
 }
 
-// Checks what file type a file is
+/**
+ * Checks the file type of a given file.
+ * @param file - The file to check.
+ * @returns The file type of the given file.
+ */
 export function isCorrectFileType(file: File): AcceptedFileTypes {
   let fileExtension = file.name.split(".").pop();
   if (fileExtension === undefined) return AcceptedFileTypes.Unknown;

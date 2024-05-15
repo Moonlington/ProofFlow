@@ -16,16 +16,25 @@ import {
 } from "./Commands/commands";
 import { InsertionPlace } from "./Commands/helpers";
 
-// create input rules (using default regex)
-let blockMathInputRule = makeBlockMathInputRule(
+// Create input rules using default regex
+const blockMathInputRule = makeBlockMathInputRule(
   REGEX_BLOCK_MATH_DOLLARS,
   ProofFlowSchema.nodes.math_display,
 );
 
+/**
+ * Creates an array of plugins for the given schema.
+ *
+ * @param schema - The schema to create plugins for.
+ * @returns An array of plugins.
+ */
 export function createPlugins(schema: Schema): Plugin[] {
-  let plugins = new Array<Plugin>();
+  const plugins = [];
 
+  // Add math plugin
   plugins.push(mathPlugin);
+
+  // Add keymap plugin with keybindings for various commands
   plugins.push(
     keymap({
       Backspace: deleteSelection,
@@ -39,6 +48,9 @@ export function createPlugins(schema: Schema): Plugin[] {
       "Mod-L": cmdInsertMath(schema, InsertionPlace.Above),
     }),
   );
+
+  // Add input rules plugin with block math input rule
   plugins.push(inputRules({ rules: [blockMathInputRule] }));
+
   return plugins;
 }

@@ -1,30 +1,52 @@
 import { Node, Schema } from "prosemirror-model";
 import { node as codeMirrorNode } from "./CodeMirror";
-
+/**
+ * The cell types available in ProofFlow.
+ * Can be markdown, math_display, or codecell.
+ */
 const cell = "(markdown | math_display | code_mirror)";
 
+/**
+ * The ProofFlow schema.
+ */
 export const ProofFlowSchema: Schema = new Schema({
   nodes: {
+    /**
+     * The document node.
+     * Contains zero or more cell nodes.
+     */
     doc: {
       content: `${cell}*`,
     },
 
+    /**
+     * The markdown node.
+     * Represents a block of markdown text.
+     */
     markdown: {
       block: true,
       content: "text*",
       parseDOM: [{ tag: "markdown", preserveWhitespace: "full" }],
       atom: true,
-      toDOM(_node) {
+      toDOM(node) {
         return ["markdown", 0];
       },
     },
 
     code_mirror: codeMirrorNode,
 
+    /**
+     * The text node.
+     * Represents inline text.
+     */
     text: {
       group: "inline",
     },
 
+    /**
+     * The codecell node.
+     * Represents a code cell.
+     */
     codecell: {
       content: "text*",
       code: true,
@@ -34,6 +56,10 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The math_display node.
+     * Represents a block of math display.
+     */
     math_display: {
       group: "block math",
       content: "text*",
@@ -48,6 +74,10 @@ export const ProofFlowSchema: Schema = new Schema({
     },
   },
   marks: {
+    /**
+     * The em mark.
+     * Represents emphasized text.
+     */
     em: {
       parseDOM: [{ tag: "i" }, { tag: "em" }],
       toDOM() {
@@ -55,6 +85,10 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The strong mark.
+     * Represents strong text.
+     */
     strong: {
       parseDOM: [{ tag: "b" }, { tag: "strong" }],
       toDOM() {
@@ -62,6 +96,10 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The link mark.
+     * Represents a hyperlink.
+     */
     link: {
       attrs: {
         href: {},
@@ -84,6 +122,10 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The code mark.
+     * Represents inline code.
+     */
     code: {
       parseDOM: [{ tag: "code" }],
       toDOM() {
