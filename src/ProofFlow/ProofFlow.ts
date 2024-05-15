@@ -19,7 +19,7 @@ import { getContent } from "./outputparser/savefile";
 
 import { minimalSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
-
+import { defaultMarkdownParser } from "prosemirror-markdown";
 // CSS
 
 export class ProofFlow {
@@ -56,7 +56,44 @@ export class ProofFlow {
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
+      handleDOMEvents: {
+        focus: (view, event) => {
+          //let element = event.target as HTMLElement;
+          //let markdowncell = element.querySelector("markdown");
+          //console.log(view.state.doc.nodeAt(view.state.selection.anchor)?.type.name);
+          console.log(view.state.selection.$to.node().type.name); 
 
+          console.log("focus");
+          //console.log(view.state.selection);
+          //console.log(element.querySelector("markdown"));
+        },
+        blur: (view, event) => {
+          console.log("To: "+view.state.selection.$to.node().textContent); 
+          console.log("From: "+view.state.selection.$from.node().textContent); 
+          if (view.state.selection.$to.node().type.name !== "markdown") return;
+
+          /*let trans: Transaction = view.state.tr;
+          const textblockNodeType = ProofFlowSchema.nodes["markdown"];
+          let renderedMarkdownNode: Node = textblockNodeType.create(null, defaultMarkdownParser.parse(view.state.selection.$to.node().textContent)!.content);
+          trans = trans.replaceSelectionWith(renderedMarkdownNode);
+
+          view.state = view.state.apply(trans);
+          view.updateState(view.state);*/
+          console.log("blur");
+       }
+      },
+      // Render text to markdown when a markdown cell is double clicked
+      handleDoubleClickOn(view, pos, node, nodePos, event, direct) {
+        if (node.type.name === "markdown" && direct) {
+          let trans: Transaction = view.state.tr;
+          const textblockNodeType = ProofFlowSchema.nodes["markdown"];
+            let textNode: Node = textblockNodeType.create(null, defaultMarkdownParser.parse(node.textContent)!.content);
+          trans = trans.replaceSelectionWith(textNode);
+
+          view.state = view.state.apply(trans);
+          view.updateState(view.state);
+        } 
+      },
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
