@@ -1,17 +1,12 @@
-import {
-  Schema,
-  DOMParser,
-  NodeType,
-  Node,
-} from "prosemirror-model";
+import { Schema, DOMParser, NodeType, Node } from "prosemirror-model";
 import { CodeMirrorView } from "./CodeMirror";
 import type { GetPos } from "./CodeMirror/types";
 import { ProofFlowSchema } from "./proofflowschema.ts";
 import {
   EditorState,
   EditorStateConfig,
-    Transaction,
-    Selection,
+  Transaction,
+  Selection,
   NodeSelection,
 } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
@@ -62,11 +57,7 @@ export class ProofFlow {
 
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
-        code_mirror: (
-          node: Node,
-          view: EditorView,
-          getPos: GetPos,
-        ) =>
+        code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
           new CodeMirrorView({
             node,
             view,
