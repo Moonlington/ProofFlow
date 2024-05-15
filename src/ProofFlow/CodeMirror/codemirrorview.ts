@@ -44,6 +44,9 @@ const computeChange = (
   return { from: start, to: oldEnd, text: newVal.slice(start, newEnd) };
 };
 
+/**
+ * A node view for CodeMirror nodes, used for implementing the CodeMirror editor
+ */
 class CodeMirrorView implements NodeView {
   node: ProsemirrorNode;
   view: EditorView;
@@ -163,9 +166,7 @@ class CodeMirrorView implements NodeView {
   }
 
   /**
-   * Move the cursor to the start/end of the line/character
-   * if the cursor is at the start/end of the line/character
-   * and there is no selection
+   * Escape the CodeMirror editor and move the cursor to the ProseMirror editor
    */
   mayBeEscape(unit: "char" | "line", dir: -1 | 1): Command {
     return (view) => {
@@ -206,7 +207,7 @@ class CodeMirrorView implements NodeView {
     };
   }
 
-  /*
+  /**
    * Update the node view if the node has changed
    * and update the CodeMirror editor if the content has changed
    */
@@ -232,6 +233,9 @@ class CodeMirrorView implements NodeView {
     return true;
   }
 
+  /**
+   * Focus the CodeMirror editor and set the selection
+   */
   setSelection(anchor: number, head: number): void {
     this.focus();
     this.updating = true;

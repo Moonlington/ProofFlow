@@ -7,10 +7,6 @@ import {
 import { CodeMirrorView } from "./CodeMirror";
 import type { GetPos } from "./CodeMirror/types";
 import { Proofflowschema } from "./proofflowschema.ts";
-import { schema } from "prosemirror-schema-basic";
-import { MenuItem } from "prosemirror-menu";
-import { setBlockType } from "prosemirror-commands";
-import { buildMenuItems, exampleSetup } from "prosemirror-example-setup";
 import {
   EditorState,
   EditorStateConfig,
@@ -50,6 +46,8 @@ export class ProofFlow {
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
+
+      // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (
           node: ProsemirrorNode,
