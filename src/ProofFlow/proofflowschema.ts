@@ -1,10 +1,10 @@
 import { Node, Schema } from "prosemirror-model";
-
+import { node as codeMirrorNode } from "./CodeMirror";
 /**
  * The cell types available in ProofFlow.
  * Can be markdown, math_display, or codecell.
  */
-const cell = "(markdown | math_display | codecell)";
+const cell = "(markdown | math_display | code_mirror)";
 
 /**
  * The ProofFlow schema.
@@ -32,6 +32,8 @@ export const ProofFlowSchema: Schema = new Schema({
         return ["markdown", 0];
       },
     },
+
+    code_mirror: codeMirrorNode,
 
     /**
      * The text node.

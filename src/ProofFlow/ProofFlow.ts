@@ -1,18 +1,28 @@
-import { Schema, DOMParser } from "prosemirror-model";
-import { NodeType, Node } from "prosemirror-model";
-import { ProofFlowSchema } from "./ProofFlowSchema";
+import {
+  Schema,
+  DOMParser,
+  NodeType,
+  Node,
+} from "prosemirror-model";
+import { CodeMirrorView } from "./CodeMirror";
+import type { GetPos } from "./CodeMirror/types";
+import { ProofFlowSchema } from "./proofflowschema.ts";
 import {
   EditorState,
   EditorStateConfig,
-  Transaction,
-  Selection,
+    Transaction,
+    Selection,
+  NodeSelection,
 } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
-import { createPlugins } from "./Plugins";
+import { createPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 import { Area, AreaType } from "./parser/area";
 import { parseToProofFlow } from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
+
+import { minimalSetup } from "codemirror";
+import { javascript } from "@codemirror/lang-javascript";
 
 // CSS
 
@@ -48,6 +58,23 @@ export class ProofFlow {
       state: this.editorState,
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
+      },
+
+      // Define a node view for the custom code mirror node as a prop
+      nodeViews: {
+        code_mirror: (
+          node: Node,
+          view: EditorView,
+          getPos: GetPos,
+        ) =>
+          new CodeMirrorView({
+            node,
+            view,
+            getPos,
+            cmOptions: {
+              extensions: [minimalSetup, javascript()],
+            },
+          }),
       },
     };
     this.editorView = new EditorView(this._editorElem, directEditorProps);

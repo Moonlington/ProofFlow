@@ -26,7 +26,7 @@ export function cmdInsertCode(
   schema: Schema,
   insertionPlace: InsertionPlace,
 ): Command {
-  const codeblockNodeType = schema.nodes["codecell"];
+  const codeblockNodeType = schema.nodes["code_mirror"];
   return getCodeInsertCommand(
     getInsertionFunction(insertionPlace),
     codeblockNodeType,
