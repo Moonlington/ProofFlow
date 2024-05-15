@@ -3,27 +3,39 @@ import {
   AcceptedFileTypes,
   isCorrectFileType,
 } from "./ProofFlow/parser/accepted-file-types";
+import "./ProofFlow.css";
 import "./index.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
 
-let editorElement: HTMLElement = document.querySelector("#editor")!;
-let contentElement: HTMLElement = document.querySelector("#content")!;
+// Get the editor and content elements
+const editorElement: HTMLElement = document.querySelector("#editor")!;
+const contentElement: HTMLElement = document.querySelector("#content")!;
 
+// Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
 
-let buttonNewInstance = document.getElementById("newtextblock");
+// Button to create a new instance of the editor and content elements
+const buttonNewInstance = document.getElementById("newtextblock");
+// Add event listener to the button
 buttonNewInstance?.addEventListener("click", (e) => {
+  // Remove all children from the editor element
   while (editorElement.firstChild != null) {
     editorElement.removeChild(editorElement.firstChild);
   }
+
+  // Remove all children from the content element
   while (contentElement.firstChild != null) {
     contentElement.removeChild(contentElement.firstChild);
   }
+
+  // Create a new instance of the ProofFlow class
   proofFlow = new ProofFlow(editorElement, contentElement);
 });
 
-let buttonInsertHi = document.getElementById("insert-hi");
+// Button to insert "hi" in the editor element
+// TODO: remove this button, it's just for testing
+const buttonInsertHi = document.getElementById("insert-hi");
 buttonInsertHi?.addEventListener("click", (e) => {
   proofFlow.createTextArea("hi");
 });
@@ -33,22 +45,35 @@ document
   .getElementById("file-input")
   ?.addEventListener("change", readSingleFile, false);
 
-// Reads a file and checks if the format is correct, if so it sends it to the editor to open it
+/**
+ * Reads a single file from the input event and processes it.
+ * @param e - The input event.
+ */
 function readSingleFile(e: Event) {
+  // Get the file list from the input event and check if it's empty
   if (!e.target) return;
-  let fileList = (<HTMLInputElement>e.target).files;
+  const fileList = (<HTMLInputElement>e.target).files;
   if (!fileList) return;
-  let file = fileList[0];
-  let fileType = isCorrectFileType(file);
+
+  // Get the first file from the list and check if it's a correct file type
+  const file = fileList[0];
+  const fileType = isCorrectFileType(file);
   if (fileType === AcceptedFileTypes.Unknown) {
     console.log("Sorry, this file type is currently not supported");
     return;
   }
-  let reader = new FileReader();
+
+  // Create a new file reader and read the file content
+  const reader = new FileReader();
   reader.readAsText(file, "UTF-8");
+
+  // Event listener to process the file content
   reader.onloadend = (readerEvent: ProgressEvent<FileReader>) => {
     if (readerEvent?.target?.result) {
-      let result = readerEvent.target.result.toString();
+      // Get the result from the reader event
+      const result = readerEvent.target.result.toString();
+
+      // Process the file content
       proofFlow.openOriginalCoqFile(result);
     }
   };
