@@ -1,5 +1,5 @@
-import { NodeType, Node } from "prosemirror-model";
-import { ProofFlowSchema } from "./ProofFlowSchema";
+import { NodeType, Node, DOMParser, Schema } from "prosemirror-model";
+import { ProofFlowSchema } from "./proofflowschema";
 import { CodeMirrorView } from "./CodeMirror";
 import type { GetPos } from "./CodeMirror/types";
 import {
@@ -133,7 +133,7 @@ export class ProofFlow {
   public createCodeArea(text: string): void {
     let trans: Transaction = this.getState().tr;
     let counter = this.getState().doc.content.size;
-    const codeblockNodeType = ProofFlowSchema.nodes["codecell"];
+    const codeblockNodeType = ProofFlowSchema.nodes["code_mirror"];
     let codeNode: Node = codeblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
