@@ -34,6 +34,42 @@ export function parseToProofFlow(text: string): Area[] {
 }
 
 /**
+ * Converts non-code text into Areas for math and Markdown
+ * @param text - The input text (non-code) to parse.
+ * @returns An array of areas representing the parsed text.
+ */
+function parseNonCode(text: string): Area[] {
+  let areas = new Array();
+
+  const regex = /(\$\$[\s\S]*?\$\$)|([\s\S]+?)(?=\$\$|$)/g;
+
+  const matches: string[] = [];
+  
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+      matches.push(match[0].trim());
+  }
+
+  matches.forEach((m) => {
+    if (m.length == 0) return;
+    let area = new Area();
+    area.text = m;
+    if (m.startsWith('$')) {
+      area.areaType = AreaType.Math;
+      console.log(area.text);
+      const fixed = area.text.replace(/\$/g, '');
+      console.log(fixed);
+      area.text = fixed.trim();
+    } else {
+      area.areaType = AreaType.Markdown;
+    }
+    areas.push(area);
+  })
+
+  return areas;
+}
+
+/**
  * Converts a default Coq file into different areas for easier conversion to the Prosemirror format.
  * @param text - The input text to parse.
  * @returns An array of areas representing the parsed text.
@@ -53,10 +89,7 @@ function parseToAreas(text: string): Area[] {
       // Coqdoc sometimes contains (******) but this does not have any use
       if (coqdoc[0].match(reqCoqdocNoUse)) continue;
 
-      area.areaType = AreaType.Markdown;
-      area.text = coqdoc[0];
-
-      areas.push(area);
+      areas = areas.concat(parseNonCode(coqdoc[0]));
       continue;
     }
     let code = text.match(regCode);

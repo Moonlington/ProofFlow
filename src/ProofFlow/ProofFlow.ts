@@ -92,6 +92,8 @@ export class ProofFlow {
         this.createTextArea(area.text);
       } else if (area.areaType == AreaType.Code) {
         this.createCodeArea(area.text);
+      } else if (area.areaType == AreaType.Math) {
+        this.createMathArea(area.text);
       }
     }
   }
@@ -135,6 +137,24 @@ export class ProofFlow {
     ]);
     trans = trans.setSelection(Selection.atEnd(this.getState().doc));
     trans = trans.insert(counter, codeNode);
+    this.editorView.state = this.editorView.state.apply(trans);
+    this.editorView.updateState(this.editorView.state);
+  }
+
+  /**
+   * Creates a new math area in the editor and inserts the specified math.
+   *
+   * @param text - The math to be inserted in the math area.
+   */
+  public createMathArea(text: string): void {
+    let trans: Transaction = this.getState().tr;
+    let counter = this.getState().doc.content.size;
+    const mathblockNodeType = ProofFlowSchema.nodes["math_display"];
+    let mathNode: Node = mathblockNodeType.create(null, [
+      ProofFlowSchema.text(text),
+    ]);
+    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
+    trans = trans.insert(counter, mathNode);
     this.editorView.state = this.editorView.state.apply(trans);
     this.editorView.updateState(this.editorView.state);
   }
