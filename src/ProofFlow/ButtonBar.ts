@@ -3,8 +3,8 @@ import {
   cmdInsertCode,
   cmdInsertMarkdown,
   cmdInsertMath,
-} from "./commands/commands";
-import { InsertionPlace } from "./commands/helpers";
+} from "./Commands/commands";
+import { InsertionPlace } from "./Commands/helpers";
 import { EditorView } from "prosemirror-view";
 import { Node } from "prosemirror-model";
 import { deleteSelection } from "prosemirror-commands";
@@ -30,7 +30,7 @@ export class ButtonBar {
     bar.className = "button-bar";
 
     /**
-     * Array of button commands.
+     * Array of button Commands.
      * Each command object contains a name and a command function.
      */
     const buttonCommands = [
