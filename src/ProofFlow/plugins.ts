@@ -33,10 +33,10 @@ export function createPlugins(schema: Schema): Plugin[] {
       Enter: newlineInCode, // This only works in code sections
       "Mod-m": cmdInsertMarkdown(schema, InsertionPlace.Underneath),
       "Mod-M": cmdInsertMarkdown(schema, InsertionPlace.Above),
-      "1": cmdInsertCode(schema, InsertionPlace.Underneath),
-      "2": cmdInsertCode(schema, InsertionPlace.Above),
-      "3": cmdInsertMath(schema, InsertionPlace.Underneath),
-      "4": cmdInsertMath(schema, InsertionPlace.Above),
+      "Mod-q": cmdInsertCode(schema, InsertionPlace.Underneath),
+      "Mod-Q": cmdInsertCode(schema, InsertionPlace.Above),
+      "Mod-l": cmdInsertMath(schema, InsertionPlace.Underneath),
+      "Mod-L": cmdInsertMath(schema, InsertionPlace.Above),
     }),
   );
   plugins.push(inputRules({ rules: [blockMathInputRule] }));
