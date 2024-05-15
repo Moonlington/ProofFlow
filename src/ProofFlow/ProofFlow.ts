@@ -58,29 +58,33 @@ export class ProofFlow {
       },
       handleDOMEvents: {
         focus: (view, event) => {
-          //let element = event.target as HTMLElement;
-          //let markdowncell = element.querySelector("markdown");
-          //console.log(view.state.doc.nodeAt(view.state.selection.anchor)?.type.name);
-          console.log(view.state.selection.$to.node().type.name); 
-
-          console.log("focus");
-          //console.log(view.state.selection);
-          //console.log(element.querySelector("markdown"));
+         
         },
         blur: (view, event) => {
-          console.log("To: "+view.state.selection.$to.node().textContent); 
-          console.log("From: "+view.state.selection.$from.node().textContent); 
+          console.log("To: " + view.state.selection.$to.node().textContent);
+          console.log(view.state.selection.$to.node().type.name);
           if (view.state.selection.$to.node().type.name !== "markdown") return;
-
-          /*let trans: Transaction = view.state.tr;
+        
+          let trans = view.state.tr;
           const textblockNodeType = ProofFlowSchema.nodes["markdown"];
-          let renderedMarkdownNode: Node = textblockNodeType.create(null, defaultMarkdownParser.parse(view.state.selection.$to.node().textContent)!.content);
-          trans = trans.replaceSelectionWith(renderedMarkdownNode);
-
-          view.state = view.state.apply(trans);
-          view.updateState(view.state);*/
+          
+          // Parse the content and create a new markdown node with the parsed content
+          const parsedContent = defaultMarkdownParser.parse(view.state.selection.$to.node().textContent);
+          if (parsedContent) {
+            let newMarkdownNode = textblockNodeType.create(null, parsedContent.content);
+            trans = trans.replaceWith(
+              view.state.selection.$from.pos,
+              view.state.selection.$to.pos,
+              newMarkdownNode
+            );
+        
+            view.dispatch(trans);
+          }
+        
           console.log("blur");
-       }
+        }
+        
+        
       },
       // Render text to markdown when a markdown cell is double clicked
       handleDoubleClickOn(view, pos, node, nodePos, event, direct) {
