@@ -15,6 +15,7 @@ import { mathSerializer } from "@benrbray/prosemirror-math";
 import { Area, AreaType } from "./parser/area";
 import { parseToProofFlow } from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
+import { getContent } from "./outputparser/savefile";
 
 import { minimalSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
@@ -26,8 +27,9 @@ export class ProofFlow {
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
   private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
 
-  private editorState: EditorState; // The state of the editor
   private editorView: EditorView; // The view of the editor
+
+  private fileName: string = "file.txt";
 
   /**
    * Represents the ProofFlow class.
@@ -46,11 +48,11 @@ export class ProofFlow {
       doc: DOMParser.fromSchema(ProofFlowSchema).parse(this._contentElem),
       plugins: createPlugins(this._schema),
     };
-    this.editorState = EditorState.create(editorStateConfig);
+    const editorState = EditorState.create(editorStateConfig);
 
     // Create the editor view
     let directEditorProps: DirectEditorProps = {
-      state: this.editorState,
+      state: editorState,
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
@@ -94,6 +96,10 @@ export class ProofFlow {
     }
   }
 
+  public getState(): EditorState {
+    return this.editorView.state;
+  }
+
   /**
    * Creates a new text area in the editor and inserts the specified text.
    *
@@ -101,19 +107,18 @@ export class ProofFlow {
    */
   public createTextArea(text: string): void {
     // Create a new transaction and get the counter
-    let trans: Transaction = this.editorState.tr;
-    let counter = this.editorState.doc.content.size;
+    let trans: Transaction = this.getState().tr;
+    let counter = this.getState().doc.content.size;
 
     // Create a new text node and insert it at the end of the document
     const textblockNodeType = ProofFlowSchema.nodes["markdown"];
     let textNode: Node = textblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
-    trans = trans.setSelection(Selection.atEnd(this.editorState.doc));
+    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
     trans = trans.insert(counter, textNode);
-    console.log(trans);
-    this.editorState = this.editorState.apply(trans);
-    this.editorView.updateState(this.editorState);
+    this.editorView.state = this.editorView.state.apply(trans);
+    this.editorView.updateState(this.editorView.state);
   }
 
   /**
@@ -122,16 +127,35 @@ export class ProofFlow {
    * @param text - The code to be inserted in the code area.
    */
   public createCodeArea(text: string): void {
-    let trans: Transaction = this.editorState.tr;
-    let counter = this.editorState.doc.content.size;
-    const codeblockNodeType = ProofFlowSchema.nodes["codecell"];
+    let trans: Transaction = this.getState().tr;
+    let counter = this.getState().doc.content.size;
+    const codeblockNodeType = ProofFlowSchema.nodes["code_mirror"];
     let codeNode: Node = codeblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
-    trans = trans.setSelection(Selection.atEnd(this.editorState.doc));
+    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
     trans = trans.insert(counter, codeNode);
-    console.log(trans);
-    this.editorState = this.editorState.apply(trans);
-    this.editorView.updateState(this.editorState);
+    this.editorView.state = this.editorView.state.apply(trans);
+    this.editorView.updateState(this.editorView.state);
+  }
+
+  public setFileName(fileName: string) {
+    this.fileName = fileName;
+  }
+
+  public saveFile() {
+    const content = this.editorView.state.doc;
+    const result = getContent(content);
+    const blob = new Blob([result], { type: "text" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = this.fileName;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   }
 }
