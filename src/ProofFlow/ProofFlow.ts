@@ -13,7 +13,7 @@ import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { createPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 import { Area, AreaType } from "./parser/area";
-import { parseToProofFlow } from "./parser/coq-to-proofflow";
+import { parseToAreasMV, parseToAreasV, parseToProofFlow } from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
 
@@ -84,7 +84,31 @@ export class ProofFlow {
    */
   public openOriginalCoqFile(text: string): void {
     // Parse the text to create the proof flow
-    let wrappers = parseToProofFlow(text);
+    let wrappers = parseToProofFlow(text, parseToAreasV);
+    console.log(wrappers);
+    for (let wrapper of wrappers) {
+      // Create text or code areas based on the parsed content
+      console.log(wrapper);
+      for (let area of wrapper.areas) {
+        if (area.areaType == AreaType.Markdown) {
+          this.createTextArea(area.text);
+        } else if (area.areaType == AreaType.Code) {
+          this.createCodeArea(area.text);
+        } else if (area.areaType == AreaType.Math) {
+          this.createMathArea(area.text);
+        }
+      }
+    }
+  }
+
+  /**
+   * Opens the markdown Coq file and creates text or code areas based on the parsed content.
+   *
+   * @param text - The content of the Coq file.
+   */
+  public openMarkdownCoqFile(text: string): void {
+    // Parse the text to create the proof flow
+    let wrappers = parseToProofFlow(text, parseToAreasMV);
     console.log(wrappers);
     for (let wrapper of wrappers) {
       // Create text or code areas based on the parsed content
