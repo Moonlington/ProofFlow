@@ -84,16 +84,19 @@ export class ProofFlow {
    */
   public openOriginalCoqFile(text: string): void {
     // Parse the text to create the proof flow
-    let areas: Area[] = parseToProofFlow(text);
-
-    // Create text or code areas based on the parsed content
-    for (let area of areas) {
-      if (area.areaType == AreaType.Markdown) {
-        this.createTextArea(area.text);
-      } else if (area.areaType == AreaType.Code) {
-        this.createCodeArea(area.text);
-      } else if (area.areaType == AreaType.Math) {
-        this.createMathArea(area.text);
+    let wrappers = parseToProofFlow(text);
+    console.log(wrappers);
+    for (let wrapper of wrappers) {
+      // Create text or code areas based on the parsed content
+      console.log(wrapper);
+      for (let area of wrapper.areas) {
+        if (area.areaType == AreaType.Markdown) {
+          this.createTextArea(area.text);
+        } else if (area.areaType == AreaType.Code) {
+          this.createCodeArea(area.text);
+        } else if (area.areaType == AreaType.Math) {
+          this.createMathArea(area.text);
+        }
       }
     }
   }
