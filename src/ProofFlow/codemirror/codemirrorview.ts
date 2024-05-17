@@ -45,7 +45,7 @@ const computeChange = (
 };
 
 /**
- * A node view for CodeMirror nodes, used for implementing the CodeMirror editor
+ * A node view for codemirror nodes, used for implementing the codemirror editor
  */
 class CodeMirrorView implements NodeView {
   node: ProsemirrorNode;
@@ -72,7 +72,7 @@ class CodeMirrorView implements NodeView {
       return true;
     });
 
-    // Create a CodeMirror instance
+    // Create a codemirror instance
     this.cm = new CMView({
       dispatch: this.dispatch.bind(this),
     });
@@ -119,7 +119,7 @@ class CodeMirrorView implements NodeView {
     this.cm.setState(cmState);
 
     CodeMirrorView.instances.push(this);
-    // Ensure the selection is synchronized from ProseMirror to CodeMirror
+    // Ensure the selection is synchronized from ProseMirror to codemirror
     this.view.dom.addEventListener('focus', () => this.forwardSelection());
   }
 
@@ -143,7 +143,7 @@ class CodeMirrorView implements NodeView {
     }
   }
 
-  // Converts the CodeMirror selection to a ProseMirror selection
+  // Converts the codemirror selection to a ProseMirror selection
   asProseMirrorSelection(doc: ProsemirrorNode) {
     const offset = this.getPos() + 1;
     const { anchor, head } = this.cm.state.selection.main;
@@ -179,7 +179,8 @@ class CodeMirrorView implements NodeView {
   }
 
   /**
-   * Escape the CodeMirror editor and move the cursor to the ProseMirror editor
+   * Escape the codemirror editor and move the cursor to the ProseMirror editor
+   * Will return false if the movement will not escape the current view
    */
   mayBeEscape(unit: "char" | "line", dir: -1 | 1): Command {
     return (view) => {
@@ -224,7 +225,7 @@ class CodeMirrorView implements NodeView {
 
   /**
    * Update the node view if the node has changed
-   * and update the CodeMirror editor if the content has changed
+   * and update the codemirror editor if the content has changed
    */
   update(node: ProsemirrorNode) {
     if (node.type !== this.node.type) {
@@ -249,7 +250,7 @@ class CodeMirrorView implements NodeView {
   }
 
   /**
-   * Focus the CodeMirror editor and set the selection
+   * Focus the codemirror editor and set the selection
    */
   setSelection(anchor: number, head: number): void {
     this.focus();

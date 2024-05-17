@@ -2,8 +2,8 @@ import { NodeType } from "prosemirror-model";
 import { allowedToInsert, InsertionFunction } from "./helpers";
 import { Command, EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { GetPos } from "../CodeMirror/types.ts";
-import { CodeMirrorView } from "../CodeMirror";
+import { GetPos } from "../codemirror/types.ts";
+import { CodeMirrorView } from "../codemirror";
 
 /**
  * Returns a command function for inserting a node of type `mdNodeType`.

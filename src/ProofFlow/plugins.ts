@@ -37,9 +37,12 @@ export function createPlugins(schema: Schema): Plugin[] {
   // Add keymap plugin with keybindings for various commands
   plugins.push(
     keymap({
-      Backspace: deleteSelection,
-      Delete: deleteSelection,
-      Enter: newlineInCode, // This only works in code sections
+       "Tab": (state, dispatch) => {
+            if(dispatch){ dispatch(state.tr.insertText("\t")); } return true;
+       },
+      "Backspace": deleteSelection,
+      "Delete": deleteSelection,
+      "Enter": newlineInCode, // This only works in code sections
       "Mod-m": cmdInsertMarkdown(schema, InsertionPlace.Underneath),
       "Mod-M": cmdInsertMarkdown(schema, InsertionPlace.Above),
       "Mod-q": cmdInsertCode(schema, InsertionPlace.Underneath),

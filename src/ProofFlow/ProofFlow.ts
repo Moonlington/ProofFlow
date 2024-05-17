@@ -3,8 +3,8 @@ import {
   DOMParser,
   Node as ProseMirrorNode,
 } from "prosemirror-model";
-import { CodeMirrorView } from "./CodeMirror";
-import type { GetPos } from "./CodeMirror/types";
+import { CodeMirrorView } from "./codemirror";
+import type { GetPos } from "./codemirror/types";
 import { ProofFlowSchema } from "./proofflowschema.ts";
 import {
   EditorState,
@@ -24,6 +24,8 @@ import { getContent } from "./outputparser/savefile";
 import { minimalSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
+import {myKeymap} from "./codemirror/keymap.ts";
+import { keymap } from "prosemirror-keymap";
 // CSS
 
 export class ProofFlow {
@@ -62,13 +64,13 @@ export class ProofFlow {
       },
       handleDOMEvents: {
         focus: (view, event) => {
-             
+
         },
         blur: (view, event) => {
           console.log("To: " + view.state.selection.$to.node().textContent);
           console.log(view.state.selection.$to.node().type.name);
           if (view.state.selection.$to.node().type.name !== "markdown") return;
-        
+
           let trans = view.state.tr;
           const textblockNodeType = ProofFlowSchema.nodes["markdown"];
           console.log(view.state.selection.$from.pos + " " + view.state.selection.$to.pos);
@@ -82,14 +84,14 @@ export class ProofFlow {
               view.state.selection.$to.pos,
               newMarkdownNode
             );
-        
+
             view.dispatch(trans);
-          }     
+          }
           console.log("blur");
           return;
-        }       
+        }
       },
-      
+
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (
@@ -103,6 +105,7 @@ export class ProofFlow {
               getPos,
               cmOptions: {
                 extensions: [minimalSetup, javascript()],
+                keymap: myKeymap,
               },
             }),
       },
@@ -113,7 +116,7 @@ export class ProofFlow {
     const buttonBar = new ButtonBar(this._schema, this.editorView);
     buttonBar.render(this._editorElem);
 
-    // Synchronize ProseMirror selection changes with CodeMirror
+    // Synchronize ProseMirror selection changes with codemirror
     this.editorView.dom.addEventListener("focus", () => {
       this.syncProseMirrorToCodeMirror();
     });
