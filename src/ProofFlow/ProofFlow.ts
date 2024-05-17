@@ -1,8 +1,7 @@
 import {
   Schema,
   DOMParser,
-  NodeType,
-  Node,
+  Node as ProseMirrorNode,
 } from "prosemirror-model";
 import { CodeMirrorView } from "./CodeMirror";
 import type { GetPos } from "./CodeMirror/types";
@@ -10,9 +9,8 @@ import { ProofFlowSchema } from "./proofflowschema.ts";
 import {
   EditorState,
   EditorStateConfig,
-    Transaction,
-    Selection,
-  NodeSelection,
+  Transaction,
+  Selection,
 } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { createPlugins } from "./plugins.ts";
@@ -63,18 +61,18 @@ export class ProofFlow {
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (
-          node: Node,
-          view: EditorView,
-          getPos: GetPos,
+            node: ProseMirrorNode,
+            view: EditorView,
+            getPos: GetPos,
         ) =>
-          new CodeMirrorView({
-            node,
-            view,
-            getPos,
-            cmOptions: {
-              extensions: [minimalSetup, javascript()],
-            },
-          }),
+            new CodeMirrorView({
+              node,
+              view,
+              getPos,
+              cmOptions: {
+                extensions: [minimalSetup, javascript()],
+              },
+            }),
       },
     };
     this.editorView = new EditorView(this._editorElem, directEditorProps);
@@ -82,6 +80,29 @@ export class ProofFlow {
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, this.editorView);
     buttonBar.render(this._editorElem);
+
+    // Synchronize ProseMirror selection changes with CodeMirror
+    this.editorView.dom.addEventListener("focus", () => {
+      this.syncProseMirrorToCodeMirror();
+    });
+  }
+
+  syncProseMirrorToCodeMirror() {
+    const { state } = this.editorView;
+    const { selection } = state;
+
+    if (selection.empty && selection.$anchor.parent.type.name === "code_mirror") {
+      const pos = selection.$anchor.before(selection.$anchor.depth);
+      const cmView = CodeMirrorView.findByPos(pos);
+
+      if (cmView) {
+        cmView.setSelection(
+            selection.anchor - selection.$anchor.start(),
+            selection.head - selection.$anchor.start()
+        );
+        cmView.focus();
+      }
+    }
   }
 
   /**
@@ -115,7 +136,7 @@ export class ProofFlow {
 
     // Create a new text node and insert it at the end of the document
     const textblockNodeType = ProofFlowSchema.nodes["markdown"];
-    let textNode: Node = textblockNodeType.create(null, [
+    let textNode: ProseMirrorNode = textblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
     trans = trans.setSelection(Selection.atEnd(this.editorState.doc));
@@ -133,8 +154,8 @@ export class ProofFlow {
   public createCodeArea(text: string): void {
     let trans: Transaction = this.editorState.tr;
     let counter = this.editorState.doc.content.size;
-    const codeblockNodeType = ProofFlowSchema.nodes["codecell"];
-    let codeNode: Node = codeblockNodeType.create(null, [
+    const codeblockNodeType = ProofFlowSchema.nodes["code_mirror"];
+    let codeNode: ProseMirrorNode = codeblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
     trans = trans.setSelection(Selection.atEnd(this.editorState.doc));
