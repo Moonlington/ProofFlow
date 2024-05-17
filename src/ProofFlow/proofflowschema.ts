@@ -21,20 +21,30 @@ export const ProofFlowSchema: Schema = new Schema({
     },
 
     collapsible: {
-			content: `${containercontent}*`,
-			attrs: {
-				title: {default: "Collapsible"},
-				visible: {default: false}
-			},
-			parseDOM: [{tag: "collapsible", getAttrs(dom) {
-				return {
-					title: (dom as HTMLElement).getAttribute("title") ?? "Collapsible"
-				}
-			}}],
-			toDOM(node: Node) {
-				return ["div", {class: "collapsible", visible: node.attrs.visible}, 0];
-			}
-		},
+      content: `${containercontent}*`,
+      attrs: {
+        title: { default: "Collapsible" },
+        visible: { default: false },
+      },
+      parseDOM: [
+        {
+          tag: "collapsible",
+          getAttrs(dom) {
+            return {
+              title:
+                (dom as HTMLElement).getAttribute("title") ?? "Collapsible",
+            };
+          },
+        },
+      ],
+      toDOM(node: Node) {
+        return [
+          "div",
+          { class: "collapsible", visible: node.attrs.visible },
+          0,
+        ];
+      },
+    },
 
     /**
      * The markdown node.

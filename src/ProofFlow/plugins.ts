@@ -32,7 +32,7 @@ const blockMathInputRule = makeBlockMathInputRule(
 export function createPlugins(schema: Schema): Plugin[] {
   const plugins = [];
 
-  plugins.push(createCollapsiblePlugin(schema),)
+  plugins.push(createCollapsiblePlugin(schema));
   // Add math plugin
   plugins.push(mathPlugin);
 

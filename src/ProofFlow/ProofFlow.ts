@@ -13,13 +13,21 @@ import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { createPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 import { Area, AreaType } from "./parser/area";
-import { parseToAreasMV, parseToAreasV, parseToProofFlow } from "./parser/coq-to-proofflow";
+import {
+  parseToAreasMV,
+  parseToAreasV,
+  parseToProofFlow,
+} from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
 
 import { minimalSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
-import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
+import {
+  defaultMarkdownParser,
+  defaultMarkdownSerializer,
+} from "prosemirror-markdown";
+import { Wrapper, WrapperType } from "./parser/wrapper.ts";
 // CSS
 
 export class ProofFlow {
@@ -85,7 +93,7 @@ export class ProofFlow {
           return;
         }       
       },*/
-      
+
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
@@ -104,21 +112,28 @@ export class ProofFlow {
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, this.editorView);
     buttonBar.render(this._editorElem);
+  }
 
-
-    const markdownNodeType = ProofFlowSchema.nodes["markdown"];
-    let markdownNode: Node = markdownNodeType.create(null, [
-      ProofFlowSchema.text("hi"),
-    ]);
-
-    const mathNodeType = ProofFlowSchema.nodes["math_display"];
-    let mathNode: Node = mathNodeType.create(null, [
-      ProofFlowSchema.text("hi"),
-    ]);
-
-    const collapsibleNodeType = ProofFlowSchema.nodes["collapsible"];
-    let collapsibleNode: Node = collapsibleNodeType.create({title: "test", visible: true}, [markdownNode, mathNode, markdownNode]);
-    this.insertAtEnd(collapsibleNode);
+  public openFile(wrappers: Wrapper[]): void {
+    console.log(wrappers);
+    for (let wrapper of wrappers) {
+      // Create text or code areas based on the parsed content
+      console.log(wrapper);
+      console.log(wrapper.wrapperType);
+      if (wrapper.wrapperType == WrapperType.Collapsible) {
+        this.createCollapsible(wrapper);
+      } else {
+        for (let area of wrapper.areas) {
+          if (area.areaType == AreaType.Markdown) {
+            this.createTextArea(area.text);
+          } else if (area.areaType == AreaType.Code) {
+            this.createCodeArea(area.text);
+          } else if (area.areaType == AreaType.Math) {
+            this.createMathArea(area.text);
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -129,20 +144,7 @@ export class ProofFlow {
   public openOriginalCoqFile(text: string): void {
     // Parse the text to create the proof flow
     let wrappers = parseToProofFlow(text, parseToAreasV);
-    console.log(wrappers);
-    for (let wrapper of wrappers) {
-      // Create text or code areas based on the parsed content
-      console.log(wrapper);
-      for (let area of wrapper.areas) {
-        if (area.areaType == AreaType.Markdown) {
-          this.createTextArea(area.text);
-        } else if (area.areaType == AreaType.Code) {
-          this.createCodeArea(area.text);
-        } else if (area.areaType == AreaType.Math) {
-          this.createMathArea(area.text);
-        }
-      }
-    }
+    this.openFile(wrappers);
   }
 
   /**
@@ -153,20 +155,7 @@ export class ProofFlow {
   public openMarkdownCoqFile(text: string): void {
     // Parse the text to create the proof flow
     let wrappers = parseToProofFlow(text, parseToAreasMV);
-    console.log(wrappers);
-    for (let wrapper of wrappers) {
-      // Create text or code areas based on the parsed content
-      console.log(wrapper);
-      for (let area of wrapper.areas) {
-        if (area.areaType == AreaType.Markdown) {
-          this.createTextArea(area.text);
-        } else if (area.areaType == AreaType.Code) {
-          this.createCodeArea(area.text);
-        } else if (area.areaType == AreaType.Math) {
-          this.createMathArea(area.text);
-        }
-      }
-    }
+    this.openFile(wrappers);
   }
 
   public getState(): EditorState {
@@ -184,16 +173,61 @@ export class ProofFlow {
     this.editorView.updateState(this.editorView.state);
   }
 
+  public createCollapsible(wrapper: Wrapper) {
+    const title = wrapper.info;
+    let nodes: Node[] = [];
+    wrapper.areas.forEach((area) => {
+      if (area.areaType == AreaType.Code) {
+        const node = this.createCodeNode(area.text);
+        nodes.push(node);
+      } else if (area.areaType == AreaType.Math) {
+        const node = this.createMathNode(area.text);
+        nodes.push(node);
+      } else if (area.areaType == AreaType.Markdown) {
+        const node = this.createTextNode(area.text);
+        nodes.push(node);
+      }
+    });
+
+    const collapsibleNodeType = ProofFlowSchema.nodes["collapsible"];
+    let collapsibleNode: Node = collapsibleNodeType.create(
+      { title: title, visible: true },
+      nodes,
+    );
+    this.insertAtEnd(collapsibleNode);
+  }
+
+  private createTextNode(text: string): Node {
+    const textblockNodeType = ProofFlowSchema.nodes["markdown"];
+    let textNode: Node = textblockNodeType.create(null, [
+      ProofFlowSchema.text(text),
+    ]);
+    return textNode;
+  }
+
+  private createCodeNode(text: string): Node {
+    const textblockNodeType = ProofFlowSchema.nodes["code_mirror"];
+    let textNode: Node = textblockNodeType.create(null, [
+      ProofFlowSchema.text(text),
+    ]);
+    return textNode;
+  }
+
+  private createMathNode(text: string): Node {
+    const textblockNodeType = ProofFlowSchema.nodes["math_display"];
+    let textNode: Node = textblockNodeType.create(null, [
+      ProofFlowSchema.text(text),
+    ]);
+    return textNode;
+  }
+
   /**
    * Creates a new text area in the editor and inserts the specified text.
    *
    * @param text - The text to be inserted in the text area.
    */
   public createTextArea(text: string): void {
-    const textblockNodeType = ProofFlowSchema.nodes["markdown"];
-    let textNode: Node = textblockNodeType.create(null, [
-      ProofFlowSchema.text(text),
-    ]);
+    let textNode = this.createTextNode(text);
     this.insertAtEnd(textNode);
   }
 
@@ -203,10 +237,7 @@ export class ProofFlow {
    * @param text - The code to be inserted in the code area.
    */
   public createCodeArea(text: string): void {
-    const codeblockNodeType = ProofFlowSchema.nodes["code_mirror"];
-    let codeNode: Node = codeblockNodeType.create(null, [
-      ProofFlowSchema.text(text),
-    ]);
+    let codeNode = this.createCodeNode(text);
     this.insertAtEnd(codeNode);
   }
 
@@ -216,10 +247,7 @@ export class ProofFlow {
    * @param text - The math to be inserted in the math area.
    */
   public createMathArea(text: string): void {
-    const mathblockNodeType = ProofFlowSchema.nodes["math_display"];
-    let mathNode: Node = mathblockNodeType.create(null, [
-      ProofFlowSchema.text(text),
-    ]);
+    let mathNode = this.createMathNode(text);
     this.insertAtEnd(mathNode);
   }
 
