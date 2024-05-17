@@ -56,7 +56,7 @@ export class ProofFlow {
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
-      handleDOMEvents: {
+      /*handleDOMEvents: {
         focus: (view, event) => {
              
         },
@@ -84,7 +84,7 @@ export class ProofFlow {
           console.log("blur");
           return;
         }       
-      },
+      },*/
       
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
