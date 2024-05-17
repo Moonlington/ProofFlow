@@ -23,7 +23,7 @@ import { getContent } from "./outputparser/savefile";
 
 import { minimalSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
-
+import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
 // CSS
 
 export class ProofFlow {
@@ -60,7 +60,36 @@ export class ProofFlow {
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
-
+      handleDOMEvents: {
+        focus: (view, event) => {
+             
+        },
+        blur: (view, event) => {
+          console.log("To: " + view.state.selection.$to.node().textContent);
+          console.log(view.state.selection.$to.node().type.name);
+          if (view.state.selection.$to.node().type.name !== "markdown") return;
+        
+          let trans = view.state.tr;
+          const textblockNodeType = ProofFlowSchema.nodes["markdown"];
+          console.log(view.state.selection.$from.pos + " " + view.state.selection.$to.pos);
+          // Parse the content and create a new markdown node with the parsed content
+          const parsedContent = defaultMarkdownParser.parse(view.state.selection.$to.node().textContent);
+          if (parsedContent) {
+            let newMarkdownNode = textblockNodeType.create(null, parsedContent.content);
+            trans = trans.replaceWith(
+              // Subtract the length of the text content from the $from position to get the correct position
+              view.state.selection.$from.pos - view.state.selection.$to.node().textContent.length - 1,
+              view.state.selection.$to.pos,
+              newMarkdownNode
+            );
+        
+            view.dispatch(trans);
+          }     
+          console.log("blur");
+          return;
+        }       
+      },
+      
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (
