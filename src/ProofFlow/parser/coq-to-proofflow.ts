@@ -129,6 +129,7 @@ function parseNonCode(text: string): Area[] {
 export function parseToAreasV(text: string): Area[] {
   let areas: Area[] = new Array();
   const regCoqdoc = /^\s*\(\*((.|\n)*?)\*\)\s*/;
+  const regMath = /^\s*\$\$((.|\n)*?)\$\$\s*/;
   const reqCoqdocNoUse = /^\s*\(\**\)\s*/;
   const regCode = /^\s*(.|\n)*?(?=\(\*)\s*/;
   while (text.length > 0) {
@@ -144,6 +145,16 @@ export function parseToAreasV(text: string): Area[] {
       areas = areas.concat(parseNonCode(coqdoc[0]));
       continue;
     }
+    let math = text.match(regMath);
+    if (math != null) {
+      text = text.replace(regMath, "");
+
+      area.areaType = AreaType.Math;
+      area.text = math[1].trim();
+      areas.push(area);
+      continue;
+    }
+
     let code = text.match(regCode);
     if (code != null) {
       // For code sections
@@ -191,6 +202,10 @@ export function parseToAreasMV(text: string): Area[] {
       inCode = false;
       startIndex = i + '```\n'.length;
     }
+  }
+  if (startIndex != text.length) {
+    let nonCodeText = text.substring(startIndex, text.length);
+    areas = areas.concat(parseNonCode(nonCodeText));
   }
   return areas;
 }
