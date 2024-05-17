@@ -19,7 +19,7 @@ import { getContent } from "./outputparser/savefile";
 
 import { minimalSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
-import { defaultMarkdownParser } from "prosemirror-markdown";
+import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
 // CSS
 
 export class ProofFlow {
@@ -58,7 +58,7 @@ export class ProofFlow {
       },
       handleDOMEvents: {
         focus: (view, event) => {
-         
+             
         },
         blur: (view, event) => {
           console.log("To: " + view.state.selection.$to.node().textContent);
@@ -80,25 +80,12 @@ export class ProofFlow {
             );
         
             view.dispatch(trans);
-          }
-        
+          }     
           console.log("blur");
-        }
-        
-        
+          return;
+        }       
       },
-      // Render text to markdown when a markdown cell is double clicked
-      handleDoubleClickOn(view, pos, node, nodePos, event, direct) {
-        if (node.type.name === "markdown" && direct) {
-          let trans: Transaction = view.state.tr;
-          const textblockNodeType = ProofFlowSchema.nodes["markdown"];
-            let textNode: Node = textblockNodeType.create(null, defaultMarkdownParser.parse(node.textContent)!.content);
-          trans = trans.replaceSelectionWith(textNode);
-
-          view.state = view.state.apply(trans);
-          view.updateState(view.state);
-        } 
-      },
+      
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
