@@ -158,25 +158,28 @@ export class ProofFlow {
     return this.editorView.state;
   }
 
+  private insertAtEnd(node: Node) {
+    // Create a new transaction and get the counter
+    let trans: Transaction = this.getState().tr;
+    let counter = this.getState().doc.content.size;
+
+    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
+    trans = trans.insert(counter, node);
+    this.editorView.state = this.editorView.state.apply(trans);
+    this.editorView.updateState(this.editorView.state);
+  }
+
   /**
    * Creates a new text area in the editor and inserts the specified text.
    *
    * @param text - The text to be inserted in the text area.
    */
   public createTextArea(text: string): void {
-    // Create a new transaction and get the counter
-    let trans: Transaction = this.getState().tr;
-    let counter = this.getState().doc.content.size;
-
-    // Create a new text node and insert it at the end of the document
     const textblockNodeType = ProofFlowSchema.nodes["markdown"];
     let textNode: Node = textblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
-    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
-    trans = trans.insert(counter, textNode);
-    this.editorView.state = this.editorView.state.apply(trans);
-    this.editorView.updateState(this.editorView.state);
+    this.insertAtEnd(textNode);
   }
 
   /**
@@ -185,16 +188,11 @@ export class ProofFlow {
    * @param text - The code to be inserted in the code area.
    */
   public createCodeArea(text: string): void {
-    let trans: Transaction = this.getState().tr;
-    let counter = this.getState().doc.content.size;
     const codeblockNodeType = ProofFlowSchema.nodes["code_mirror"];
     let codeNode: Node = codeblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
-    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
-    trans = trans.insert(counter, codeNode);
-    this.editorView.state = this.editorView.state.apply(trans);
-    this.editorView.updateState(this.editorView.state);
+    this.insertAtEnd(codeNode);
   }
 
   /**
@@ -203,16 +201,11 @@ export class ProofFlow {
    * @param text - The math to be inserted in the math area.
    */
   public createMathArea(text: string): void {
-    let trans: Transaction = this.getState().tr;
-    let counter = this.getState().doc.content.size;
     const mathblockNodeType = ProofFlowSchema.nodes["math_display"];
     let mathNode: Node = mathblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
-    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
-    trans = trans.insert(counter, mathNode);
-    this.editorView.state = this.editorView.state.apply(trans);
-    this.editorView.updateState(this.editorView.state);
+    this.insertAtEnd(mathNode);
   }
 
   public setFileName(fileName: string) {
