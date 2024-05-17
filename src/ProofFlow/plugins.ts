@@ -15,6 +15,7 @@ import {
   cmdInsertMath,
 } from "./commands/commands";
 import { InsertionPlace } from "./commands/helpers";
+import { createCollapsiblePlugin } from "./collapsible-areas.ts";
 
 // Create input rules using default regex
 const blockMathInputRule = makeBlockMathInputRule(
@@ -31,6 +32,7 @@ const blockMathInputRule = makeBlockMathInputRule(
 export function createPlugins(schema: Schema): Plugin[] {
   const plugins = [];
 
+  plugins.push(createCollapsiblePlugin(schema),)
   // Add math plugin
   plugins.push(mathPlugin);
 

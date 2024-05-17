@@ -32,6 +32,10 @@ math-display {
   background-color:  #f6ff0019;
 }
 
+div[visible="true"] {
+  display: none;
+}
+
 #editor {
   background-color: #f0f0f0; 
   float: left; 

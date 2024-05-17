@@ -104,6 +104,21 @@ export class ProofFlow {
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, this.editorView);
     buttonBar.render(this._editorElem);
+
+
+    const markdownNodeType = ProofFlowSchema.nodes["markdown"];
+    let markdownNode: Node = markdownNodeType.create(null, [
+      ProofFlowSchema.text("hi"),
+    ]);
+
+    const mathNodeType = ProofFlowSchema.nodes["math_display"];
+    let mathNode: Node = mathNodeType.create(null, [
+      ProofFlowSchema.text("hi"),
+    ]);
+
+    const collapsibleNodeType = ProofFlowSchema.nodes["collapsible"];
+    let collapsibleNode: Node = collapsibleNodeType.create({title: "test", visible: true}, [markdownNode, mathNode, markdownNode]);
+    this.insertAtEnd(collapsibleNode);
   }
 
   /**
