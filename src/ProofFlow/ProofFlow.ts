@@ -9,18 +9,26 @@ import {
   Selection,
   NodeSelection,
 } from "prosemirror-state";
-import { history } from "prosemirror-history";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { createPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 import { Area, AreaType } from "./parser/area";
-import { parseToAreasMV, parseToAreasV, parseToProofFlow } from "./parser/coq-to-proofflow";
+import {
+  parseToAreasMV,
+  parseToAreasV,
+  parseToProofFlow,
+} from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
 
 import { minimalSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
-import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
+import {
+  defaultMarkdownParser,
+  defaultMarkdownSerializer,
+} from "prosemirror-markdown";
+import { applyGlobalKeyBindings } from "./commands/shortcuts";
+
 // CSS
 
 export class ProofFlow {
@@ -29,7 +37,6 @@ export class ProofFlow {
   private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
 
   private editorView: EditorView; // The view of the editor
-  private history: any; // The history of the editor
 
   private fileName: string = "file.txt";
 
@@ -48,7 +55,7 @@ export class ProofFlow {
     let editorStateConfig: EditorStateConfig = {
       schema: ProofFlowSchema,
       doc: DOMParser.fromSchema(ProofFlowSchema).parse(this._contentElem),
-      plugins: createPlugins(this._schema),
+      plugins: createPlugins(ProofFlowSchema),
     };
     const editorState = EditorState.create(editorStateConfig);
 
@@ -87,7 +94,7 @@ export class ProofFlow {
           return;
         }       
       },*/
-      
+
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
@@ -102,12 +109,13 @@ export class ProofFlow {
       },
     };
     this.editorView = new EditorView(this._editorElem, directEditorProps);
-    // Store history state
-    this.history = history();
 
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, this.editorView);
     buttonBar.render(this._editorElem);
+
+    // Apply global keymap and input rules
+    applyGlobalKeyBindings(this.editorView);
   }
 
   /**
@@ -237,38 +245,5 @@ export class ProofFlow {
 
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
-  }
-
-  /**
-   * Undoes the last action in the editor.
-   */
-  public undo(): void {
-    const tr = this.editorState.tr;
-    if (this.history.canUndo()) {
-      const undoTr = this.history.undo(tr);
-      if (undoTr) {
-        this.applyTransaction(undoTr);
-      }
-    }
-  }
-
-  /**
-   * Redoes the last undone action in the editor.
-   */
-  public redo(): void {
-    const tr = this.editorState.tr;
-    if (this.history.canRedo()) {
-      const redoTr = this.history.redo(tr);
-      if (redoTr) {
-        this.applyTransaction(redoTr);
-      }
-    }
-  }
-
-  // Other methods...
-
-  private applyTransaction(tr: Transaction): void {
-    this.editorState = this.editorState.apply(tr);
-    this.editorView.updateState(this.editorState);
   }
 }
