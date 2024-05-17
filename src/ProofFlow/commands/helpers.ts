@@ -54,16 +54,14 @@ export function insertAbove(
   tr: Transaction,
   ...nodeType: NodeType[]
 ): Transaction {
-  // Determine the type of the selection and the insertion point
   const sel = state.selection;
   const { isTextSelection, isNodeSelection } = selectionType(sel);
 
-  // Initialize the transaction object
   let trans: Transaction = tr;
 
   if (isNodeSelection) {
-    // If the selection is a node selection, insert the specified node types above the current selection
-    const pos = sel.from;
+    // If the selection is a node selection, insert above that node
+    const pos = sel.from; // Get the position of the selection
     let counter = pos;
 
     nodeType.forEach((type) => {
@@ -71,10 +69,9 @@ export function insertAbove(
       counter++;
     });
   } else if (isTextSelection) {
-    // If the selection is a text selection, insert the specified node types above the current selection
-    const textSel = sel as TextSelection;
-    const from = textSel.from - 1;
-    let counter = from;
+    // If the selection is a text selection, insert above the parent node
+    const parentPos = sel.$from.depth ? sel.$from.before(sel.$from.depth) : 0; // Get the position of the parent node or 0 if it doesn't exist
+    let counter = parentPos;
 
     nodeType.forEach((type) => {
       trans = trans.insert(counter, type.create());
@@ -130,7 +127,7 @@ export function insertUnder(
       sel.to + (sel.$from.parent.nodeSize - textSel.$from.parentOffset) - 1;
     // Check if the to point is valid
     if (to > state.doc.nodeSize) {
-      console.log("This is no bueno");
+      console.log("Invalid insertion point");
       return trans;
     }
     let counter = to;
