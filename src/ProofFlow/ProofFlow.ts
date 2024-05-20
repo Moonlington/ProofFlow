@@ -56,10 +56,29 @@ export class ProofFlow {
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
+
       handleDOMEvents: {
         focus: (view, event) => {
-          
+          let trans = view.state.tr;
+          const textblockNodeType = ProofFlowSchema.nodes["markdown"];
+          const serializedContent = defaultMarkdownSerializer.serialize(view.state.selection.$to.node());
+          console.log(serializedContent)
+          // Parse the content and create a new markdown node with the parsed content
+
+          let cursorOffset = view.state.selection.$from.parentOffset;
+          let nodeStart = view.state.selection.$from.pos - cursorOffset - 1;
+          let nodeEnd = nodeStart + view.state.selection.$from.node().textContent.length + 1;
+
+          let newMarkdownNode = textblockNodeType.create(null, ProofFlowSchema.text(serializedContent));
+          trans = trans.replaceWith(
+            nodeStart,
+            nodeEnd,
+            newMarkdownNode
+          );
+      
+          view.dispatch(trans);       
         },
+
         blur: (view, event) => {
           if (view.state.selection.$to.node().type.name !== "markdown") return;
         
@@ -67,11 +86,11 @@ export class ProofFlow {
           const textblockNodeType = ProofFlowSchema.nodes["markdown"];
           
           // Parse the content and create a new markdown node with the parsed content
-          const parsedContent = defaultMarkdownParser.parse(view.state.selection.$to.node().textContent);
+          const parsedContent = defaultMarkdownParser.parse(view.state.selection.$from.node().textContent);
           if (parsedContent) {
-            let cursorOffset = view.state.selection.$to.parentOffset;
-            let nodeStart = view.state.selection.$to.pos - cursorOffset - 1;
-            let nodeEnd = nodeStart + view.state.selection.$to.node().textContent.length + 1;
+            let cursorOffset = view.state.selection.$from.parentOffset;
+            let nodeStart = view.state.selection.$from.pos - cursorOffset - 1;
+            let nodeEnd = nodeStart + view.state.selection.$from.node().textContent.length + 1;
 
             let newMarkdownNode = textblockNodeType.create(null, parsedContent.content);
             trans = trans.replaceWith(
