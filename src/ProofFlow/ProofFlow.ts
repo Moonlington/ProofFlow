@@ -28,6 +28,7 @@ import {
   defaultMarkdownSerializer,
 } from "prosemirror-markdown";
 import { Wrapper, WrapperType } from "./parser/wrapper.ts";
+import { mathblockNodeType, codeblockNodeType, collapsibleNodeType, markdownblockNodeType } from "./nodetypes.ts";
 // CSS
 
 export class ProofFlow {
@@ -189,7 +190,6 @@ export class ProofFlow {
       }
     });
 
-    const collapsibleNodeType = ProofFlowSchema.nodes["collapsible"];
     let collapsibleNode: Node = collapsibleNodeType.create(
       { title: title, visible: true },
       nodes,
@@ -198,24 +198,21 @@ export class ProofFlow {
   }
 
   private createTextNode(text: string): Node {
-    const textblockNodeType = ProofFlowSchema.nodes["markdown"];
-    let textNode: Node = textblockNodeType.create(null, [
+    let textNode: Node = markdownblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
     return textNode;
   }
 
   private createCodeNode(text: string): Node {
-    const textblockNodeType = ProofFlowSchema.nodes["code_mirror"];
-    let textNode: Node = textblockNodeType.create(null, [
+    let textNode: Node = codeblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
     return textNode;
   }
 
   private createMathNode(text: string): Node {
-    const textblockNodeType = ProofFlowSchema.nodes["math_display"];
-    let textNode: Node = textblockNodeType.create(null, [
+    let textNode: Node = mathblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
     return textNode;
