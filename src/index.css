@@ -20,12 +20,16 @@
   border-bottom: #2701ff13 0.5px solid;
 }
 
-.collapsible {
-  border: #85b46f 0.5px solid;
+.collapsible-title-element {
+  border: #85b46f 4px;
+  width: 100% - 4px;
+  border-style: solid;
 }
 
-.collapsible-title-element {
-  border: #85b46f 1px solid;
+.collapsible {
+  border: #85b46f 3px;
+  width: 100% - 4px;
+  border-style: dashed;
 }
 
 codecell {
