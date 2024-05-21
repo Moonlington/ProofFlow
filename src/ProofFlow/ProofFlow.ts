@@ -59,31 +59,42 @@ export class ProofFlow {
 
       handleDOMEvents: {
         focus: (view, event) => {
+
+          // If the selection is not in a markdown_rendered node (or undefined), return
+          if (view.state.selection.$to.node(1) === undefined) return;
+          if (view.state.selection.$to.node(1).type.name !== "markdown_rendered") return;
+
           let trans = view.state.tr;
           const textblockNodeType = ProofFlowSchema.nodes["markdown"];
-          const serializedContent = defaultMarkdownSerializer.serialize(view.state.selection.$to.node());
-          console.log(serializedContent)
+
+          // (1) to get correct node / text with markdown characters still in (markdown_rendered parent cell instead of the raw header/paragraph DOM)
+          const serializedContent = defaultMarkdownSerializer.serialize(view.state.selection.$to.node(1));
+
           // Parse the content and create a new markdown node with the parsed content
+          let parentOffset = view.state.selection.$to.node(1).resolve(view.state.selection.$to.pos).parentOffset
+          let nodeStart = view.state.selection.$to.pos - parentOffset; // use the upper bound + parentoffset
+          let nodeEnd = view.state.selection.$from.pos + 1; // use the lower bound
+          
+          // Create a new markdown node with the serialized content (a.k.a the raw text)
+          let newMarkdownNode = ProofFlowSchema.node("markdown", null, ProofFlowSchema.text(serializedContent));
 
-          let cursorOffset = view.state.selection.$from.parentOffset;
-          let nodeStart = view.state.selection.$from.pos - cursorOffset - 1;
-          let nodeEnd = nodeStart + view.state.selection.$from.node().textContent.length + 1;
-
-          let newMarkdownNode = textblockNodeType.create(null, ProofFlowSchema.text(serializedContent));
-          trans = trans.replaceWith(
+          // Create and push the transaction of replacing the markdown-rendered node with the markdown raw text node
+          trans = trans.replaceRangeWith(
             nodeStart,
             nodeEnd,
             newMarkdownNode
           );
-      
-          view.dispatch(trans);       
+          let newState = view.state.apply(trans);
+          view.updateState(newState);     
         },
 
         blur: (view, event) => {
-          if (view.state.selection.$to.node().type.name !== "markdown") return;
-        
+          // If the selection is not in a markdow node (or undefined), return
+          if (view.state.selection.$to.node(1) === undefined) return;
+          if (view.state.selection.$to.node(1).type.name !== "markdown") return;
+
           let trans = view.state.tr;
-          const textblockNodeType = ProofFlowSchema.nodes["markdown"];
+          const textblockNodeType = ProofFlowSchema.nodes["markdown_rendered"];
           
           // Parse the content and create a new markdown node with the parsed content
           const parsedContent = defaultMarkdownParser.parse(view.state.selection.$from.node().textContent);
@@ -93,13 +104,14 @@ export class ProofFlow {
             let nodeEnd = nodeStart + view.state.selection.$from.node().textContent.length + 1;
 
             let newMarkdownNode = textblockNodeType.create(null, parsedContent.content);
-            trans = trans.replaceWith(
+            trans = trans.replaceRangeWith(
               nodeStart,
               nodeEnd,
               newMarkdownNode
             );
         
-            view.dispatch(trans);
+            let newState = view.state.apply(trans);
+            view.updateState(newState);
           }     
         }       
       },

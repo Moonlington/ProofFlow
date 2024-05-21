@@ -4,7 +4,7 @@ import { node as codeMirrorNode } from "./CodeMirror";
  * The cell types available in ProofFlow.
  * Can be markdown, math_display, or codecell.
  */
-const cell = "(markdown | math_display | code_mirror)";
+const cell = "(markdown | math_display | code_mirror | markdown_rendered)";
 
 /**
  * The ProofFlow schema.
@@ -24,15 +24,33 @@ export const ProofFlowSchema: Schema = new Schema({
      * Represents a block of markdown text.
      */
     markdown: {
-      block: true,
+      block: false,
       content: "text*",
+      group: "block",
       parseDOM: [{ tag: "markdown", preserveWhitespace: "full" }],
       atom: false,
       code: true,
+      leaf: false,
       toDOM(node) {
         return ["markdown", 0];
       },
     },
+    
+  /**
+   * The markdown_rendered node.
+   * Represents a block of markdown text that has been rendered.
+   */
+    markdown_rendered: {
+      block: false,
+      content: "text*",
+      group: "block",
+      parseDOM: [{ tag: "markdown-rendered", preserveWhitespace: true }],
+      atom: true,
+      toDOM(node) {
+        return ["markdown-rendered", {contenteditable: false}, 0];
+      },
+    },
+    
 
     code_mirror: codeMirrorNode,
 
@@ -42,6 +60,13 @@ export const ProofFlowSchema: Schema = new Schema({
      */
     text: {
       group: "inline",
+    },
+
+    paragraph: {
+      content: "text*",
+      group: "block",
+      parseDOM: [{ tag: "p" }],
+      toDOM() { return ["p", 0]; }
     },
 
     /**
