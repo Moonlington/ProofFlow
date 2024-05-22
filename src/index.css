@@ -20,9 +20,10 @@
   border-bottom: #2701ff13 0.5px solid;
 }
 
-.collapsible-title-element {
+collapsible_title {
   border: #85b46f 4px;
-  width: 100% - 4px;
+  width: 100%;
+  display: block;
   border-style: solid;
 }
 
@@ -50,7 +51,7 @@ math-display {
   width: 100%;
 }
 
-div[visible="true"] {
+div[visible="false"] {
   display: none;
 }
 

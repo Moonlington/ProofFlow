@@ -4,7 +4,7 @@ import { node as codeMirrorNode } from "./CodeMirror";
  * The cell types available in ProofFlow.
  * Can be markdown, math_display, or codecell.
  */
-const cell = "(markdown | collapsible | math_display | code_mirror)";
+const cell = "(markdown | collapsible | collapsible_title | math_display | code_mirror)";
 const containercontent = "(markdown | math_display | code_mirror)";
 
 /**
@@ -23,7 +23,6 @@ export const ProofFlowSchema: Schema = new Schema({
     collapsible: {
       content: `${containercontent}*`,
       attrs: {
-        title: { default: "Collapsible" },
         visible: { default: false },
       },
       parseDOM: [
@@ -43,6 +42,17 @@ export const ProofFlowSchema: Schema = new Schema({
           { class: "collapsible", visible: node.attrs.visible },
           0,
         ];
+      },
+    },
+
+    collapsible_title: {
+      block: true,
+      content: "text*",
+      parseDOM: [{ tag: "collapsible_title", preserveWhitespace: "full" }],
+      atom: false,
+      code: false,
+      toDOM(node) {
+        return ["collapsible_title", 0];
       },
     },
 

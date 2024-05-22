@@ -28,7 +28,7 @@ import {
   defaultMarkdownSerializer,
 } from "prosemirror-markdown";
 import { Wrapper, WrapperType } from "./parser/wrapper.ts";
-import { mathblockNodeType, codeblockNodeType, collapsibleNodeType, markdownblockNodeType } from "./nodetypes.ts";
+import { mathblockNodeType, codeblockNodeType, collapsibleNodeType, markdownblockNodeType, collapsibleTitleNodeType } from "./nodetypes.ts";
 // CSS
 
 export class ProofFlow {
@@ -39,6 +39,8 @@ export class ProofFlow {
   private editorView: EditorView; // The view of the editor
 
   private fileName: string = "file.txt";
+
+  private count = 0;
 
   /**
    * Represents the ProofFlow class.
@@ -64,6 +66,21 @@ export class ProofFlow {
       state: editorState,
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
+      },
+      handleClickOn(view, pos, node, nodePos, event, direct) {
+        if (node.type.name == "collapsible_title") {
+          let startPos = view.state.doc.resolve(pos).start(0);
+          console.log(view.state.doc.nodeAt(startPos));
+
+          const state = view.state.doc.nodeAt(startPos)?.attrs.visible as boolean;
+          console.log(state);
+          const trans = view.state.tr.setNodeAttribute(
+            startPos,
+            "visible",
+            !state,
+          );
+          view.dispatch(trans);
+        }
       },
       /*handleDOMEvents: {
         focus: (view, event) => {
@@ -177,6 +194,12 @@ export class ProofFlow {
   public createCollapsible(wrapper: Wrapper) {
     const title = wrapper.info;
     let nodes: Node[] = [];
+
+    let textNode: Node = collapsibleTitleNodeType.create(null, [
+      ProofFlowSchema.text(title),
+    ]);
+    nodes.push(textNode);
+
     wrapper.areas.forEach((area) => {
       if (area.areaType == AreaType.Code) {
         const node = this.createCodeNode(area.text);
@@ -191,7 +214,7 @@ export class ProofFlow {
     });
 
     let collapsibleNode: Node = collapsibleNodeType.create(
-      { title: title, visible: true },
+      { visible: true },
       nodes,
     );
     this.insertAtEnd(collapsibleNode);
