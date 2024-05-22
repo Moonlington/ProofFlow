@@ -1,4 +1,4 @@
-import { Schema } from "prosemirror-model";
+import { NodeType, Schema } from "prosemirror-model";
 import {
   cmdInsertCode,
   cmdInsertMarkdown,
@@ -56,17 +56,15 @@ export class ButtonBar {
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete";
         deleteButton.addEventListener("click", () => {
-            // math blocks are of type doc, don't question it
-            if (this._editorView.state.selection.$head.node().type.name === "doc"){
-              // this works for math nodes
-              deleteSelection(this._editorView.state, this._editorView.dispatch);
-            } else {
-              // this works for markdown and code blocks
-              const tr = this._editorView.state.tr;
-              const node = this._editorView.state.selection.$head.node();
-              let depth = this._editorView.state.selection.$head.depth;
-              this._editorView.dispatch(tr.delete(this._editorView.state.selection.$head.before(depth), this._editorView.state.selection.$head.after(depth)));              
-            }
+          if (this._editorView.state.selection.toJSON().type == "node") {
+            // this works for math nodes
+            deleteSelection(this._editorView.state, this._editorView.dispatch);
+          } else {
+            // this works for markdown and code blocks
+            const depth = this._editorView.state.selection.$head.depth;
+            const tr = this._editorView.state.tr;
+            this._editorView.dispatch(tr.delete(this._editorView.state.selection.$head.before(depth), this._editorView.state.selection.$head.after(depth)));              
+          }
         });
         column.appendChild(deleteButton);
       } else {
