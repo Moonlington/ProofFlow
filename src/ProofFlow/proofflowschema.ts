@@ -24,28 +24,30 @@ export const ProofFlowSchema: Schema = new Schema({
      * Represents a block of markdown text.
      */
     markdown: {
-      block: false,
+      block: true,
       content: "text*",
       group: "block",
       parseDOM: [{ tag: "markdown", preserveWhitespace: "full" }],
       atom: false,
       code: true,
       leaf: false,
+      draggable: false,
       toDOM(node) {
         return ["markdown", 0];
       },
     },
-    
+
   /**
    * The markdown_rendered node.
    * Represents a block of markdown text that has been rendered.
    */
     markdown_rendered: {
-      block: false,
+      block: true,
       content: "text*",
       group: "block",
       parseDOM: [{ tag: "markdown-rendered", preserveWhitespace: true }],
       atom: true,
+      draggable: false,
       toDOM(node) {
         return ["markdown-rendered", {contenteditable: false}, 0];
       },
