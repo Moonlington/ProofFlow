@@ -6,6 +6,7 @@ import {
 } from "./commands/commands";
 import { InsertionPlace } from "./commands/helpers";
 import { EditorView } from "prosemirror-view";
+import { NodeSelection, Selection } from "prosemirror-state";
 import { Node } from "prosemirror-model";
 import { deleteSelection } from "prosemirror-commands";
 
@@ -55,7 +56,17 @@ export class ButtonBar {
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete";
         deleteButton.addEventListener("click", () => {
-          deleteSelection(this._editorView.state, this._editorView.dispatch);
+            // math blocks are of type doc, don't question it
+            if (this._editorView.state.selection.$head.node().type.name === "doc"){
+              // this works for math nodes
+              deleteSelection(this._editorView.state, this._editorView.dispatch);
+            } else {
+              // this works for markdown and code blocks
+              const tr = this._editorView.state.tr;
+              const node = this._editorView.state.selection.$head.node();
+              let depth = this._editorView.state.selection.$head.depth;
+              this._editorView.dispatch(tr.delete(this._editorView.state.selection.$head.before(depth), this._editorView.state.selection.$head.after(depth)));              
+            }
         });
         column.appendChild(deleteButton);
       } else {
