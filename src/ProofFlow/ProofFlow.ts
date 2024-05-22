@@ -21,11 +21,10 @@ import { parseToProofFlow } from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
 
-import { minimalSetup } from "codemirror";
+import { basicSetup } from "codemirror";
+import { bracketMatching } from "@codemirror/matchbrackets";
 import { javascript } from "@codemirror/lang-javascript";
 import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
-import {myKeymap} from "./codemirror/keymap.ts";
-import { keymap } from "prosemirror-keymap";
 // CSS
 
 export class ProofFlow {
@@ -104,8 +103,9 @@ export class ProofFlow {
               view,
               getPos,
               cmOptions: {
-                extensions: [minimalSetup, javascript()],
-                keymap: myKeymap,
+                extensions: [
+                    basicSetup,
+                  javascript()],
               },
             }),
       },
@@ -200,6 +200,7 @@ export class ProofFlow {
     trans = trans.insert(counter, codeNode);
     this.editorView.state = this.editorView.state.apply(trans);
     this.editorView.updateState(this.editorView.state);
+    this.editorView.dom.addEventListener('focus', () => this.syncProseMirrorToCodeMirror());
   }
 
   public setFileName(fileName: string) {

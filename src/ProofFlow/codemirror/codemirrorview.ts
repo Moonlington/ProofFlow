@@ -2,7 +2,7 @@
  *  Adapted from https://github.com/sibiraj-s/prosemirror-codemirror-6
  *--------------------------------------------------------*/
 
-import { Selection, TextSelection } from "prosemirror-state";
+import {Selection, TextSelection, Transaction} from "prosemirror-state";
 import type { EditorView, NodeView } from "prosemirror-view";
 import type { Node as ProsemirrorNode } from "prosemirror-model";
 import { exitCode } from "prosemirror-commands";
@@ -49,7 +49,8 @@ const computeChange = (
  */
 class CodeMirrorView implements NodeView {
   node: ProsemirrorNode;
-  view: EditorView;
+  _outerView: EditorView;
+  _innerView: EditorView | undefined;
   dom: HTMLElement;
   cm: CMView;
   getPos: () => number;
@@ -60,7 +61,7 @@ class CodeMirrorView implements NodeView {
   constructor(options: CodeMirrorViewOptions) {
     // Store for later
     this.node = options.node;
-    this.view = options.view;
+    this._outerView = options.view;
     const cmExtensions = options.cmOptions?.extensions || [];
 
     this.getPos = options.getPos as () => number;
@@ -79,6 +80,20 @@ class CodeMirrorView implements NodeView {
 
     // The editor's outer node is our DOM representation
     this.dom = this.cm.dom;
+
+
+    // Keymaps for the codemirror editor
+    const tabKeymap = keymap.of([
+      {
+        key: "Tab",
+        run: () => {
+          const state = this.cm.state;
+          this.cm.dispatch(state.update(state.replaceSelection("\t")));
+          return true;
+        },
+        preventDefault: true,
+      },
+    ]);
 
     const cmState = CMState.create({
       doc: this.node.textContent,
@@ -104,8 +119,8 @@ class CodeMirrorView implements NodeView {
           {
             key: "Ctrl-Enter",
             run: () => {
-              if (exitCode(this.view.state, this.view.dispatch)) {
-                this.view.focus();
+              if (exitCode(this._outerView.state, this._outerView.dispatch)) {
+                this._outerView.focus();
                 return true;
               }
               return false;
@@ -113,6 +128,7 @@ class CodeMirrorView implements NodeView {
           },
         ]),
         cmExtensions,
+        tabKeymap,
       ],
     });
 
@@ -120,7 +136,7 @@ class CodeMirrorView implements NodeView {
 
     CodeMirrorView.instances.push(this);
     // Ensure the selection is synchronized from ProseMirror to codemirror
-    this.view.dom.addEventListener('focus', () => this.forwardSelection());
+    this._outerView.dom.addEventListener('focus', () => this.forwardSelection());
   }
 
   // Method to find a CodeMirrorView instance by its position in the ProseMirror document
@@ -135,12 +151,19 @@ class CodeMirrorView implements NodeView {
       return;
     }
 
-    const { state } = this.view;
+    const { state } = this._outerView;
     const selection = this.asProseMirrorSelection(state.doc);
 
     if (!selection.eq(state.selection)) {
-      this.view.dispatch(state.tr.setSelection(selection));
+      this._outerView.dispatch(state.tr.setSelection(selection));
     }
+
+    // Ensure only one cursor is active
+    CodeMirrorView.instances.forEach((instance) => {
+      if (instance !== this && instance.cm.hasFocus) {
+        instance.cm.contentDOM.blur(); // Remove focus from other CodeMirror instances
+      }
+    });
   }
 
   // Converts the codemirror selection to a ProseMirror selection
@@ -165,15 +188,15 @@ class CodeMirrorView implements NodeView {
       }
 
       const content = change.text
-          ? this.view.state.schema.text(change.text)
+          ? this._outerView.state.schema.text(change.text)
           : null;
 
-      const tr = this.view.state.tr.replaceWith(
+      const tr = this._outerView.state.tr.replaceWith(
           change.from + start,
           change.to + start,
           content as ProsemirrorNode,
       );
-      this.view.dispatch(tr);
+      this._outerView.dispatch(tr);
       this.forwardSelection();
     }
   }
@@ -210,13 +233,13 @@ class CodeMirrorView implements NodeView {
 
       const targetPos = this.getPos() + (dir < 0 ? 0 : this.node.nodeSize);
       const pmSelection = Selection.near(
-          this.view.state.doc.resolve(targetPos),
+          this._outerView.state.doc.resolve(targetPos),
           dir,
       );
-      this.view.dispatch(
-          this.view.state.tr.setSelection(pmSelection).scrollIntoView(),
+      this._outerView.dispatch(
+          this._outerView.state.tr.setSelection(pmSelection).scrollIntoView(),
       );
-      this.view.focus();
+      this._outerView.focus();
       return true;
     };
 

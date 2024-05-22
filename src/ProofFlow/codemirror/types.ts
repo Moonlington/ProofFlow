@@ -21,7 +21,6 @@ export interface ComputeChange {
  */
 interface CMOptions {
   extensions: Extension;
-    keymap: Extension;
 }
 
 export type GetPos = () => number | undefined;
