@@ -69,16 +69,22 @@ export class ProofFlow {
       },
       handleClickOn(view, pos, node, nodePos, event, direct) {
         if (node.type.name == "collapsible_title") {
-          let startPos = view.state.doc.resolve(pos).start(0);
-          console.log(view.state.doc.nodeAt(startPos));
+          /*console.log(pos, nodePos);
+          let test = view.state.doc.resolve(pos);
+          console.log(test);
+          let startPos = test.start(1);
+          console.log(startPos);
+          let node = view.state.doc.nodeAt(startPos - 1);
+          console.log(node);
+
+          console.log(view.state.doc.nodeAt(196));*/
+
+          let startPos = nodePos - 1;
+          let node = view.state.doc.nodeAt(startPos);
 
           const state = view.state.doc.nodeAt(startPos)?.attrs.visible as boolean;
-          console.log(state);
-          const trans = view.state.tr.setNodeAttribute(
-            startPos,
-            "visible",
-            !state,
-          );
+          let trans = view.state.tr.setNodeAttribute(startPos, "visible", !state);
+          
           view.dispatch(trans);
         }
       },

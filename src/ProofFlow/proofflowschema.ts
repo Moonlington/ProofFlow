@@ -5,7 +5,7 @@ import { node as codeMirrorNode } from "./CodeMirror";
  * Can be markdown, math_display, or codecell.
  */
 const cell = "(markdown | collapsible | collapsible_title | math_display | code_mirror)";
-const containercontent = "(markdown | math_display | code_mirror)";
+const containercontent = "(markdown | collapsible_title | math_display | code_mirror)";
 
 /**
  * The ProofFlow schema.
