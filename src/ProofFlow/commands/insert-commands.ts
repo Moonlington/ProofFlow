@@ -1,9 +1,11 @@
-import { NodeType } from "prosemirror-model";
-import { allowedToInsert, InsertionFunction } from "./helpers";
+import { NodeType, Node } from "prosemirror-model";
+import { allowedToInsert, getContainingNode, InsertionFunction } from "./helpers";
 import { Command, EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { GetPos } from "../CodeMirror/types.ts";
 import { CodeMirrorView } from "../CodeMirror";
+import { collapsibleContentType, collapsibleNodeType, collapsibleTitleNodeType } from "../nodetypes.ts";
+import { ProofFlowSchema } from "../proofflowschema.ts";
 
 /**
  * Returns a command function for inserting a node of type `mdNodeType`.
@@ -73,6 +75,36 @@ export function getCodeInsertCommand(
     trans = insertionFunction(state, state.tr, codeblockNodeType);
     if (dispatch && trans) dispatch(trans);
 
+    return true;
+  };
+}
+
+export function getCollapsibleInsertCommand(): Command {
+  return (
+    state: EditorState,
+    dispatch?: (tr: Transaction) => void,
+    view?: EditorView,
+  ): boolean => {
+    if (!allowedToInsert(state)) return false;
+    let selection = state.selection;
+    let parent = getContainingNode(selection);
+    if (parent == undefined || parent.type.name != "doc") return false;
+    const oldNode = selection.$from.node();
+    console.log(oldNode);
+
+    let textNode: Node = collapsibleTitleNodeType.create(null, [
+      ProofFlowSchema.text("Collapsible: "),
+    ]);
+    let contentNode: Node = collapsibleContentType.create(
+      { visible: true },
+      [oldNode],
+    )
+    let collapsibleNode: Node = collapsibleNodeType.create({}, [textNode, contentNode]);
+    let trans: Transaction = state.tr;
+    let resolved = selection.$from;
+    console.log(resolved.start(), resolved.end());
+    trans.replaceWith(resolved.start() - 1, resolved.end(), collapsibleNode);
+    if (dispatch && trans) dispatch(trans);
     return true;
   };
 }

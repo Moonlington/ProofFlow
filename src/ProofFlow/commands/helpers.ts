@@ -35,7 +35,6 @@ export type InsertionFunction = (
  * @returns An object with properties indicating the type of the selection.
  */
 export function selectionType(sel: Selection) {
-  console.log(sel);
   return {
     isTextSelection: sel instanceof TextSelection, // True if the selection is a text selection
     isNodeSelection: sel instanceof NodeSelection, // True if the selection is a node selection
