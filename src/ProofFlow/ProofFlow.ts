@@ -27,6 +27,7 @@ import {
   defaultMarkdownParser,
   defaultMarkdownSerializer,
 } from "prosemirror-markdown";
+import { applyGlobalKeyBindings } from "./commands/shortcuts";
 import { Wrapper, WrapperType } from "./parser/wrapper.ts";
 import { mathblockNodeType, codeblockNodeType, collapsibleNodeType, markdownblockNodeType, collapsibleTitleNodeType, collapsibleContentType } from "./nodetypes.ts";
 // CSS
@@ -57,7 +58,7 @@ export class ProofFlow {
     let editorStateConfig: EditorStateConfig = {
       schema: ProofFlowSchema,
       doc: DOMParser.fromSchema(ProofFlowSchema).parse(this._contentElem),
-      plugins: createPlugins(this._schema),
+      plugins: createPlugins(ProofFlowSchema),
     };
     const editorState = EditorState.create(editorStateConfig);
 
@@ -126,6 +127,9 @@ export class ProofFlow {
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, this.editorView);
     buttonBar.render(this._editorElem);
+
+    // Apply global keymap and input rules
+    applyGlobalKeyBindings(this.editorView);
   }
 
   public openFile(wrappers: Wrapper[]): void {

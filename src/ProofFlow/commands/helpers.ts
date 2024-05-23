@@ -6,6 +6,7 @@ import {
   Selection,
   Transaction,
 } from "prosemirror-state";
+import { closeHistory } from "prosemirror-history";
 
 /**
  * Represents the possible places where an insertion can occur.
@@ -88,6 +89,9 @@ export function insertAbove(
     });
   }
 
+  // Close the history event to prevent further steps from being appended to it
+  trans = closeHistory(trans);
+
   return trans;
 }
 
@@ -145,6 +149,9 @@ export function insertUnder(
       counter++;
     });
   }
+
+  // Close the history event to prevent further steps from being appended to it
+  trans = closeHistory(trans);
 
   return trans;
 }
