@@ -58,55 +58,60 @@ export class ProofFlow {
         return mathSerializer.serializeSlice(slice);
       },
       handleClickOn(view, pos, node, nodePos, event, direct) {
-          
           if (node.type.name === undefined) return;
-          if (node.type.name !== "markdown_rendered") return;
-
+          //if (node.type.name !== "markdown_rendered") return;
+          //const state = view.state;
           let trans = view.state.tr;
-          let thisNode = node;
-          view.state.doc.descendants((node, pos) => {
-
-            if (node.eq(thisNode) || node.type.name !== "markdown") return;
-            console.log(node.type.name + " " + pos)
-            const parsedContent = defaultMarkdownParser.parse(node.textContent);
-            if (parsedContent) {
-              let sizeOffset = node.content.size;
-              let nodeStart = pos;
-              let nodeEnd = nodeStart + sizeOffset + 1;
-              const markdownNodeType = ProofFlowSchema.nodes["markdown_rendered"];
-              let newMarkdownNode = markdownNodeType.create(null, parsedContent.content);
-              trans = trans.replaceRangeWith(
-                nodeStart,
-                nodeEnd,
-                newMarkdownNode
-              );
-
-            } 
+          const thisNode = node;
+          const thisPos = nodePos
+          const savedDoc = view.state.doc;
+         trans.doc.descendants((node, pos) => {
+            console.log("b4 " + node.type.name + " current node pos: " + pos + " clicked node pos: " + nodePos)
+            if ((nodePos < pos || nodePos > pos + node.nodeSize - 1) && node.type.name === "markdown") {
+                console.log(node.type.name + " " + pos)
+                const parsedContent = defaultMarkdownParser.parse(node.textContent);
+                console.log("parsed content: " + parsedContent!.content)
+                if (parsedContent) {
+                  let sizeOffset = node.nodeSize;
+                  let nodeStart = pos;
+                  let nodeEnd = nodeStart + sizeOffset - 1;
+                  console.log("s + e +c: " + nodeStart + " " + nodeEnd + " " + sizeOffset)
+                  const markdownRenderedNodeType = ProofFlowSchema.nodes["markdown_rendered"];
+                  let newMarkdownNode = markdownRenderedNodeType.create(null, parsedContent.content);
+                  trans.replaceRangeWith(
+                    nodeStart,
+                    nodeEnd,
+                    newMarkdownNode
+                  );
+                } 
+              }
+              if (pos <= thisPos && thisPos < pos + node.nodeSize  && node.type.name === "markdown_rendered") {
+                const serializedContent = defaultMarkdownSerializer.serialize(node);
+                console.log(node.textContent);
+                let sizeOffset = node.nodeSize;
+                let nodeStart = pos; 
+                let nodeEnd = nodeStart + sizeOffset - 1; 
+                console.log("md ren s + e +c: " + nodeStart + " " + nodeEnd + " " + sizeOffset)
+  
+                // Create a new markdown node with the serialized content (a.k.a the raw text)
+                // Make sure the text is not empty, since creating an empty text cell is not allowed
+                let text = serializedContent == "" ? "empty" : serializedContent;
+                console.log("MAking markdown node with text: " + text)
+                const markdownNodeType = ProofFlowSchema.nodes["markdown"];
+                let newMarkdownNode = markdownNodeType.create(null, ProofFlowSchema.text(text));
+  
+                // Create and push the transaction of replacing the markdown-rendered node with the markdown raw text node
+                trans.replaceRangeWith(
+                  nodeStart,
+                  nodeEnd,
+                  newMarkdownNode
+                );
+              }
           });
           
-          // (1) to get correct node / text with markdown characters still in (markdown_rendered parent cell instead of the raw header/paragraph DOM)
-          const serializedContent = defaultMarkdownSerializer.serialize(node);
-
-          // Parse the content and create a new markdown node with the parsed content
-          let sizeOffset = node.content.size;
-          let nodeStart = nodePos; // use the upper bound + parentoffset
-          let nodeEnd = nodePos + sizeOffset + 1; // use the lower bound
-          
-          // Create a new markdown node with the serialized content (a.k.a the raw text)
-          // Make sure the text is not empty, since creating an empty text cell is not allowed
-          let text = serializedContent == "" ? " " : serializedContent;
-          let newMarkdownNode = ProofFlowSchema.node("markdown", null, ProofFlowSchema.text(text));
-
-          // Create and push the transaction of replacing the markdown-rendered node with the markdown raw text node
-          trans = trans.replaceRangeWith(
-            nodeStart,
-            nodeEnd,
-            newMarkdownNode
-          );
-          let newState = view.state.apply(trans);
-          view.updateState(newState); 
+          view.dispatch(trans);
       },
-      handleDOMEvents: {     
+      /*handleDOMEvents: {     
         blur: (view, event) => {
           // If the selection is not in a markdow node (or undefined), return
           if (view.state.selection.$to.node(1) === undefined) return;
@@ -134,7 +139,7 @@ export class ProofFlow {
           } 
           return false;    
         }      
-      },
+      },*/
       
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
