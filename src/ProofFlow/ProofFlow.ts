@@ -28,7 +28,7 @@ import {
   defaultMarkdownSerializer,
 } from "prosemirror-markdown";
 import { Wrapper, WrapperType } from "./parser/wrapper.ts";
-import { mathblockNodeType, codeblockNodeType, collapsibleNodeType, markdownblockNodeType, collapsibleTitleNodeType } from "./nodetypes.ts";
+import { mathblockNodeType, codeblockNodeType, collapsibleNodeType, markdownblockNodeType, collapsibleTitleNodeType, collapsibleContentType } from "./nodetypes.ts";
 // CSS
 
 export class ProofFlow {
@@ -69,19 +69,9 @@ export class ProofFlow {
       },
       handleClickOn(view, pos, node, nodePos, event, direct) {
         if (node.type.name == "collapsible_title") {
-          /*console.log(pos, nodePos);
-          let test = view.state.doc.resolve(pos);
-          console.log(test);
-          let startPos = test.start(1);
-          console.log(startPos);
-          let node = view.state.doc.nodeAt(startPos - 1);
-          console.log(node);
-
-          console.log(view.state.doc.nodeAt(196));*/
-
-          let startPos = nodePos - 1;
-          let node = view.state.doc.nodeAt(startPos);
-
+          let startPos = nodePos + node.nodeSize;
+          //let contentNode = view.state.doc.nodeAt(startPos);
+          //console.log(contentNode);
           const state = view.state.doc.nodeAt(startPos)?.attrs.visible as boolean;
           let trans = view.state.tr.setNodeAttribute(startPos, "visible", !state);
           
@@ -139,11 +129,11 @@ export class ProofFlow {
   }
 
   public openFile(wrappers: Wrapper[]): void {
-    console.log(wrappers);
+    // console.log(wrappers);
     for (let wrapper of wrappers) {
       // Create text or code areas based on the parsed content
-      console.log(wrapper);
-      console.log(wrapper.wrapperType);
+      // console.log(wrapper);
+      // console.log(wrapper.wrapperType);
       if (wrapper.wrapperType == WrapperType.Collapsible) {
         this.createCollapsible(wrapper);
       } else {
@@ -199,30 +189,30 @@ export class ProofFlow {
 
   public createCollapsible(wrapper: Wrapper) {
     const title = wrapper.info;
-    let nodes: Node[] = [];
 
     let textNode: Node = collapsibleTitleNodeType.create(null, [
       ProofFlowSchema.text(title),
     ]);
-    nodes.push(textNode);
+
+    let contentNodes: Node[] = [];
 
     wrapper.areas.forEach((area) => {
       if (area.areaType == AreaType.Code) {
         const node = this.createCodeNode(area.text);
-        nodes.push(node);
+        contentNodes.push(node);
       } else if (area.areaType == AreaType.Math) {
         const node = this.createMathNode(area.text);
-        nodes.push(node);
+        contentNodes.push(node);
       } else if (area.areaType == AreaType.Markdown) {
         const node = this.createTextNode(area.text);
-        nodes.push(node);
+        contentNodes.push(node);
       }
     });
-
-    let collapsibleNode: Node = collapsibleNodeType.create(
+    let contentNode: Node = collapsibleContentType.create(
       { visible: true },
-      nodes,
-    );
+      contentNodes,
+    )
+    let collapsibleNode: Node = collapsibleNodeType.create({}, [textNode, contentNode]);
     this.insertAtEnd(collapsibleNode);
   }
 

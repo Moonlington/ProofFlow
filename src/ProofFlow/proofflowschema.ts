@@ -4,8 +4,8 @@ import { node as codeMirrorNode } from "./CodeMirror";
  * The cell types available in ProofFlow.
  * Can be markdown, math_display, or codecell.
  */
-const cell = "(markdown | collapsible | collapsible_title | math_display | code_mirror)";
-const containercontent = "(markdown | collapsible_title | math_display | code_mirror)";
+const cell = "(markdown | collapsible | math_display | code_mirror)";
+const containercontent = "(markdown | math_display | code_mirror)";
 
 /**
  * The ProofFlow schema.
@@ -21,27 +21,10 @@ export const ProofFlowSchema: Schema = new Schema({
     },
 
     collapsible: {
-      content: `${containercontent}*`,
-      attrs: {
-        visible: { default: false },
-      },
-      parseDOM: [
-        {
-          tag: "collapsible",
-          getAttrs(dom) {
-            return {
-              title:
-                (dom as HTMLElement).getAttribute("title") ?? "Collapsible",
-            };
-          },
-        },
-      ],
+      content: `(collapsible_title)(collapsible_content)`,
+      parseDOM: [{tag: "collapsible"}],
       toDOM(node: Node) {
-        return [
-          "div",
-          { class: "collapsible", visible: node.attrs.visible },
-          0,
-        ];
+        return ["div",{ class: "collapsible" }, 0];
       },
     },
 
@@ -53,6 +36,27 @@ export const ProofFlowSchema: Schema = new Schema({
       code: false,
       toDOM(node) {
         return ["collapsible_title", 0];
+      },
+    },
+
+    collapsible_content: {
+      content: `${containercontent}+`,
+      attrs: {
+        visible: { default: false },
+      },
+      parseDOM: [
+        {
+          tag: "collapsible_content",
+          getAttrs(dom) {
+            return {
+              title:
+                (dom as HTMLElement).getAttribute("title") ?? "Collapsible",
+            };
+          },
+        },
+      ],
+      toDOM(node: Node) {
+        return ["div",{ class: "collapsible_content", visible: node.attrs.visible }, 0];
       },
     },
 
