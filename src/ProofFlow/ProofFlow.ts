@@ -114,36 +114,7 @@ export class ProofFlow {
           trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos), -1));
           view.dispatch(trans);
       },
-      /*handleDOMEvents: {     
-        blur: (view, event) => {
-          // If the selection is not in a markdow node (or undefined), return
-          if (view.state.selection.$to.node(1) === undefined) return;
-          if (view.state.selection.$to.node(1).type.name !== "markdown") return;
-
-          let trans = view.state.tr;
-          const textblockNodeType = ProofFlowSchema.nodes["markdown_rendered"];
-          
-          // Parse the content and create a new markdown node with the parsed content
-          const parsedContent = defaultMarkdownParser.parse(view.state.selection.$from.node().textContent);
-          if (parsedContent) {
-            let cursorOffset = view.state.selection.$from.parentOffset;
-            let nodeStart = view.state.selection.$from.pos - cursorOffset - 1;
-            let nodeEnd = nodeStart + view.state.selection.$from.node().textContent.length + 1;
-
-            let newMarkdownNode = textblockNodeType.create(null, parsedContent.content);
-            trans = trans.replaceRangeWith(
-              nodeStart,
-              nodeEnd,
-              newMarkdownNode
-            );
-        
-            let newState = view.state.apply(trans);
-            view.updateState(newState);
-          } 
-          return false;    
-        }      
-      },*/
-      
+    
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
