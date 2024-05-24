@@ -78,7 +78,7 @@ export class ProofFlow {
                   console.log("s + e +c: " + nodeStart + " " + nodeEnd + " " + sizeOffset)
                   const markdownRenderedNodeType = ProofFlowSchema.nodes["markdown_rendered"];
                   let newMarkdownNode = markdownRenderedNodeType.create(null, parsedContent.content);
-                  trans.replaceRangeWith(
+                  trans.replaceWith(
                     nodeStart,
                     nodeEnd,
                     newMarkdownNode
@@ -101,7 +101,7 @@ export class ProofFlow {
                 let newMarkdownNode = markdownNodeType.create(null, ProofFlowSchema.text(text));
   
                 // Create and push the transaction of replacing the markdown-rendered node with the markdown raw text node
-                trans.replaceRangeWith(
+                trans.replaceWith(
                   nodeStart,
                   nodeEnd,
                   newMarkdownNode
