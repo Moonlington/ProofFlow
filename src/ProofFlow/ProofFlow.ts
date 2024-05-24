@@ -1,7 +1,7 @@
 import {
   Schema,
   DOMParser,
-  Node as ProseMirrorNode,
+  Node,
 } from "prosemirror-model";
 import { CodeMirrorView } from "./codemirror";
 import type { GetPos } from "./codemirror/types";
@@ -26,10 +26,7 @@ import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
 
 import { basicSetup } from "codemirror";
-import { bracketMatching } from "@codemirror/matchbrackets";
 import { javascript } from "@codemirror/lang-javascript";
-import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
-import Codemirrorview from "./codemirror/codemirrorview.ts";
 import { applyGlobalKeyBindings } from "./commands/shortcuts";
 import { Wrapper, WrapperType } from "./parser/wrapper.ts";
 import { mathblockNodeType, codeblockNodeType, collapsibleNodeType, markdownblockNodeType, collapsibleTitleNodeType, collapsibleContentType } from "./nodetypes.ts";
@@ -114,7 +111,7 @@ export class ProofFlow {
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (
-            node: ProseMirrorNode,
+            node: Node,
             view: EditorView,
             getPos: GetPos,
         ) =>
@@ -140,6 +137,7 @@ export class ProofFlow {
     this.editorView.dom.addEventListener("focus", () => {
       this.syncProseMirrorToCodeMirror();
     });
+    applyGlobalKeyBindings(this.editorView);
   }
 
   syncProseMirrorToCodeMirror() {
@@ -160,9 +158,6 @@ export class ProofFlow {
     }
   }
 
-    // Apply global keymap and input rules
-    applyGlobalKeyBindings(this.editorView);
-  }
 
   public openFile(wrappers: Wrapper[]): void {
     // console.log(wrappers);
