@@ -43,7 +43,7 @@ export const ProofFlowSchema: Schema = new Schema({
      */
     markdown_rendered: {
       block: true,
-      content: "block+",
+      content: "block*",
       parseDOM: [{ tag: "markdown-rendered", preserveWhitespace: true }],
       atom: true,
       //draggable: false,

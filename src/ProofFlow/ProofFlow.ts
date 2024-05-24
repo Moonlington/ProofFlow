@@ -2,6 +2,7 @@ import { Schema, DOMParser, NodeType, Node } from "prosemirror-model";
 import { CodeMirrorView } from "./CodeMirror";
 import type { GetPos } from "./CodeMirror/types";
 import { ProofFlowSchema } from "./proofflowschema.ts";
+
 import {
   EditorState,
   EditorStateConfig,
@@ -58,63 +59,56 @@ export class ProofFlow {
         return mathSerializer.serializeSlice(slice);
       },
       handleClickOn(view, pos, node, nodePos, event, direct) {
-          if (node.type.name === undefined) return;
+          if (node.type.name === undefined || !direct) return;
           //if (node.type.name !== "markdown_rendered") return;
           //const state = view.state;
           let trans = view.state.tr;
-          const thisNode = node;
-          const thisPos = nodePos
-          const savedDoc = view.state.doc;
-
+          let thisPos = nodePos
+          let correctPos = 0;
+          let offsetToClicked = 0;
+          let newNodes = Array<Node>();
           view.state.doc.descendants((node, pos) => {
 
-            console.log("b4 " + node.type.name + " current node pos: " + pos + " clicked node pos: " + nodePos)
-            // Check if clicked node position is not the same as the current node position
-            if ((nodePos < pos || nodePos > pos + node.nodeSize - 1) && node.type.name === "markdown") {
+            // Check if the node is a valid parent node that we want to handle
+            if (!(node.type.name === "markdown_rendered" || node.type.name === "markdown" || node.type.name === "code_mirror" || node.type.name === "math_display")) return;
 
-                console.log(node.type.name + " " + pos)
+            // Check if the clicked node is the same as the current node
+            let isClickedNode: Boolean = pos <= thisPos && thisPos <= pos + node.nodeSize - 1;
+            let newNode: Node = node;
+
+            if (!isClickedNode && node.type.name === "markdown") {
                 const parsedContent = defaultMarkdownParser.parse(node.textContent);
-                console.log("parsed content: " + parsedContent!.content)
+
                 if (parsedContent) {
-                  let sizeOffset = node.nodeSize;
-                  let nodeStart = pos;
-                  let nodeEnd = nodeStart + sizeOffset - 1;
-                  console.log("s + e +c: " + nodeStart + " " + nodeEnd + " " + sizeOffset)
                   const markdownRenderedNodeType = ProofFlowSchema.nodes["markdown_rendered"];
-                  let newMarkdownNode = markdownRenderedNodeType.create(null, parsedContent.content);
-                  trans.replaceRangeWith(
-                    nodeStart,
-                    nodeEnd,
-                    newMarkdownNode
-                  );
+                  newNode = markdownRenderedNodeType.create(null, parsedContent.content);
                 } 
               }
 
               // Check if this node position is the same as the clicked node position
-              if (pos <= thisPos && thisPos < pos + node.nodeSize  && node.type.name === "markdown_rendered") {
+              else if (isClickedNode && node.type.name === "markdown_rendered") {
                 const serializedContent = defaultMarkdownSerializer.serialize(node);
-                console.log(node.textContent);
-                let sizeOffset = node.nodeSize;
-                let nodeStart = pos; 
-                let nodeEnd = nodeStart + sizeOffset - 1; 
-                console.log("md ren s + e +c: " + nodeStart + " " + nodeEnd + " " + sizeOffset)
-  
+
                 // Create a new markdown node with the serialized content (a.k.a the raw text)
                 // Make sure the text is not empty, since creating an empty text cell is not allowed
-                let text = serializedContent == "" ? "empty" : serializedContent;
-                console.log("MAking markdown node with text: " + text)
+                let text = serializedContent == "" ? " " : serializedContent;
                 const markdownNodeType = ProofFlowSchema.nodes["markdown"];
-                let newMarkdownNode = markdownNodeType.create(null, [ProofFlowSchema.text(text)]);
-  
-                // Create and push the transaction of replacing the markdown-rendered node with the markdown raw text node
-                trans.replaceRangeWith(
-                  nodeStart,
-                  nodeEnd,
-                  newMarkdownNode
-                );
+                newNode = markdownNodeType.create(null, [ProofFlowSchema.text(text)]);
+
+              } 
+
+              offsetToClicked += newNode.nodeSize;
+
+              if (isClickedNode) {
+                correctPos = offsetToClicked - 1;
               }
+              
+              newNodes.push(newNode);
+
           });
-          
+
+          trans.replaceWith(0, view.state.doc.content.size, newNodes);
+          trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos)));
           view.dispatch(trans);
       },
       /*handleDOMEvents: {     
