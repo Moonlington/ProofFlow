@@ -57,6 +57,8 @@ class CodeMirrorView implements NodeView {
   updating = false;
 
   static instances: CodeMirrorView[] = [];
+  static instanceCount: number = 0;
+  instanceNumber: number;
 
   constructor(options: CodeMirrorViewOptions) {
     // Store for later
@@ -133,8 +135,11 @@ class CodeMirrorView implements NodeView {
     });
 
     this.cm.setState(cmState);
+    this.instanceNumber = CodeMirrorView.instanceCount++;
 
+    console.log(`Created instance number ${this.instanceNumber}`);
     CodeMirrorView.instances.push(this);
+    console.log(CodeMirrorView.instances);
     // Ensure the selection is synchronized from ProseMirror to codemirror
     this._outerView.dom.addEventListener('focus', () => this.forwardSelection());
   }
@@ -160,9 +165,21 @@ class CodeMirrorView implements NodeView {
 
     // Ensure only one cursor is active
     CodeMirrorView.instances.forEach((instance) => {
-      if (instance !== this && instance.cm.hasFocus) {
-        instance.cm.contentDOM.blur(); // Remove focus from other CodeMirror instances
+      if (instance !== this) {
+        instance.blurInstance(); // Remove focus from other CodeMirror instances
+        console.log("blurred", this.instanceNumber, instance.instanceNumber);
       }
+    });
+  }
+
+
+  /**
+   * Method to blur the CodeMirror instance when other instances are focused
+   */
+  blurInstance() {
+    this.cm.dispatch({
+      selection: { anchor: this.cm.state.selection.main.head, head: this.cm.state.selection.main.head },
+      scrollIntoView: false
     });
   }
 
@@ -173,7 +190,10 @@ class CodeMirrorView implements NodeView {
     return TextSelection.create(doc, anchor + offset, head + offset);
   }
 
-  // Dispatch a transaction to the ProseMirror editor
+  /**
+   * Dispatch a transaction to the codemirror editor and update the ProseMirror editor
+   * @param cmTr
+   */
   dispatch(cmTr: CMTransaction) {
     this.cm.setState(cmTr.state);
 
@@ -285,6 +305,7 @@ class CodeMirrorView implements NodeView {
   focus() {
     this.cm.focus();
     this.forwardSelection();
+    console.log("focused", this);
   }
 
   selectNode() {
