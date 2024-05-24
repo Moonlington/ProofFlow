@@ -17,7 +17,8 @@ import {
   parseToAreasMV,
   parseToAreasV,
   parseToProofFlow,
-} from "./parser/coq-to-proofflow";
+  parseToAreasLean,
+} from "./parser/parse-to-proofflow.ts";
 import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
 
@@ -150,6 +151,30 @@ export class ProofFlow {
   public openMarkdownCoqFile(text: string): void {
     // Parse the text to create the proof flow
     let wrappers = parseToProofFlow(text, parseToAreasMV);
+    console.log(wrappers);
+    for (let wrapper of wrappers) {
+      // Create text or code areas based on the parsed content
+      console.log(wrapper);
+      for (let area of wrapper.areas) {
+        if (area.areaType == AreaType.Markdown) {
+          this.createTextArea(area.text);
+        } else if (area.areaType == AreaType.Code) {
+          this.createCodeArea(area.text);
+        } else if (area.areaType == AreaType.Math) {
+          this.createMathArea(area.text);
+        }
+      }
+    }
+  }
+
+  /**
+   * Opens the markdown Lean file and creates text or code areas based on the parsed content.
+   *
+   * @param text - The content of the Lean file.
+   */
+  public openLeanFile(text: string): void {
+    // Parse the text to create the proof flow
+    let wrappers = parseToProofFlow(text, parseToAreasLean);
     console.log(wrappers);
     for (let wrapper of wrappers) {
       // Create text or code areas based on the parsed content
