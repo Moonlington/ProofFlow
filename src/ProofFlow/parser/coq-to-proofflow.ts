@@ -29,7 +29,10 @@ export function domFromText(text: string): HTMLDivElement {
  * @param text - The input text to parse.
  * @returns An array of wrappers representing the parsed text.
  */
-export function parseToProofFlow(text: string, areaParsingFunction: Function): Wrapper[] {
+export function parseToProofFlow(
+  text: string,
+  areaParsingFunction: Function,
+): Wrapper[] {
   let wrappers: Wrapper[] = [];
   let startIndex = 0;
   let inCollapsible = false;
@@ -188,19 +191,19 @@ export function parseToAreasMV(text: string): Area[] {
   let inCode = false;
   let startIndex = 0;
   for (let i = 0; i < text.length; i++) {
-    if (!text.startsWith('```', i)) continue;
+    if (!text.startsWith("```", i)) continue;
     if (!inCode) {
       let nonCodeText = text.substring(startIndex, i);
       areas = areas.concat(parseNonCode(nonCodeText));
       inCode = true;
-      startIndex = i + '```coq\n'.length;
+      startIndex = i + "```coq\n".length;
     } else {
       let area = new Area();
       area.areaType = AreaType.Code;
       area.text = text.substring(startIndex, i);
       areas.push(area);
       inCode = false;
-      startIndex = i + '```\n'.length;
+      startIndex = i + "```\n".length;
     }
   }
   if (startIndex != text.length) {

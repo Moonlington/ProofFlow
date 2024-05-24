@@ -13,13 +13,22 @@ import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { createPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 import { Area, AreaType } from "./parser/area";
-import { parseToAreasMV, parseToAreasV, parseToProofFlow } from "./parser/coq-to-proofflow";
+import {
+  parseToAreasMV,
+  parseToAreasV,
+  parseToProofFlow,
+} from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
 
 import { minimalSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
-import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
+import {
+  defaultMarkdownParser,
+  defaultMarkdownSerializer,
+} from "prosemirror-markdown";
+import { applyGlobalKeyBindings } from "./commands/shortcuts";
+
 // CSS
 
 export class ProofFlow {
@@ -46,7 +55,7 @@ export class ProofFlow {
     let editorStateConfig: EditorStateConfig = {
       schema: ProofFlowSchema,
       doc: DOMParser.fromSchema(ProofFlowSchema).parse(this._contentElem),
-      plugins: createPlugins(this._schema),
+      plugins: createPlugins(ProofFlowSchema),
     };
     const editorState = EditorState.create(editorStateConfig);
 
@@ -85,7 +94,7 @@ export class ProofFlow {
           return;
         }       
       },*/
-      
+
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
@@ -104,6 +113,9 @@ export class ProofFlow {
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, this.editorView);
     buttonBar.render(this._editorElem);
+
+    // Apply global keymap and input rules
+    applyGlobalKeyBindings(this.editorView);
   }
 
   /**
