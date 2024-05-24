@@ -1,4 +1,4 @@
-import { Schema } from "prosemirror-model";
+import { NodeType, Schema } from "prosemirror-model";
 import {
   cmdInsertCode,
   cmdInsertMarkdown,
@@ -6,6 +6,7 @@ import {
 } from "./commands/commands";
 import { InsertionPlace } from "./commands/helpers";
 import { EditorView } from "prosemirror-view";
+import { NodeSelection, Selection } from "prosemirror-state";
 import { Node } from "prosemirror-model";
 import { deleteSelection } from "prosemirror-commands";
 import { undo, redo } from "prosemirror-history";
@@ -51,9 +52,17 @@ export class ButtonBar {
 
       if (i === columnCount - 1) {
         // Add delete button
-        this.addButton(column, "Delete", () =>
-          deleteSelection(this._editorView.state, this._editorView.dispatch),
-        );
+        this.addButton(column, "Delete", () => {
+          if (this._editorView.state.selection instanceof NodeSelection) {
+            // this works for math nodes
+            deleteSelection(this._editorView.state, this._editorView.dispatch)
+          } else {
+            // this works for markdown and code blocks
+            const depth = this._editorView.state.selection.$head.depth;
+            const tr = this._editorView.state.tr;
+            this._editorView.dispatch(tr.delete(this._editorView.state.selection.$head.before(depth), this._editorView.state.selection.$head.after(depth)));
+          }
+      });
       } else if (i === columnCount - 2) {
         // Add undo and redo buttons
         this.addButton(column, "Undo", () =>
