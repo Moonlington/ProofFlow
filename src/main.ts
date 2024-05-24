@@ -77,10 +77,14 @@ function readSingleFile(e: Event) {
     if (readerEvent?.target?.result) {
       // Get the result from the reader event
       const result = readerEvent.target.result.toString();
+      proofFlow.setFileName(file.name);
 
       // Process the file content
-      proofFlow.openOriginalCoqFile(result);
-      proofFlow.setFileName(file.name);
+      if (fileType == AcceptedFileTypes.Coq) {
+        proofFlow.openOriginalCoqFile(result);
+      } else if (fileType == AcceptedFileTypes.CoqMD) {
+        proofFlow.openMarkdownCoqFile(result);
+      }
     }
   };
 }

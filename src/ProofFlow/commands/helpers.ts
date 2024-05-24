@@ -6,6 +6,7 @@ import {
   Selection,
   Transaction,
 } from "prosemirror-state";
+import { closeHistory } from "prosemirror-history";
 
 /**
  * Represents the possible places where an insertion can occur.
@@ -33,8 +34,7 @@ export type InsertionFunction = (
  * @param sel - The selection to determine the type of.
  * @returns An object with properties indicating the type of the selection.
  */
-export function selectionType(sel: Selection) {
-  console.log(sel);
+export function getSelectionType(sel: Selection) {
   return {
     isTextSelection: sel instanceof TextSelection, // True if the selection is a text selection
     isNodeSelection: sel instanceof NodeSelection, // True if the selection is a node selection
@@ -55,7 +55,7 @@ export function insertAbove(
   ...nodeType: NodeType[]
 ): Transaction {
   const sel = state.selection;
-  const { isTextSelection, isNodeSelection } = selectionType(sel);
+  const { isTextSelection, isNodeSelection } = getSelectionType(sel);
 
   let trans: Transaction = tr;
 
@@ -88,6 +88,9 @@ export function insertAbove(
     });
   }
 
+  // Close the history event to prevent further steps from being appended to it
+  trans = closeHistory(trans);
+
   return trans;
 }
 
@@ -106,7 +109,7 @@ export function insertUnder(
 ): Transaction {
   // Determine the type of the selection and the insertion point
   const sel = state.selection;
-  const { isTextSelection, isNodeSelection } = selectionType(sel);
+  const { isTextSelection, isNodeSelection } = getSelectionType(sel);
 
   // Initialize the transaction object
   let trans: Transaction = tr;
@@ -146,6 +149,9 @@ export function insertUnder(
     });
   }
 
+  // Close the history event to prevent further steps from being appended to it
+  trans = closeHistory(trans);
+
   return trans;
 }
 
@@ -157,7 +163,7 @@ export function insertUnder(
  */
 export function getContainingNode(sel: Selection): Node | undefined {
   // Determine the type of the selection
-  const { isTextSelection, isNodeSelection } = selectionType(sel);
+  const { isTextSelection, isNodeSelection } = getSelectionType(sel);
 
   // If the selection is a text or node selection, return the parent node of the selection
   // Otherwise, return undefined
@@ -176,5 +182,17 @@ export function getContainingNode(sel: Selection): Node | undefined {
  * @returns A boolean indicating whether insertion is allowed.
  */
 export function allowedToInsert(state: EditorState): boolean {
+  let selection = state.selection;
+  let selectionType = getSelectionType(selection);
+  console.log(selection);
+  if (selectionType.isTextSelection) {
+    let node = selection.$from.node();
+    if (node == null) return true;
+    if (node.type.name == "collapsible_title") return false;
+  } else if (selectionType.isNodeSelection) {
+    let node = (selection as NodeSelection).node;
+    if (node.type.name == "collapsible_content") return false;
+    if (node.type.name == "collapsible_title") return false;
+  }
   return true;
 }

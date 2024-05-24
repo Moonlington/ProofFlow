@@ -4,7 +4,8 @@ import { node as codeMirrorNode } from "./codemirror";
  * The cell types available in ProofFlow.
  * Can be markdown, math_display, or codecell.
  */
-const cell = "(markdown | math_display | code_mirror)";
+const cell = "(markdown | collapsible | math_display | code_mirror)";
+const containercontent = "(markdown | math_display | code_mirror)";
 
 /**
  * The ProofFlow schema.
@@ -19,6 +20,46 @@ export const ProofFlowSchema: Schema = new Schema({
       content: `${cell}*`,
     },
 
+    collapsible: {
+      content: `(collapsible_title)(collapsible_content)`,
+      parseDOM: [{tag: "collapsible"}],
+      toDOM(node: Node) {
+        return ["div",{ class: "collapsible" }, 0];
+      },
+    },
+
+    collapsible_title: {
+      block: true,
+      content: "text*",
+      parseDOM: [{ tag: "collapsible_title", preserveWhitespace: "full" }],
+      atom: false,
+      code: false,
+      toDOM(node) {
+        return ["collapsible_title", 0];
+      },
+    },
+
+    collapsible_content: {
+      content: `${containercontent}+`,
+      attrs: {
+        visible: { default: false },
+      },
+      parseDOM: [
+        {
+          tag: "collapsible_content",
+          getAttrs(dom) {
+            return {
+              title:
+                (dom as HTMLElement).getAttribute("title") ?? "Collapsible",
+            };
+          },
+        },
+      ],
+      toDOM(node: Node) {
+        return ["div",{ class: "collapsible_content", visible: node.attrs.visible }, 0];
+      },
+    },
+
     /**
      * The markdown node.
      * Represents a block of markdown text.
@@ -28,6 +69,7 @@ export const ProofFlowSchema: Schema = new Schema({
       content: "text*",
       parseDOM: [{ tag: "markdown", preserveWhitespace: "full" }],
       atom: false,
+      code: true,
       toDOM(node) {
         return ["markdown", 0];
       },
@@ -41,19 +83,6 @@ export const ProofFlowSchema: Schema = new Schema({
      */
     text: {
       group: "inline",
-    },
-
-    /**
-     * The codecell node.
-     * Represents a code cell.
-     */
-    codecell: {
-      content: "text*",
-      code: true,
-      parseDOM: [{ tag: "codecell", preserveWhitespace: "full" }],
-      toDOM(node) {
-        return ["codecell", node.attrs, 0];
-      },
     },
 
     /**
