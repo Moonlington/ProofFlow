@@ -1,4 +1,5 @@
 import { Area, AreaType } from "./area";
+import { Wrapper, WrapperType } from "./wrapper";
 
 /**
  * Parses text into an HTML div to be rendered by ProseMirror.
@@ -24,12 +25,102 @@ export function domFromText(text: string): HTMLDivElement {
 }
 
 /**
- * Parses the text into areas and converts Coqdoc into markdown.
+ * Parses the text into wrappers, containing different areas.
  * @param text - The input text to parse.
+ * @returns An array of wrappers representing the parsed text.
+ */
+export function parseToProofFlow(
+  text: string,
+  areaParsingFunction: Function,
+): Wrapper[] {
+  let wrappers: Wrapper[] = [];
+  let startIndex = 0;
+  let inCollapsible = false;
+  let inInput = false;
+
+  let wrapper = new Wrapper();
+
+  function insertInWrapper(endIndex: number, endTagLength: number) {
+    let areasText = text.substring(startIndex, endIndex);
+    wrapper.areas = areaParsingFunction(areasText);
+    wrappers.push(wrapper);
+    wrapper = new Wrapper();
+    startIndex = endIndex + endTagLength;
+  }
+
+  const regExpHint = /\"([^"]+)\"/;
+  for (let i = 0; i < text.length; i++) {
+    if (inCollapsible) {
+      if (!text.startsWith("</hint>", i)) continue;
+      inCollapsible = false;
+      insertInWrapper(i, "</hint>".length);
+      continue;
+    }
+    if (inInput) {
+      if (!text.startsWith("</input-area>", i)) continue;
+      inInput = false;
+      insertInWrapper(i, "</input-area>".length);
+      continue;
+    }
+    if (!(text.startsWith("<input-area>", i) || text.startsWith("<hint", i)))
+      continue;
+    if (i > startIndex) {
+      insertInWrapper(i, 0);
+    }
+    if (text.indexOf(">", i) == -1) return wrappers;
+    if (text.startsWith("<input-area>", i)) {
+      wrapper.wrapperType = WrapperType.Input;
+      inInput = true;
+    } else if (text.startsWith("<hint", i)) {
+      wrapper.wrapperType = WrapperType.Collapsible;
+      inCollapsible = true;
+    }
+    startIndex = text.indexOf(">", i) + 1;
+    if (text.startsWith("<input-area>", i)) continue;
+
+    let regex = regExpHint;
+    regex.lastIndex = i;
+    let titleString = regex.exec(text);
+    if (titleString != null) wrapper.info = titleString[1];
+  }
+
+  if (startIndex != text.length) {
+    insertInWrapper(text.length, 0);
+  }
+  return wrappers;
+}
+
+/**
+ * Converts non-code text into Areas for math and Markdown
+ * @param text - The input text (non-code) to parse.
  * @returns An array of areas representing the parsed text.
  */
-export function parseToProofFlow(text: string): Area[] {
-  let areas = parseToAreas(text);
+function parseNonCode(text: string): Area[] {
+  let areas = new Array();
+
+  const regex = /(\$\$[\s\S]*?\$\$)|([\s\S]+?)(?=\$\$|$)/g;
+
+  const matches: string[] = [];
+
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    matches.push(match[0].trim());
+  }
+
+  matches.forEach((m) => {
+    if (m.length == 0) return;
+    let area = new Area();
+    area.text = m;
+    if (m.startsWith("$")) {
+      area.areaType = AreaType.Math;
+      const fixed = area.text.replace(/\$/g, "");
+      area.text = fixed.trim();
+    } else {
+      area.areaType = AreaType.Markdown;
+    }
+    areas.push(area);
+  });
+
   return areas;
 }
 
@@ -38,9 +129,10 @@ export function parseToProofFlow(text: string): Area[] {
  * @param text - The input text to parse.
  * @returns An array of areas representing the parsed text.
  */
-function parseToAreas(text: string): Area[] {
+export function parseToAreasV(text: string): Area[] {
   let areas: Area[] = new Array();
   const regCoqdoc = /^\s*\(\*((.|\n)*?)\*\)\s*/;
+  const regMath = /^\s*\$\$((.|\n)*?)\$\$\s*/;
   const reqCoqdocNoUse = /^\s*\(\**\)\s*/;
   const regCode = /^\s*(.|\n)*?(?=\(\*)\s*/;
   while (text.length > 0) {
@@ -53,12 +145,19 @@ function parseToAreas(text: string): Area[] {
       // Coqdoc sometimes contains (******) but this does not have any use
       if (coqdoc[0].match(reqCoqdocNoUse)) continue;
 
-      area.areaType = AreaType.Markdown;
-      area.text = coqdoc[0];
+      areas = areas.concat(parseNonCode(coqdoc[0]));
+      continue;
+    }
+    let math = text.match(regMath);
+    if (math != null) {
+      text = text.replace(regMath, "");
 
+      area.areaType = AreaType.Math;
+      area.text = math[1].trim();
       areas.push(area);
       continue;
     }
+
     let code = text.match(regCode);
     if (code != null) {
       // For code sections
@@ -78,5 +177,38 @@ function parseToAreas(text: string): Area[] {
     break;
   }
 
+  return areas;
+}
+
+/**
+ * Converts a markdown Coq file into different areas for easier conversion to the Prosemirror format.
+ * @param text - The input text to parse.
+ * @returns An array of areas representing the parsed text.
+ */
+export function parseToAreasMV(text: string): Area[] {
+  let areas: Area[] = new Array();
+
+  let inCode = false;
+  let startIndex = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (!text.startsWith("```", i)) continue;
+    if (!inCode) {
+      let nonCodeText = text.substring(startIndex, i);
+      areas = areas.concat(parseNonCode(nonCodeText));
+      inCode = true;
+      startIndex = i + "```coq\n".length;
+    } else {
+      let area = new Area();
+      area.areaType = AreaType.Code;
+      area.text = text.substring(startIndex, i);
+      areas.push(area);
+      inCode = false;
+      startIndex = i + "```\n".length;
+    }
+  }
+  if (startIndex != text.length) {
+    let nonCodeText = text.substring(startIndex, text.length);
+    areas = areas.concat(parseNonCode(nonCodeText));
+  }
   return areas;
 }

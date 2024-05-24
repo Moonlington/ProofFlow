@@ -1,7 +1,7 @@
 import {
   Schema,
   DOMParser,
-  Node as ProseMirrorNode,
+  Node,
 } from "prosemirror-model";
 import { CodeMirrorView } from "./codemirror";
 import type { GetPos } from "./codemirror/types";
@@ -17,7 +17,11 @@ import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { createPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 import { Area, AreaType } from "./parser/area";
-import { parseToProofFlow } from "./parser/coq-to-proofflow";
+import {
+  parseToAreasMV,
+  parseToAreasV,
+  parseToProofFlow,
+} from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
 
@@ -26,6 +30,8 @@ import { bracketMatching } from "@codemirror/matchbrackets";
 import { javascript } from "@codemirror/lang-javascript";
 import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
 import Codemirrorview from "./codemirror/codemirrorview.ts";
+import { applyGlobalKeyBindings } from "./commands/shortcuts";
+
 // CSS
 
 export class ProofFlow {
@@ -52,7 +58,7 @@ export class ProofFlow {
     let editorStateConfig: EditorStateConfig = {
       schema: ProofFlowSchema,
       doc: DOMParser.fromSchema(ProofFlowSchema).parse(this._contentElem),
-      plugins: createPlugins(this._schema),
+      plugins: createPlugins(ProofFlowSchema),
     };
     const editorState = EditorState.create(editorStateConfig);
 
@@ -62,7 +68,7 @@ export class ProofFlow {
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
-      handleDOMEvents: {
+      /*handleDOMEvents: {
         focus: (view, event) => {
 
         },
@@ -89,12 +95,12 @@ export class ProofFlow {
           }
           return;
         }
-      },
+      },*/
 
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (
-            node: ProseMirrorNode,
+            node: Node,
             view: EditorView,
             getPos: GetPos,
         ) =>
@@ -138,6 +144,9 @@ export class ProofFlow {
         cmView.focus();
       }
     }
+
+    // Apply global keymap and input rules
+    applyGlobalKeyBindings(this.editorView);
   }
 
   /**
@@ -147,14 +156,43 @@ export class ProofFlow {
    */
   public openOriginalCoqFile(text: string): void {
     // Parse the text to create the proof flow
-    let areas: Area[] = parseToProofFlow(text);
+    let wrappers = parseToProofFlow(text, parseToAreasV);
+    console.log(wrappers);
+    for (let wrapper of wrappers) {
+      // Create text or code areas based on the parsed content
+      console.log(wrapper);
+      for (let area of wrapper.areas) {
+        if (area.areaType == AreaType.Markdown) {
+          this.createTextArea(area.text);
+        } else if (area.areaType == AreaType.Code) {
+          this.createCodeArea(area.text);
+        } else if (area.areaType == AreaType.Math) {
+          this.createMathArea(area.text);
+        }
+      }
+    }
+  }
 
-    // Create text or code areas based on the parsed content
-    for (let area of areas) {
-      if (area.areaType == AreaType.Markdown) {
-        this.createTextArea(area.text);
-      } else if (area.areaType == AreaType.Code) {
-        this.createCodeArea(area.text);
+  /**
+   * Opens the markdown Coq file and creates text or code areas based on the parsed content.
+   *
+   * @param text - The content of the Coq file.
+   */
+  public openMarkdownCoqFile(text: string): void {
+    // Parse the text to create the proof flow
+    let wrappers = parseToProofFlow(text, parseToAreasMV);
+    console.log(wrappers);
+    for (let wrapper of wrappers) {
+      // Create text or code areas based on the parsed content
+      console.log(wrapper);
+      for (let area of wrapper.areas) {
+        if (area.areaType == AreaType.Markdown) {
+          this.createTextArea(area.text);
+        } else if (area.areaType == AreaType.Code) {
+          this.createCodeArea(area.text);
+        } else if (area.areaType == AreaType.Math) {
+          this.createMathArea(area.text);
+        }
       }
     }
   }
@@ -175,7 +213,7 @@ export class ProofFlow {
 
     // Create a new text node and insert it at the end of the document
     const textblockNodeType = ProofFlowSchema.nodes["markdown"];
-    let textNode: ProseMirrorNode = textblockNodeType.create(null, [
+    let textNode: Node = textblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
     trans = trans.setSelection(Selection.atEnd(this.getState().doc));
@@ -193,11 +231,29 @@ export class ProofFlow {
     let trans: Transaction = this.getState().tr;
     let counter = this.getState().doc.content.size;
     const codeblockNodeType = ProofFlowSchema.nodes["code_mirror"];
-    let codeNode: ProseMirrorNode = codeblockNodeType.create(null, [
+    let codeNode: Node = codeblockNodeType.create(null, [
       ProofFlowSchema.text(text),
     ]);
     trans = trans.setSelection(Selection.atEnd(this.getState().doc));
     trans = trans.insert(counter, codeNode);
+    this.editorView.state = this.editorView.state.apply(trans);
+    this.editorView.updateState(this.editorView.state);
+  }
+
+  /**
+   * Creates a new math area in the editor and inserts the specified math.
+   *
+   * @param text - The math to be inserted in the math area.
+   */
+  public createMathArea(text: string): void {
+    let trans: Transaction = this.getState().tr;
+    let counter = this.getState().doc.content.size;
+    const mathblockNodeType = ProofFlowSchema.nodes["math_display"];
+    let mathNode: Node = mathblockNodeType.create(null, [
+      ProofFlowSchema.text(text),
+    ]);
+    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
+    trans = trans.insert(counter, mathNode);
     this.editorView.state = this.editorView.state.apply(trans);
     this.editorView.updateState(this.editorView.state);
   }
