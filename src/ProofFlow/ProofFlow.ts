@@ -17,7 +17,7 @@ import { Area, AreaType } from "./parser/area";
 import { parseToAreasMV, parseToAreasV, parseToProofFlow } from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
-
+import { schema } from "prosemirror-markdown";
 import { minimalSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
@@ -65,9 +65,13 @@ export class ProofFlow {
           const thisNode = node;
           const thisPos = nodePos
           const savedDoc = view.state.doc;
-         trans.doc.descendants((node, pos) => {
+
+          view.state.doc.descendants((node, pos) => {
+
             console.log("b4 " + node.type.name + " current node pos: " + pos + " clicked node pos: " + nodePos)
+            // Check if clicked node position is not the same as the current node position
             if ((nodePos < pos || nodePos > pos + node.nodeSize - 1) && node.type.name === "markdown") {
+
                 console.log(node.type.name + " " + pos)
                 const parsedContent = defaultMarkdownParser.parse(node.textContent);
                 console.log("parsed content: " + parsedContent!.content)
@@ -78,13 +82,15 @@ export class ProofFlow {
                   console.log("s + e +c: " + nodeStart + " " + nodeEnd + " " + sizeOffset)
                   const markdownRenderedNodeType = ProofFlowSchema.nodes["markdown_rendered"];
                   let newMarkdownNode = markdownRenderedNodeType.create(null, parsedContent.content);
-                  trans.replaceWith(
+                  trans.replaceRangeWith(
                     nodeStart,
                     nodeEnd,
                     newMarkdownNode
                   );
                 } 
               }
+
+              // Check if this node position is the same as the clicked node position
               if (pos <= thisPos && thisPos < pos + node.nodeSize  && node.type.name === "markdown_rendered") {
                 const serializedContent = defaultMarkdownSerializer.serialize(node);
                 console.log(node.textContent);
@@ -98,10 +104,10 @@ export class ProofFlow {
                 let text = serializedContent == "" ? "empty" : serializedContent;
                 console.log("MAking markdown node with text: " + text)
                 const markdownNodeType = ProofFlowSchema.nodes["markdown"];
-                let newMarkdownNode = markdownNodeType.create(null, ProofFlowSchema.text(text));
+                let newMarkdownNode = markdownNodeType.create(null, [ProofFlowSchema.text(text)]);
   
                 // Create and push the transaction of replacing the markdown-rendered node with the markdown raw text node
-                trans.replaceWith(
+                trans.replaceRangeWith(
                   nodeStart,
                   nodeEnd,
                   newMarkdownNode
