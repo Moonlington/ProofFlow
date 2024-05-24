@@ -60,13 +60,14 @@ export class ProofFlow {
       },
       handleClickOn(view, pos, node, nodePos, event, direct) {
           if (node.type.name === undefined || !direct) return;
-          //if (node.type.name !== "markdown_rendered") return;
-          //const state = view.state;
+          console.log("========================= New click ================================")
           let trans = view.state.tr;
+          let cursorOffset = pos;
           let thisPos = nodePos
           let correctPos = 0;
           let offsetToClicked = 0;
           let newNodes = Array<Node>();
+
           view.state.doc.descendants((node, pos) => {
 
             // Check if the node is a valid parent node that we want to handle
@@ -85,30 +86,32 @@ export class ProofFlow {
                 } 
               }
 
-              // Check if this node position is the same as the clicked node position
-              else if (isClickedNode && node.type.name === "markdown_rendered") {
+            // Check if this node position is the same as the clicked node position
+            else if (isClickedNode && node.type.name === "markdown_rendered") {
                 const serializedContent = defaultMarkdownSerializer.serialize(node);
 
-                // Create a new markdown node with the serialized content (a.k.a the raw text)
-                // Make sure the text is not empty, since creating an empty text cell is not allowed
-                let text = serializedContent == "" ? " " : serializedContent;
-                const markdownNodeType = ProofFlowSchema.nodes["markdown"];
-                newNode = markdownNodeType.create(null, [ProofFlowSchema.text(text)]);
+              // Create a new markdown node with the serialized content (a.k.a the raw text)
+              // Make sure the text is not empty, since creating an empty text cell is not allowed
+              let text = serializedContent == "" ? " " : serializedContent;
+              const markdownNodeType = ProofFlowSchema.nodes["markdown"];
+              newNode = markdownNodeType.create(null, [ProofFlowSchema.text(text)]);
 
-              } 
+            } 
 
-              offsetToClicked += newNode.nodeSize;
+            console.log("Pos: " + pos + " nodePos: " + nodePos + " nodeSize: " + node.nodeSize + " new nodeSize: " + newNode.nodeSize);
 
-              if (isClickedNode) {
-                correctPos = offsetToClicked - 1;
-              }
-              
-              newNodes.push(newNode);
+            if (isClickedNode) {
+              offsetToClicked += newNode.nodeSize - (newNode.nodeSize - (cursorOffset - thisPos)); 
+              correctPos = offsetToClicked;
+            }
+
+            offsetToClicked += newNode.nodeSize;
+            newNodes.push(newNode);
 
           });
 
           trans.replaceWith(0, view.state.doc.content.size, newNodes);
-          trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos)));
+          trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos), -1));
           view.dispatch(trans);
       },
       /*handleDOMEvents: {     
