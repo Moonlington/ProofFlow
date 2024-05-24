@@ -182,5 +182,17 @@ export function getContainingNode(sel: Selection): Node | undefined {
  * @returns A boolean indicating whether insertion is allowed.
  */
 export function allowedToInsert(state: EditorState): boolean {
+  let selection = state.selection;
+  let selectionType = getSelectionType(selection);
+  console.log(selection);
+  if (selectionType.isTextSelection) {
+    let node = selection.$from.node();
+    if (node == null) return true;
+    if (node.type.name == "collapsible_title") return false;
+  } else if (selectionType.isNodeSelection) {
+    let node = (selection as NodeSelection).node;
+    if (node.type.name == "collapsible_content") return false;
+    if (node.type.name == "collapsible_title") return false;
+  }
   return true;
 }
