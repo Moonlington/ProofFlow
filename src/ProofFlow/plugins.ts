@@ -3,6 +3,7 @@ import { keymap } from "prosemirror-keymap";
 import { Schema } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
 import { mathPlugin } from "@benrbray/prosemirror-math";
+import { history } from "prosemirror-history";
 import { inputRules } from "prosemirror-inputrules";
 import {
   makeBlockMathInputRule,
@@ -51,6 +52,9 @@ export function createPlugins(schema: Schema): Plugin[] {
 
   // Add input rules plugin with block math input rule
   plugins.push(inputRules({ rules: [blockMathInputRule] }));
+
+  // Add history plugin
+  plugins.push(history());
 
   return plugins;
 }
