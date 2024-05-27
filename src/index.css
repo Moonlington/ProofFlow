@@ -20,7 +20,6 @@
   border-bottom: #2701ff13 0.5px solid;
 }
 
-code-mirror {
 collapsible_title {
   border: #85b46f 4px;
   width: 100%;
@@ -102,4 +101,3 @@ div[visible="false"] {
 #container {
   min-width: 605px;
 }
-
