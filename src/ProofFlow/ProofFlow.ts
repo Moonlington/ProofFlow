@@ -91,9 +91,7 @@ export class ProofFlow {
           let newNodes = Array<Node>();
 
           view.state.doc.descendants((node, pos) => {
-
-            // Check if the node is a valid parent node that we want to handle
-            if (!(node.type.name === "markdown_rendered" || node.type.name === "markdown" || node.type.name === "code_mirror" || node.type.name === "math_display")) return;
+            if (!(node.type.name === "markdown_rendered" || node.type.name === "collapsible" || node.type.name === "markdown" || node.type.name === "code_mirror" || node.type.name === "math_display")) return false;
 
             // Check if the clicked node is the same as the current node
             let isClickedNode: Boolean = pos <= thisPos && thisPos <= pos + node.nodeSize - 1;
