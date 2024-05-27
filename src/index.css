@@ -44,6 +44,7 @@ math-display {
 
 #editor, #content {
   width: 49.5%;
+  min-width: 300px;
   height: 98vh;
   background-clip: padding-box;
   border-color: black;
@@ -59,19 +60,21 @@ math-display {
   align-items: center;
   background-color: #f0f0f0;
   border-bottom: 1px solid #ccc;
-  padding: 8px;
 }
 
 .button-bar button {
-  padding: 8px 16px;
-  background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 4px;
   cursor: pointer;
-  width: 100px;
-  margin: 4px
+  font-size: 8px;
+  width: 95%;
+  min-width: 50px;
 }
 
 .button-bar button:hover {
   background-color: #e0e0e0;
+}
+
+#container {
+  min-width: 605px;
 }
