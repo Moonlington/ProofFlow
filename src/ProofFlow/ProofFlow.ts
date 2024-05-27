@@ -60,7 +60,7 @@ export class ProofFlow {
       },
       handleClickOn(view, pos, node, nodePos, event, direct) {
           if (node.type.name === undefined || !direct) return;
-          console.log("========================= New click ================================")
+          
           let trans = view.state.tr;
           let cursorOffset = pos;
           let thisPos = nodePos
@@ -101,7 +101,7 @@ export class ProofFlow {
             console.log("Pos: " + pos + " nodePos: " + nodePos + " nodeSize: " + node.nodeSize + " new nodeSize: " + newNode.nodeSize);
 
             if (isClickedNode) {
-              offsetToClicked += newNode.nodeSize - (newNode.nodeSize - (cursorOffset - thisPos)); 
+              offsetToClicked += cursorOffset - thisPos; 
               correctPos = offsetToClicked;
             }
 
