@@ -65,6 +65,17 @@ export class ProofFlow {
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
+      handleClickOn(view, pos, node, nodePos, event, direct) {
+        if (node.type.name == "collapsible_title") {
+          let startPos = nodePos + node.nodeSize;
+          //let contentNode = view.state.doc.nodeAt(startPos);
+          //console.log(contentNode);
+          const state = view.state.doc.nodeAt(startPos)?.attrs.visible as boolean;
+          let trans = view.state.tr.setNodeAttribute(startPos, "visible", !state);
+
+          view.dispatch(trans);
+        }
+      },
       /*handleDOMEvents: {
         focus: (view, event) => {
 
