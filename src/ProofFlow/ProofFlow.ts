@@ -28,7 +28,8 @@ import {
   defaultMarkdownSerializer,
 } from "prosemirror-markdown";
 import { applyGlobalKeyBindings } from "./commands/shortcuts";
-
+import { Wrapper, WrapperType } from "./parser/wrapper.ts";
+import { mathblockNodeType, codeblockNodeType, collapsibleNodeType, markdownblockNodeType, collapsibleTitleNodeType, collapsibleContentType } from "./nodetypes.ts";
 // CSS
 
 export class ProofFlow {
@@ -39,6 +40,8 @@ export class ProofFlow {
   private editorView: EditorView; // The view of the editor
 
   private fileName: string = "file.txt";
+
+  private count = 0;
 
   /**
    * Represents the ProofFlow class.
@@ -64,6 +67,17 @@ export class ProofFlow {
       state: editorState,
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
+      },
+      handleClickOn(view, pos, node, nodePos, event, direct) {
+        if (node.type.name == "collapsible_title") {
+          let startPos = nodePos + node.nodeSize;
+          //let contentNode = view.state.doc.nodeAt(startPos);
+          //console.log(contentNode);
+          const state = view.state.doc.nodeAt(startPos)?.attrs.visible as boolean;
+          let trans = view.state.tr.setNodeAttribute(startPos, "visible", !state);
+          
+          view.dispatch(trans);
+        }
       },
       /*handleDOMEvents: {
         focus: (view, event) => {
@@ -118,6 +132,28 @@ export class ProofFlow {
     applyGlobalKeyBindings(this.editorView);
   }
 
+  public openFile(wrappers: Wrapper[]): void {
+    // console.log(wrappers);
+    for (let wrapper of wrappers) {
+      // Create text or code areas based on the parsed content
+      // console.log(wrapper);
+      // console.log(wrapper.wrapperType);
+      if (wrapper.wrapperType == WrapperType.Collapsible) {
+        this.createCollapsible(wrapper);
+      } else {
+        for (let area of wrapper.areas) {
+          if (area.areaType == AreaType.Markdown) {
+            this.createTextArea(area.text);
+          } else if (area.areaType == AreaType.Code) {
+            this.createCodeArea(area.text);
+          } else if (area.areaType == AreaType.Math) {
+            this.createMathArea(area.text);
+          }
+        }
+      }
+    }
+  }
+
   /**
    * Opens the original Coq file and creates text or code areas based on the parsed content.
    *
@@ -126,20 +162,7 @@ export class ProofFlow {
   public openOriginalCoqFile(text: string): void {
     // Parse the text to create the proof flow
     let wrappers = parseToProofFlow(text, parseToAreasV);
-    console.log(wrappers);
-    for (let wrapper of wrappers) {
-      // Create text or code areas based on the parsed content
-      console.log(wrapper);
-      for (let area of wrapper.areas) {
-        if (area.areaType == AreaType.Markdown) {
-          this.createTextArea(area.text);
-        } else if (area.areaType == AreaType.Code) {
-          this.createCodeArea(area.text);
-        } else if (area.areaType == AreaType.Math) {
-          this.createMathArea(area.text);
-        }
-      }
-    }
+    this.openFile(wrappers);
   }
 
   /**
@@ -150,24 +173,72 @@ export class ProofFlow {
   public openMarkdownCoqFile(text: string): void {
     // Parse the text to create the proof flow
     let wrappers = parseToProofFlow(text, parseToAreasMV);
-    console.log(wrappers);
-    for (let wrapper of wrappers) {
-      // Create text or code areas based on the parsed content
-      console.log(wrapper);
-      for (let area of wrapper.areas) {
-        if (area.areaType == AreaType.Markdown) {
-          this.createTextArea(area.text);
-        } else if (area.areaType == AreaType.Code) {
-          this.createCodeArea(area.text);
-        } else if (area.areaType == AreaType.Math) {
-          this.createMathArea(area.text);
-        }
-      }
-    }
+    this.openFile(wrappers);
   }
 
   public getState(): EditorState {
     return this.editorView.state;
+  }
+
+  private insertAtEnd(node: Node) {
+    // Create a new transaction and get the counter
+    let trans: Transaction = this.getState().tr;
+    let counter = this.getState().doc.content.size;
+
+    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
+    trans = trans.insert(counter, node);
+    this.editorView.state = this.editorView.state.apply(trans);
+    this.editorView.updateState(this.editorView.state);
+  }
+
+  public createCollapsible(wrapper: Wrapper) {
+    const title = wrapper.info;
+
+    let textNode: Node = collapsibleTitleNodeType.create(null, [
+      ProofFlowSchema.text(title),
+    ]);
+
+    let contentNodes: Node[] = [];
+
+    wrapper.areas.forEach((area) => {
+      if (area.areaType == AreaType.Code) {
+        const node = this.createCodeNode(area.text);
+        contentNodes.push(node);
+      } else if (area.areaType == AreaType.Math) {
+        const node = this.createMathNode(area.text);
+        contentNodes.push(node);
+      } else if (area.areaType == AreaType.Markdown) {
+        const node = this.createTextNode(area.text);
+        contentNodes.push(node);
+      }
+    });
+    let contentNode: Node = collapsibleContentType.create(
+      { visible: true },
+      contentNodes,
+    )
+    let collapsibleNode: Node = collapsibleNodeType.create({}, [textNode, contentNode]);
+    this.insertAtEnd(collapsibleNode);
+  }
+
+  private createTextNode(text: string): Node {
+    let textNode: Node = markdownblockNodeType.create(null, [
+      ProofFlowSchema.text(text),
+    ]);
+    return textNode;
+  }
+
+  private createCodeNode(text: string): Node {
+    let textNode: Node = codeblockNodeType.create(null, [
+      ProofFlowSchema.text(text),
+    ]);
+    return textNode;
+  }
+
+  private createMathNode(text: string): Node {
+    let textNode: Node = mathblockNodeType.create(null, [
+      ProofFlowSchema.text(text),
+    ]);
+    return textNode;
   }
 
   /**
@@ -176,19 +247,8 @@ export class ProofFlow {
    * @param text - The text to be inserted in the text area.
    */
   public createTextArea(text: string): void {
-    // Create a new transaction and get the counter
-    let trans: Transaction = this.getState().tr;
-    let counter = this.getState().doc.content.size;
-
-    // Create a new text node and insert it at the end of the document
-    const textblockNodeType = ProofFlowSchema.nodes["markdown"];
-    let textNode: Node = textblockNodeType.create(null, [
-      ProofFlowSchema.text(text),
-    ]);
-    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
-    trans = trans.insert(counter, textNode);
-    this.editorView.state = this.editorView.state.apply(trans);
-    this.editorView.updateState(this.editorView.state);
+    let textNode = this.createTextNode(text);
+    this.insertAtEnd(textNode);
   }
 
   /**
@@ -197,16 +257,8 @@ export class ProofFlow {
    * @param text - The code to be inserted in the code area.
    */
   public createCodeArea(text: string): void {
-    let trans: Transaction = this.getState().tr;
-    let counter = this.getState().doc.content.size;
-    const codeblockNodeType = ProofFlowSchema.nodes["code_mirror"];
-    let codeNode: Node = codeblockNodeType.create(null, [
-      ProofFlowSchema.text(text),
-    ]);
-    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
-    trans = trans.insert(counter, codeNode);
-    this.editorView.state = this.editorView.state.apply(trans);
-    this.editorView.updateState(this.editorView.state);
+    let codeNode = this.createCodeNode(text);
+    this.insertAtEnd(codeNode);
   }
 
   /**
@@ -215,16 +267,8 @@ export class ProofFlow {
    * @param text - The math to be inserted in the math area.
    */
   public createMathArea(text: string): void {
-    let trans: Transaction = this.getState().tr;
-    let counter = this.getState().doc.content.size;
-    const mathblockNodeType = ProofFlowSchema.nodes["math_display"];
-    let mathNode: Node = mathblockNodeType.create(null, [
-      ProofFlowSchema.text(text),
-    ]);
-    trans = trans.setSelection(Selection.atEnd(this.getState().doc));
-    trans = trans.insert(counter, mathNode);
-    this.editorView.state = this.editorView.state.apply(trans);
-    this.editorView.updateState(this.editorView.state);
+    let mathNode = this.createMathNode(text);
+    this.insertAtEnd(mathNode);
   }
 
   public setFileName(fileName: string) {
