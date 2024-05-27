@@ -1,4 +1,4 @@
-import { ProofFlow } from "./ProofFlow/ProofFlow";
+import { ProofFlow } from "./ProofFlow/editor/ProofFlow.ts";
 import {
   AcceptedFileTypes,
   isCorrectFileType,

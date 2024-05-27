@@ -14,8 +14,8 @@ import {
   cmdInsertCode,
   cmdInsertMarkdown,
   cmdInsertMath,
-} from "./commands/commands";
-import { InsertionPlace } from "./commands/helpers";
+} from "../commands/commands.ts";
+import { InsertionPlace } from "../commands/helpers.ts";
 
 // Create input rules using default regex
 const blockMathInputRule = makeBlockMathInputRule(

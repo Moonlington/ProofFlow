@@ -309,7 +309,6 @@ class CodeMirrorView implements NodeView {
    * Focus the codemirror editor and set the selection
    */
   setSelection(anchor: number, head: number): void {
-    this.focus();
     this.updating = true;
     this.cm.dispatch({ selection: { anchor, head } });
     this.updating = false;

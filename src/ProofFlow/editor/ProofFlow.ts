@@ -3,8 +3,8 @@ import {
   DOMParser,
   Node,
 } from "prosemirror-model";
-import { CodeMirrorView } from "./codemirror";
-import type { GetPos } from "./codemirror/types";
+import { CodeMirrorView } from "../codemirror";
+import type { GetPos } from "../codemirror/types.ts";
 import { ProofFlowSchema } from "./proofflowschema.ts";
 
 import {
@@ -18,19 +18,19 @@ import {
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { createPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
-import { Area, AreaType } from "./parser/area";
+import { Area, AreaType } from "../parser/area.ts";
 import {
   parseToAreasMV,
   parseToAreasV,
   parseToProofFlow,
   parseToAreasLean,
-} from "./parser/parse-to-proofflow.ts";
-import { ButtonBar } from "./ButtonBar";
-import { getContent } from "./outputparser/savefile";
+} from "../parser/parse-to-proofflow.ts";
+import { ButtonBar } from "./ButtonBar.ts";
+import { getContent } from "../outputparser/savefile.ts";
 
 import { basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
-import { applyGlobalKeyBindings } from "./commands/shortcuts";
+import { applyGlobalKeyBindings } from "../commands/shortcuts.ts";
 import {
     defaultMarkdownParser,
     defaultMarkdownSerializer,
@@ -57,6 +57,7 @@ export class ProofFlow {
     this._editorElem = editorElem; // Set the editor element
     this._contentElem = contentElement; // Set the content element
 
+
     // Create the editor state
     let editorStateConfig: EditorStateConfig = {
       schema: ProofFlowSchema,
@@ -75,7 +76,6 @@ export class ProofFlow {
           if (node.type.name === undefined || !direct) return;
 
           let trans = view.state.tr;
-
           let cursorOffset = pos;
           let thisPos = nodePos
           let correctPos = 0;
@@ -119,7 +119,6 @@ export class ProofFlow {
 
             offsetToClicked += newNode.nodeSize;
             newNodes.push(newNode);
-
           });
 
           trans.replaceWith(0, view.state.doc.content.size, newNodes);
@@ -140,6 +139,7 @@ export class ProofFlow {
               getPos,
               cmOptions: {
                 extensions: [
+                    // will be changed, and later code from basic setup will be added to the codebase
                     basicSetup,
                   javascript()],
               },
@@ -173,9 +173,10 @@ export class ProofFlow {
     if (selection.empty && selection.$anchor.parent.type.name === "code_mirror") {
       const pos = selection.$anchor.before(selection.$anchor.depth);
       const cmView = CodeMirrorView.findByPos(pos);
-      console.log("Moving from codemirror")
 
+      // Check for not null (TypeScript mandates)
       if (cmView) {
+        console.log("Moving from codemirror")
         cmView.blurInstance();
       }
     }
