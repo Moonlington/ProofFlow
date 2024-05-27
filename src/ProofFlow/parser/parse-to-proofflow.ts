@@ -117,7 +117,7 @@ function parseNonCode(text: string): Area[] {
       area.text = fixed.trim();
     } else {
       area.areaType = AreaType.Markdown;
-    }``
+    }
     areas.push(area);
   });
 
