@@ -41,8 +41,6 @@ export class ProofFlow {
 
   private fileName: string = "file.txt";
 
-  private count = 0;
-
   /**
    * Represents the ProofFlow class.
    * @constructor
