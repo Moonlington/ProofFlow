@@ -6,11 +6,13 @@ import {
 import { CodeMirrorView } from "./codemirror";
 import type { GetPos } from "./codemirror/types";
 import { ProofFlowSchema } from "./proofflowschema.ts";
+
 import {
   EditorState,
   EditorStateConfig,
   Transaction,
   Selection,
+  TextSelection,
   NodeSelection,
 } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
@@ -21,14 +23,18 @@ import {
   parseToAreasMV,
   parseToAreasV,
   parseToProofFlow,
-} from "./parser/coq-to-proofflow";
+  parseToAreasLean,
+} from "./parser/parse-to-proofflow.ts";
 import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
 
 import { basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { applyGlobalKeyBindings } from "./commands/shortcuts";
-
+import {
+    defaultMarkdownParser,
+    defaultMarkdownSerializer,
+} from "prosemirror-markdown";
 // CSS
 
 export class ProofFlow {
@@ -66,44 +72,60 @@ export class ProofFlow {
         return mathSerializer.serializeSlice(slice);
       },
       handleClickOn(view, pos, node, nodePos, event, direct) {
-        if (node.type.name == "collapsible_title") {
-          let startPos = nodePos + node.nodeSize;
-          //let contentNode = view.state.doc.nodeAt(startPos);
-          //console.log(contentNode);
-          const state = view.state.doc.nodeAt(startPos)?.attrs.visible as boolean;
-          let trans = view.state.tr.setNodeAttribute(startPos, "visible", !state);
-
-          view.dispatch(trans);
-        }
-      },
-      /*handleDOMEvents: {
-        focus: (view, event) => {
-
-        },
-        blur: (view, event) => {
-          console.log("To: " + view.state.selection.$to.node().textContent);
-          console.log(view.state.selection.$to.node().type.name);
-          if (view.state.selection.$to.node().type.name !== "markdown") return;
+          if (node.type.name === undefined || !direct) return;
 
           let trans = view.state.tr;
-          const textblockNodeType = ProofFlowSchema.nodes["markdown"];
-          console.log(view.state.selection.$from.pos + " " + view.state.selection.$to.pos);
-          // Parse the content and create a new markdown node with the parsed content
-          const parsedContent = defaultMarkdownParser.parse(view.state.selection.$to.node().textContent);
-          if (parsedContent) {
-            let newMarkdownNode = textblockNodeType.create(null, parsedContent.content);
-            trans = trans.replaceWith(
-              // Subtract the length of the text content from the $from position to get the correct position
-              view.state.selection.$from.pos - view.state.selection.$to.node().textContent.length - 1,
-              view.state.selection.$to.pos,
-              newMarkdownNode
-            );
 
-            view.dispatch(trans);
-          }
-          return;
-        }
-      },*/
+          let cursorOffset = pos;
+          let thisPos = nodePos
+          let correctPos = 0;
+          let offsetToClicked = 0;
+          let newNodes = Array<Node>();
+
+          view.state.doc.descendants((node, pos) => {
+
+            // Check if the node is a valid parent node that we want to handle
+            if (!(node.type.name === "markdown_rendered" || node.type.name === "markdown" || node.type.name === "code_mirror" || node.type.name === "math_display")) return;
+
+            // Check if the clicked node is the same as the current node
+            let isClickedNode: Boolean = pos <= thisPos && thisPos <= pos + node.nodeSize - 1;
+            let newNode: Node = node;
+
+            if (!isClickedNode && node.type.name === "markdown") {
+                const parsedContent = defaultMarkdownParser.parse(node.textContent);
+
+                if (parsedContent) {
+                  const markdownRenderedNodeType = ProofFlowSchema.nodes["markdown_rendered"];
+                  newNode = markdownRenderedNodeType.create(null, parsedContent.content);
+                }
+              }
+
+            // Check if this node position is the same as the clicked node position
+            else if (isClickedNode && node.type.name === "markdown_rendered") {
+                const serializedContent = defaultMarkdownSerializer.serialize(node);
+
+              // Create a new markdown node with the serialized content (a.k.a the raw text)
+              // Make sure the text is not empty, since creating an empty text cell is not allowed
+              let text = serializedContent == "" ? " " : serializedContent;
+              const markdownNodeType = ProofFlowSchema.nodes["markdown"];
+              newNode = markdownNodeType.create(null, [ProofFlowSchema.text(text)]);
+
+            }
+
+            if (isClickedNode) {
+              offsetToClicked += cursorOffset - thisPos;
+              correctPos = offsetToClicked;
+            }
+
+            offsetToClicked += newNode.nodeSize;
+            newNodes.push(newNode);
+
+          });
+
+          trans.replaceWith(0, view.state.doc.content.size, newNodes);
+          trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos), -1));
+          view.dispatch(trans);
+      },
 
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
@@ -192,6 +214,30 @@ export class ProofFlow {
   public openMarkdownCoqFile(text: string): void {
     // Parse the text to create the proof flow
     let wrappers = parseToProofFlow(text, parseToAreasMV);
+    console.log(wrappers);
+    for (let wrapper of wrappers) {
+      // Create text or code areas based on the parsed content
+      console.log(wrapper);
+      for (let area of wrapper.areas) {
+        if (area.areaType == AreaType.Markdown) {
+          this.createTextArea(area.text);
+        } else if (area.areaType == AreaType.Code) {
+          this.createCodeArea(area.text);
+        } else if (area.areaType == AreaType.Math) {
+          this.createMathArea(area.text);
+        }
+      }
+    }
+  }
+
+  /**
+   * Opens the markdown Lean file and creates text or code areas based on the parsed content.
+   *
+   * @param text - The content of the Lean file.
+   */
+  public openLeanFile(text: string): void {
+    // Parse the text to create the proof flow
+    let wrappers = parseToProofFlow(text, parseToAreasLean);
     console.log(wrappers);
     for (let wrapper of wrappers) {
       // Create text or code areas based on the parsed content
