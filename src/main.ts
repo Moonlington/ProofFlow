@@ -3,8 +3,8 @@ import {
   AcceptedFileTypes,
   isCorrectFileType,
 } from "./ProofFlow/parser/accepted-file-types";
-import "./ProofFlow.css";
-import "./index.css";
+import "./ProofFlow/styles/ProofFlow.css";
+import "./ProofFlow/styles/index.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
 
