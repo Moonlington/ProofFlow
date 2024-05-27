@@ -2,11 +2,13 @@ import { Schema, DOMParser, NodeType, Node } from "prosemirror-model";
 import { CodeMirrorView } from "./CodeMirror";
 import type { GetPos } from "./CodeMirror/types";
 import { ProofFlowSchema } from "./proofflowschema.ts";
+
 import {
   EditorState,
   EditorStateConfig,
   Transaction,
   Selection,
+  TextSelection,
   NodeSelection,
 } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
@@ -20,7 +22,7 @@ import {
 } from "./parser/coq-to-proofflow";
 import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
-
+import { schema } from "prosemirror-markdown";
 import { minimalSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import {
@@ -65,36 +67,62 @@ export class ProofFlow {
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
-      /*handleDOMEvents: {
-        focus: (view, event) => {
-             
-        },
-        blur: (view, event) => {
-          console.log("To: " + view.state.selection.$to.node().textContent);
-          console.log(view.state.selection.$to.node().type.name);
-          if (view.state.selection.$to.node().type.name !== "markdown") return;
-        
-          let trans = view.state.tr;
-          const textblockNodeType = ProofFlowSchema.nodes["markdown"];
-          console.log(view.state.selection.$from.pos + " " + view.state.selection.$to.pos);
-          // Parse the content and create a new markdown node with the parsed content
-          const parsedContent = defaultMarkdownParser.parse(view.state.selection.$to.node().textContent);
-          if (parsedContent) {
-            let newMarkdownNode = textblockNodeType.create(null, parsedContent.content);
-            trans = trans.replaceWith(
-              // Subtract the length of the text content from the $from position to get the correct position
-              view.state.selection.$from.pos - view.state.selection.$to.node().textContent.length - 1,
-              view.state.selection.$to.pos,
-              newMarkdownNode
-            );
-        
-            view.dispatch(trans);
-          }     
-          console.log("blur");
-          return;
-        }       
-      },*/
+      handleClickOn(view, pos, node, nodePos, event, direct) {
+          if (node.type.name === undefined || !direct) return;
 
+          let trans = view.state.tr;
+
+          let cursorOffset = pos;
+          let thisPos = nodePos
+          let correctPos = 0;
+          let offsetToClicked = 0;
+          let newNodes = Array<Node>();
+
+          view.state.doc.descendants((node, pos) => {
+
+            // Check if the node is a valid parent node that we want to handle
+            if (!(node.type.name === "markdown_rendered" || node.type.name === "markdown" || node.type.name === "code_mirror" || node.type.name === "math_display")) return;
+
+            // Check if the clicked node is the same as the current node
+            let isClickedNode: Boolean = pos <= thisPos && thisPos <= pos + node.nodeSize - 1;
+            let newNode: Node = node;
+
+            if (!isClickedNode && node.type.name === "markdown") {
+                const parsedContent = defaultMarkdownParser.parse(node.textContent);
+
+                if (parsedContent) {
+                  const markdownRenderedNodeType = ProofFlowSchema.nodes["markdown_rendered"];
+                  newNode = markdownRenderedNodeType.create(null, parsedContent.content);
+                } 
+              }
+
+            // Check if this node position is the same as the clicked node position
+            else if (isClickedNode && node.type.name === "markdown_rendered") {
+                const serializedContent = defaultMarkdownSerializer.serialize(node);
+
+              // Create a new markdown node with the serialized content (a.k.a the raw text)
+              // Make sure the text is not empty, since creating an empty text cell is not allowed
+              let text = serializedContent == "" ? " " : serializedContent;
+              const markdownNodeType = ProofFlowSchema.nodes["markdown"];
+              newNode = markdownNodeType.create(null, [ProofFlowSchema.text(text)]);
+
+            } 
+
+            if (isClickedNode) {
+              offsetToClicked += cursorOffset - thisPos; 
+              correctPos = offsetToClicked;
+            }
+
+            offsetToClicked += newNode.nodeSize;
+            newNodes.push(newNode);
+
+          });
+
+          trans.replaceWith(0, view.state.doc.content.size, newNodes);
+          trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos), -1));
+          view.dispatch(trans);
+      },
+       
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
