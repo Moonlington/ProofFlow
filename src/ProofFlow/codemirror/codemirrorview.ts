@@ -13,6 +13,7 @@ import {
 import { Command, EditorView as CMView, keymap } from "@codemirror/view";
 import type { ComputeChange, CodeMirrorViewOptions } from "./types.ts";
 
+
 const computeChange = (
     oldVal: string,
     newVal: string,
@@ -56,8 +57,11 @@ class CodeMirrorView implements NodeView {
   getPos: () => number;
   updating = false;
 
+
+
   static instances: CodeMirrorView[] = [];
   static instanceCount: number = 0;
+  static focused: CodeMirrorView | null = null;
   instanceNumber: number;
 
   constructor(options: CodeMirrorViewOptions) {
@@ -99,6 +103,8 @@ class CodeMirrorView implements NodeView {
 
     const cmState = CMState.create({
       doc: this.node.textContent,
+
+      // Defining keymaps for codemirror
       extensions: [
         changeFilter,
         keymap.of([
@@ -144,13 +150,18 @@ class CodeMirrorView implements NodeView {
     this._outerView.dom.addEventListener('focus', () => this.forwardSelection());
   }
 
-  // Method to find a CodeMirrorView instance by its position in the ProseMirror document
+  /**
+   *  Method to find a CodeMirrorView instance by its position in the ProseMirror document
+   */
   static findByPos(pos: number): CodeMirrorView | null {
     return CodeMirrorView.instances.find(
         (instance) => instance.getPos() === pos
     ) || null;
   }
 
+  /**
+   * Method to move the cursor to the ProseMirror editor
+   */
   forwardSelection() {
     if (!this.cm.hasFocus) {
       return;
@@ -181,6 +192,8 @@ class CodeMirrorView implements NodeView {
       selection: { anchor: this.cm.state.selection.main.head, head: this.cm.state.selection.main.head },
       scrollIntoView: false
     });
+    CodeMirrorView.focused = null;
+
   }
 
   // Converts the codemirror selection to a ProseMirror selection
@@ -306,6 +319,7 @@ class CodeMirrorView implements NodeView {
     this.cm.focus();
     this.forwardSelection();
     console.log("focused", this);
+    CodeMirrorView.focused = this;
   }
 
   selectNode() {

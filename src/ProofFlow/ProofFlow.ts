@@ -26,10 +26,7 @@ import { ButtonBar } from "./ButtonBar";
 import { getContent } from "./outputparser/savefile";
 
 import { basicSetup } from "codemirror";
-import { bracketMatching } from "@codemirror/matchbrackets";
 import { javascript } from "@codemirror/lang-javascript";
-import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown";
-import Codemirrorview from "./codemirror/codemirrorview.ts";
 import { applyGlobalKeyBindings } from "./commands/shortcuts";
 
 // CSS
@@ -126,28 +123,31 @@ export class ProofFlow {
     this.editorView.dom.addEventListener("focus", () => {
       this.syncProseMirrorToCodeMirror();
     });
+
+    // Apply global key bindings
+    applyGlobalKeyBindings(this.editorView);
   }
 
+  /**
+   * Synchronizes the ProseMirror selection with the CodeMirror selection.
+   * Helps with navigating from code mirror to other node types
+   */
   syncProseMirrorToCodeMirror() {
     const { state } = this.editorView;
     const { selection } = state;
 
+    // Check if the current selection is within a code_mirror node
     if (selection.empty && selection.$anchor.parent.type.name === "code_mirror") {
       const pos = selection.$anchor.before(selection.$anchor.depth);
       const cmView = CodeMirrorView.findByPos(pos);
+      console.log("Moving from codemirror")
 
       if (cmView) {
-        cmView.setSelection(
-            selection.anchor - selection.$anchor.start(),
-            selection.head - selection.$anchor.start()
-        );
-        cmView.focus();
+        cmView.blurInstance();
       }
     }
-
-    // Apply global keymap and input rules
-    applyGlobalKeyBindings(this.editorView);
   }
+
 
   /**
    * Opens the original Coq file and creates text or code areas based on the parsed content.
