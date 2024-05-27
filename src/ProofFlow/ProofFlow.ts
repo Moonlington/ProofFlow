@@ -60,7 +60,7 @@ export class ProofFlow {
       },
       handleClickOn(view, pos, node, nodePos, event, direct) {
           if (node.type.name === undefined || !direct) return;
-          
+
           let trans = view.state.tr;
           let cursorOffset = pos;
           let thisPos = nodePos
@@ -97,8 +97,6 @@ export class ProofFlow {
               newNode = markdownNodeType.create(null, [ProofFlowSchema.text(text)]);
 
             } 
-
-            console.log("Pos: " + pos + " nodePos: " + nodePos + " nodeSize: " + node.nodeSize + " new nodeSize: " + newNode.nodeSize);
 
             if (isClickedNode) {
               offsetToClicked += cursorOffset - thisPos; 
