@@ -20,39 +20,16 @@
   border-bottom: #2701ff13 0.5px solid;
 }
 
-collapsible_title {
-  border: #85b46f 4px;
-  width: 100%;
-  display: block;
-  border-style: solid;
-}
-
-.collapsible {
-  border: #85b46f 3px;
-  width: 100% - 4px;
-  border-style: dashed;
-}
-
 codecell {
   background-color: #2701ff19;
-  display: block;
-  width: 100%;
 }
 
 markdown {
   background-color: #ff000019;
-  display: block;
-  width: 100%;
 }
 
 math-display {
   background-color:  #f6ff0019;
-  display: block;
-  width: 100%;
-}
-
-div[visible="false"] {
-  display: none;
 }
 
 #editor {
