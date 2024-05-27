@@ -5,6 +5,7 @@ export enum AcceptedFileTypes {
   Unknown = "",
   Coq = "v",
   CoqMD = "mv",
+  Lean = "lean",
 }
 
 /**

@@ -212,3 +212,53 @@ export function parseToAreasMV(text: string): Area[] {
   }
   return areas;
 }
+
+
+/**
+ * Converts a lean file with the ProofFlow genre into different areas for easier conversion to the Prosemirror format.
+ * @param text - The input text to parse.
+ * @returns An array of areas representing the parsed text.
+ */
+export function parseToAreasLean(text: string): Area[] {
+  let areas : Area[] = new Array();
+  let areatype: AreaType = AreaType.Code;
+  let startIndex = 0;
+  let skip = false;
+  for (let i = 0; i < text.length; i++) {
+    if (!text.startsWith(":::", i)) continue;
+    if (startIndex == 0) {
+      let area = new Area();
+      area.text = text.substring(startIndex, i);
+      area.areaType = areatype;
+      areas.push(area);
+    }
+    if (text.startsWith(":::text\n", i)) {
+      areatype = AreaType.Markdown;
+      startIndex = i + ":::text\n".length;
+      continue;
+    } else if (text.startsWith(":::math\n", i)) {
+      areatype = AreaType.Math;
+      startIndex = i + ":::math\n".length;
+      continue;
+    } else if (text.startsWith(":::code\n", i)) {
+      areatype = AreaType.Code;
+      startIndex = i + ":::code\n".length;
+      continue;
+    }
+
+    if (areatype == AreaType.Code && text.startsWith(":::", i)) {
+      let area = new Area();
+      area.text = text.substring(startIndex, i);
+      area.areaType = areatype;
+      areas.push(area);
+      console.log(startIndex, i);
+    } else if ((areatype == AreaType.Math || areatype == AreaType.Markdown) && text.startsWith(":::", i)) {
+      let area = new Area();
+      area.text = text.substring(startIndex, i);
+      area.areaType = areatype;
+      areas.push(area);
+      console.log(startIndex, i);
+    }
+  }
+  return areas;
+}
