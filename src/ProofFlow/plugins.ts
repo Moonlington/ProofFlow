@@ -16,6 +16,7 @@ import {
   cmdInsertMath,
 } from "./commands/commands";
 import { InsertionPlace } from "./commands/helpers";
+import { testPlugin } from "./plugins/plugin-markdown.ts";
 
 // Create input rules using default regex
 const blockMathInputRule = makeBlockMathInputRule(
@@ -35,6 +36,9 @@ export function createPlugins(schema: Schema): Plugin[] {
   // Add math plugin
   plugins.push(mathPlugin);
 
+  // Add test plugin
+  plugins.push(testPlugin);
+  
   // Add keymap plugin with keybindings for various commands
   plugins.push(
     keymap({
