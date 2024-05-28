@@ -1,10 +1,24 @@
 import { NodeType, Node } from "prosemirror-model";
-import { allowedToInsert, getContainingNode, getSelectionType, InsertionFunction } from "./helpers";
-import { Command, EditorState, NodeSelection, Transaction } from "prosemirror-state";
+import {
+  allowedToInsert,
+  getContainingNode,
+  getSelectionType,
+  InsertionFunction,
+} from "./helpers";
+import {
+  Command,
+  EditorState,
+  NodeSelection,
+  Transaction,
+} from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { GetPos } from "../CodeMirror/types.ts";
 import { CodeMirrorView } from "../CodeMirror";
-import { collapsibleContentType, collapsibleNodeType, collapsibleTitleNodeType } from "../nodetypes.ts";
+import {
+  collapsibleContentType,
+  collapsibleNodeType,
+  collapsibleTitleNodeType,
+} from "../nodetypes.ts";
 import { ProofFlowSchema } from "../proofflowschema.ts";
 
 /**
@@ -101,11 +115,13 @@ export function getCollapsibleInsertCommand(): Command {
     let textNode: Node = collapsibleTitleNodeType.create(null, [
       ProofFlowSchema.text("Collapsible: "),
     ]);
-    let contentNode: Node = collapsibleContentType.create(
-      { visible: true },
-      [oldNode],
-    )
-    let collapsibleNode: Node = collapsibleNodeType.create({}, [textNode, contentNode]);
+    let contentNode: Node = collapsibleContentType.create({ visible: true }, [
+      oldNode,
+    ]);
+    let collapsibleNode: Node = collapsibleNodeType.create({}, [
+      textNode,
+      contentNode,
+    ]);
     let trans: Transaction = state.tr;
     if (selectionType.isTextSelection) {
       let resolved = selection.$from;

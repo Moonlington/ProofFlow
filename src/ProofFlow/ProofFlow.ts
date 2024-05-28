@@ -32,7 +32,14 @@ import {
 } from "prosemirror-markdown";
 import { applyGlobalKeyBindings } from "./commands/shortcuts";
 import { Wrapper, WrapperType } from "./parser/wrapper.ts";
-import { mathblockNodeType, codeblockNodeType, collapsibleNodeType, markdownblockNodeType, collapsibleTitleNodeType, collapsibleContentType } from "./nodetypes.ts";
+import {
+  mathblockNodeType,
+  codeblockNodeType,
+  collapsibleNodeType,
+  markdownblockNodeType,
+  collapsibleTitleNodeType,
+  collapsibleContentType,
+} from "./nodetypes.ts";
 // CSS
 
 export class ProofFlow {
@@ -70,59 +77,75 @@ export class ProofFlow {
         return mathSerializer.serializeSlice(slice);
       },
       handleClickOn(view, pos, node, nodePos, event, direct) {
-          if (node.type.name === undefined || !direct) return;
+        if (node.type.name === undefined || !direct) return;
 
-          let trans = view.state.tr;
+        let trans = view.state.tr;
 
-          let cursorOffset = pos;
-          let thisPos = nodePos
-          let correctPos = 0;
-          let offsetToClicked = 0;
-          let newNodes = Array<Node>();
+        let cursorOffset = pos;
+        let thisPos = nodePos;
+        let correctPos = 0;
+        let offsetToClicked = 0;
+        let newNodes = Array<Node>();
 
-          view.state.doc.descendants((node, pos) => {
-            if (!(node.type.name === "markdown_rendered" || node.type.name === "collapsible" || node.type.name === "markdown" || node.type.name === "code_mirror" || node.type.name === "math_display")) return false;
+        view.state.doc.descendants((node, pos) => {
+          if (
+            !(
+              node.type.name === "markdown_rendered" ||
+              node.type.name === "collapsible" ||
+              node.type.name === "markdown" ||
+              node.type.name === "code_mirror" ||
+              node.type.name === "math_display"
+            )
+          )
+            return false;
 
-            // Check if the clicked node is the same as the current node
-            let isClickedNode: Boolean = pos <= thisPos && thisPos <= pos + node.nodeSize - 1;
-            let newNode: Node = node;
+          // Check if the clicked node is the same as the current node
+          let isClickedNode: Boolean =
+            pos <= thisPos && thisPos <= pos + node.nodeSize - 1;
+          let newNode: Node = node;
 
-            if (!isClickedNode && node.type.name === "markdown") {
-                const parsedContent = defaultMarkdownParser.parse(node.textContent);
+          if (!isClickedNode && node.type.name === "markdown") {
+            const parsedContent = defaultMarkdownParser.parse(node.textContent);
 
-                if (parsedContent) {
-                  const markdownRenderedNodeType = ProofFlowSchema.nodes["markdown_rendered"];
-                  newNode = markdownRenderedNodeType.create(null, parsedContent.content);
-                } 
-              }
-
-            // Check if this node position is the same as the clicked node position
-            else if (isClickedNode && node.type.name === "markdown_rendered") {
-                const serializedContent = defaultMarkdownSerializer.serialize(node);
-
-              // Create a new markdown node with the serialized content (a.k.a the raw text)
-              // Make sure the text is not empty, since creating an empty text cell is not allowed
-              let text = serializedContent == "" ? " " : serializedContent;
-              const markdownNodeType = ProofFlowSchema.nodes["markdown"];
-              newNode = markdownNodeType.create(null, [ProofFlowSchema.text(text)]);
-
-            } 
-
-            if (isClickedNode) {
-              offsetToClicked += cursorOffset - thisPos; 
-              correctPos = offsetToClicked;
+            if (parsedContent) {
+              const markdownRenderedNodeType =
+                ProofFlowSchema.nodes["markdown_rendered"];
+              newNode = markdownRenderedNodeType.create(
+                null,
+                parsedContent.content,
+              );
             }
+          }
 
-            offsetToClicked += newNode.nodeSize;
-            newNodes.push(newNode);
+          // Check if this node position is the same as the clicked node position
+          else if (isClickedNode && node.type.name === "markdown_rendered") {
+            const serializedContent = defaultMarkdownSerializer.serialize(node);
 
-          });
+            // Create a new markdown node with the serialized content (a.k.a the raw text)
+            // Make sure the text is not empty, since creating an empty text cell is not allowed
+            let text = serializedContent == "" ? " " : serializedContent;
+            const markdownNodeType = ProofFlowSchema.nodes["markdown"];
+            newNode = markdownNodeType.create(null, [
+              ProofFlowSchema.text(text),
+            ]);
+          }
 
-          trans.replaceWith(0, view.state.doc.content.size, newNodes);
-          trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos), -1));
-          view.dispatch(trans);
+          if (isClickedNode) {
+            offsetToClicked += cursorOffset - thisPos;
+            correctPos = offsetToClicked;
+          }
+
+          offsetToClicked += newNode.nodeSize;
+          newNodes.push(newNode);
+        });
+
+        trans.replaceWith(0, view.state.doc.content.size, newNodes);
+        trans.setSelection(
+          TextSelection.near(trans.doc.resolve(correctPos), -1),
+        );
+        view.dispatch(trans);
       },
-       
+
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
@@ -240,8 +263,11 @@ export class ProofFlow {
     let contentNode: Node = collapsibleContentType.create(
       { visible: true },
       contentNodes,
-    )
-    let collapsibleNode: Node = collapsibleNodeType.create({}, [textNode, contentNode]);
+    );
+    let collapsibleNode: Node = collapsibleNodeType.create({}, [
+      textNode,
+      contentNode,
+    ]);
     this.insertAtEnd(collapsibleNode);
   }
 

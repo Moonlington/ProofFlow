@@ -213,14 +213,13 @@ export function parseToAreasMV(text: string): Area[] {
   return areas;
 }
 
-
 /**
  * Converts a lean file with the ProofFlow genre into different areas for easier conversion to the Prosemirror format.
  * @param text - The input text to parse.
  * @returns An array of areas representing the parsed text.
  */
 export function parseToAreasLean(text: string): Area[] {
-  let areas : Area[] = new Array();
+  let areas: Area[] = new Array();
   let areatype: AreaType = AreaType.Code;
   let startIndex = 0;
   let skip = false;
@@ -252,7 +251,10 @@ export function parseToAreasLean(text: string): Area[] {
       area.areaType = areatype;
       areas.push(area);
       console.log(startIndex, i);
-    } else if ((areatype == AreaType.Math || areatype == AreaType.Markdown) && text.startsWith(":::", i)) {
+    } else if (
+      (areatype == AreaType.Math || areatype == AreaType.Markdown) &&
+      text.startsWith(":::", i)
+    ) {
       let area = new Area();
       area.text = text.substring(startIndex, i);
       area.areaType = areatype;
