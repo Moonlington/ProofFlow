@@ -91,7 +91,9 @@ export class ProofFlow {
           let newNodes = Array<Node>();
 
           view.state.doc.descendants((node, pos) => {
-            if (!(node.type.name === "markdown_rendered" || node.type.name === "collapsible" || node.type.name === "markdown" || node.type.name === "code_mirror" || node.type.name === "math_display")) return false;
+            if (!["markdown_rendered", "collapsible", "markdown", "code_mirror", "math_display", "input"].includes(node.type.name)) {
+              return false;
+            }
 
             // Check if the clicked node is the same as the current node
             let isClickedNode: Boolean = pos <= thisPos && thisPos <= pos + node.nodeSize - 1;
@@ -127,7 +129,7 @@ export class ProofFlow {
             newNodes.push(newNode);
 
           });
-
+          
           trans.replaceWith(0, view.state.doc.content.size, newNodes);
           trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos), -1));
           view.dispatch(trans);

@@ -1,10 +1,25 @@
 import { NodeType, Node } from "prosemirror-model";
-import { allowedToInsert, getContainingNode, getSelectionType, InsertionFunction } from "./helpers";
-import { Command, EditorState, NodeSelection, Transaction } from "prosemirror-state";
+import {
+  allowedToInsert,
+  getContainingNode,
+  getSelectionType,
+  InsertionFunction,
+} from "./helpers";
+import {
+  Command,
+  EditorState,
+  NodeSelection,
+  Transaction,
+} from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { GetPos } from "../CodeMirror/types.ts";
 import { CodeMirrorView } from "../CodeMirror";
-import { collapsibleContentType, collapsibleNodeType, collapsibleTitleNodeType } from "../nodetypes.ts";
+import {
+  collapsibleContentType,
+  collapsibleNodeType,
+  collapsibleTitleNodeType,
+  inputNodeType,
+} from "../nodetypes.ts";
 import { ProofFlowSchema } from "../proofflowschema.ts";
 
 /**
@@ -101,11 +116,13 @@ export function getCollapsibleInsertCommand(): Command {
     let textNode: Node = collapsibleTitleNodeType.create(null, [
       ProofFlowSchema.text("Collapsible: "),
     ]);
-    let contentNode: Node = collapsibleContentType.create(
-      { visible: true },
-      [oldNode],
-    )
-    let collapsibleNode: Node = collapsibleNodeType.create({}, [textNode, contentNode]);
+    let contentNode: Node = collapsibleContentType.create({ visible: true }, [
+      oldNode,
+    ]);
+    let collapsibleNode: Node = collapsibleNodeType.create({}, [
+      textNode,
+      contentNode,
+    ]);
     let trans: Transaction = state.tr;
     if (selectionType.isTextSelection) {
       let resolved = selection.$from;
@@ -113,6 +130,39 @@ export function getCollapsibleInsertCommand(): Command {
       trans.replaceWith(resolved.start() - 1, resolved.end(), collapsibleNode);
     } else if (selectionType.isNodeSelection) {
       trans.replaceSelectionWith(collapsibleNode);
+    }
+    if (dispatch && trans) dispatch(trans);
+    return true;
+  };
+}
+
+export function getInputInsertCommand(): Command {
+  return (
+    state: EditorState,
+    dispatch?: (tr: Transaction) => void,
+    view?: EditorView,
+  ): boolean => {
+    if (!allowedToInsert(state)) return false;
+    let selection = state.selection;
+    let parent = getContainingNode(selection);
+    if (parent == undefined || parent.type.name != "doc") return false;
+    let oldNode = null;
+    let selectionType = getSelectionType(selection);
+    if (selectionType.isTextSelection) {
+      oldNode = selection.$from.node();
+    } else if (selectionType.isNodeSelection) {
+      oldNode = (selection as NodeSelection).node;
+    }
+    if (oldNode == null) return false;
+
+    let contentNode: Node = oldNode;
+    let inputNode: Node = inputNodeType.create({}, [contentNode]);
+    let trans: Transaction = state.tr;
+    if (selectionType.isTextSelection) {
+      let resolved = selection.$from;
+      trans.replaceWith(resolved.start() - 1, resolved.end(), inputNode);
+    } else if (selectionType.isNodeSelection) {
+      trans.replaceSelectionWith(inputNode);
     }
     if (dispatch && trans) dispatch(trans);
     return true;

@@ -101,3 +101,7 @@ div[visible="false"] {
 #container {
   min-width: 605px;
 }
+
+.input {
+  border-left: 5px solid blue;
+}
