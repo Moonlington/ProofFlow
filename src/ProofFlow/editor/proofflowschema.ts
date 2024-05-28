@@ -94,35 +94,45 @@ export const ProofFlowSchema: Schema = new Schema({
     paragraph: {
       content: "inline*",
       group: "block",
-      parseDOM: [{tag: "p"}],
-      toDOM() { return ["p", 0] }
+      parseDOM: [{ tag: "p" }],
+      toDOM() {
+        return ["p", 0];
+      },
     },
 
     blockquote: {
       content: "block+",
       group: "block",
-      parseDOM: [{tag: "blockquote"}],
-      toDOM() { return ["blockquote", 0] }
+      parseDOM: [{ tag: "blockquote" }],
+      toDOM() {
+        return ["blockquote", 0];
+      },
     },
 
     horizontal_rule: {
       group: "block",
-      parseDOM: [{tag: "hr"}],
-      toDOM() { return ["div", ["hr"]] }
+      parseDOM: [{ tag: "hr" }],
+      toDOM() {
+        return ["div", ["hr"]];
+      },
     },
 
     heading: {
-      attrs: {level: {default: 1}},
+      attrs: { level: { default: 1 } },
       content: "(text | image)*",
       group: "block",
       defining: true,
-      parseDOM: [{tag: "h1", attrs: {level: 1}},
-                 {tag: "h2", attrs: {level: 2}},
-                 {tag: "h3", attrs: {level: 3}},
-                 {tag: "h4", attrs: {level: 4}},
-                 {tag: "h5", attrs: {level: 5}},
-                 {tag: "h6", attrs: {level: 6}}],
-      toDOM(node) { return ["h" + node.attrs.level, 0] }
+      parseDOM: [
+        { tag: "h1", attrs: { level: 1 } },
+        { tag: "h2", attrs: { level: 2 } },
+        { tag: "h3", attrs: { level: 3 } },
+        { tag: "h4", attrs: { level: 4 } },
+        { tag: "h5", attrs: { level: 5 } },
+        { tag: "h6", attrs: { level: 6 } },
+      ],
+      toDOM(node) {
+        return ["h" + node.attrs.level, 0];
+      },
     },
 
     code_block: {
@@ -131,68 +141,115 @@ export const ProofFlowSchema: Schema = new Schema({
       code: true,
       defining: true,
       marks: "",
-      attrs: {params: {default: ""}},
-      parseDOM: [{tag: "pre", preserveWhitespace: "full", getAttrs: node => (
-        {params: (node as HTMLElement).getAttribute("data-params") || ""}
-      )}],
-      toDOM(node) { return ["pre", node.attrs.params ? {"data-params": node.attrs.params} : {}, ["code", 0]] }
+      attrs: { params: { default: "" } },
+      parseDOM: [
+        {
+          tag: "pre",
+          preserveWhitespace: "full",
+          getAttrs: (node) => ({
+            params: (node as HTMLElement).getAttribute("data-params") || "",
+          }),
+        },
+      ],
+      toDOM(node) {
+        return [
+          "pre",
+          node.attrs.params ? { "data-params": node.attrs.params } : {},
+          ["code", 0],
+        ];
+      },
     },
 
     ordered_list: {
       content: "list_item+",
       group: "block",
-      attrs: {order: {default: 1}, tight: {default: false}},
-      parseDOM: [{tag: "ol", getAttrs(dom) {
-        return {order: (dom as HTMLElement).hasAttribute("start") ? +(dom as HTMLElement).getAttribute("start")! : 1,
-                tight: (dom as HTMLElement).hasAttribute("data-tight")}
-      }}],
+      attrs: { order: { default: 1 }, tight: { default: false } },
+      parseDOM: [
+        {
+          tag: "ol",
+          getAttrs(dom) {
+            return {
+              order: (dom as HTMLElement).hasAttribute("start")
+                ? +(dom as HTMLElement).getAttribute("start")!
+                : 1,
+              tight: (dom as HTMLElement).hasAttribute("data-tight"),
+            };
+          },
+        },
+      ],
       toDOM(node) {
-        return ["ol", {start: node.attrs.order == 1 ? null : node.attrs.order,
-                       "data-tight": node.attrs.tight ? "true" : null}, 0]
-      }
+        return [
+          "ol",
+          {
+            start: node.attrs.order == 1 ? null : node.attrs.order,
+            "data-tight": node.attrs.tight ? "true" : null,
+          },
+          0,
+        ];
+      },
     },
 
     bullet_list: {
       content: "list_item+",
       group: "block",
-      attrs: {tight: {default: false}},
-      parseDOM: [{tag: "ul", getAttrs: dom => ({tight: (dom as HTMLElement).hasAttribute("data-tight")})}],
-      toDOM(node) { return ["ul", {"data-tight": node.attrs.tight ? "true" : null}, 0] }
+      attrs: { tight: { default: false } },
+      parseDOM: [
+        {
+          tag: "ul",
+          getAttrs: (dom) => ({
+            tight: (dom as HTMLElement).hasAttribute("data-tight"),
+          }),
+        },
+      ],
+      toDOM(node) {
+        return ["ul", { "data-tight": node.attrs.tight ? "true" : null }, 0];
+      },
     },
 
     list_item: {
       content: "block+",
       defining: true,
-      parseDOM: [{tag: "li"}],
-      toDOM() { return ["li", 0] }
+      parseDOM: [{ tag: "li" }],
+      toDOM() {
+        return ["li", 0];
+      },
     },
 
     image: {
       inline: true,
       attrs: {
         src: {},
-        alt: {default: null},
-        title: {default: null}
+        alt: { default: null },
+        title: { default: null },
       },
       group: "inline",
       draggable: true,
-      parseDOM: [{tag: "img[src]", getAttrs(dom) {
-        return {
-          src: (dom as HTMLElement).getAttribute("src"),
-          title: (dom as HTMLElement).getAttribute("title"),
-          alt: (dom as HTMLElement).getAttribute("alt")
-        }
-      }}],
-      toDOM(node) { return ["img", node.attrs] }
+      parseDOM: [
+        {
+          tag: "img[src]",
+          getAttrs(dom) {
+            return {
+              src: (dom as HTMLElement).getAttribute("src"),
+              title: (dom as HTMLElement).getAttribute("title"),
+              alt: (dom as HTMLElement).getAttribute("alt"),
+            };
+          },
+        },
+      ],
+      toDOM(node) {
+        return ["img", node.attrs];
+      },
     },
 
     hard_break: {
       inline: true,
       group: "inline",
       selectable: false,
-      parseDOM: [{tag: "br"}],
-      toDOM() { return ["br"] }
-    }
+      parseDOM: [{ tag: "br" }],
+      toDOM() {
+        return ["br"];
+      },
+    },
   },
   marks: {
     /**

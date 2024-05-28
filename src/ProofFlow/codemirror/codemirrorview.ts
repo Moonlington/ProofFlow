@@ -2,7 +2,7 @@
  *  Adapted from https://github.com/sibiraj-s/prosemirror-codemirror-6
  *--------------------------------------------------------*/
 
-import {Selection, TextSelection, Transaction} from "prosemirror-state";
+import { Selection, TextSelection, Transaction } from "prosemirror-state";
 import type { EditorView, NodeView } from "prosemirror-view";
 import type { Node as ProsemirrorNode } from "prosemirror-model";
 import { exitCode } from "prosemirror-commands";
@@ -13,10 +13,9 @@ import {
 import { Command, EditorView as CMView, keymap } from "@codemirror/view";
 import type { ComputeChange, CodeMirrorViewOptions } from "./types.ts";
 
-
 const computeChange = (
-    oldVal: string,
-    newVal: string,
+  oldVal: string,
+  newVal: string,
 ): ComputeChange | null => {
   if (oldVal === newVal) {
     return null;
@@ -27,17 +26,17 @@ const computeChange = (
   let newEnd = newVal.length;
 
   while (
-      start < oldEnd &&
-      oldVal.charCodeAt(start) === newVal.charCodeAt(start)
-      ) {
+    start < oldEnd &&
+    oldVal.charCodeAt(start) === newVal.charCodeAt(start)
+  ) {
     start += 1;
   }
 
   while (
-      oldEnd > start &&
-      newEnd > start &&
-      oldVal.charCodeAt(oldEnd - 1) === newVal.charCodeAt(newEnd - 1)
-      ) {
+    oldEnd > start &&
+    newEnd > start &&
+    oldVal.charCodeAt(oldEnd - 1) === newVal.charCodeAt(newEnd - 1)
+  ) {
     oldEnd -= 1;
     newEnd -= 1;
   }
@@ -56,8 +55,6 @@ class CodeMirrorView implements NodeView {
   cm: CMView;
   getPos: () => number;
   updating = false;
-
-
 
   static instances: CodeMirrorView[] = [];
   static instanceCount: number = 0;
@@ -86,7 +83,6 @@ class CodeMirrorView implements NodeView {
 
     // The editor's outer node is our DOM representation
     this.dom = this.cm.dom;
-
 
     // Keymaps for the codemirror editor
     const tabKeymap = keymap.of([
@@ -147,16 +143,19 @@ class CodeMirrorView implements NodeView {
     CodeMirrorView.instances.push(this);
     console.log(CodeMirrorView.instances);
     // Ensure the selection is synchronized from ProseMirror to codemirror
-    this._outerView.dom.addEventListener('focus', () => this.forwardSelection());
+    this._outerView.dom.addEventListener("focus", () =>
+      this.forwardSelection(),
+    );
   }
 
   /**
    *  Method to find a CodeMirrorView instance by its position in the ProseMirror document
    */
   static findByPos(pos: number): CodeMirrorView | null {
-    return CodeMirrorView.instances.find(
-        (instance) => instance.getPos() === pos
-    ) || null;
+    return (
+      CodeMirrorView.instances.find((instance) => instance.getPos() === pos) ||
+      null
+    );
   }
 
   /**
@@ -183,17 +182,18 @@ class CodeMirrorView implements NodeView {
     });
   }
 
-
   /**
    * Method to blur the CodeMirror instance when other instances are focused
    */
   blurInstance() {
     this.cm.dispatch({
-      selection: { anchor: this.cm.state.selection.main.head, head: this.cm.state.selection.main.head },
-      scrollIntoView: false
+      selection: {
+        anchor: this.cm.state.selection.main.head,
+        head: this.cm.state.selection.main.head,
+      },
+      scrollIntoView: false,
     });
     CodeMirrorView.focused = null;
-
   }
 
   // Converts the codemirror selection to a ProseMirror selection
@@ -221,13 +221,13 @@ class CodeMirrorView implements NodeView {
       }
 
       const content = change.text
-          ? this._outerView.state.schema.text(change.text)
-          : null;
+        ? this._outerView.state.schema.text(change.text)
+        : null;
 
       const tr = this._outerView.state.tr.replaceWith(
-          change.from + start,
-          change.to + start,
-          content as ProsemirrorNode,
+        change.from + start,
+        change.to + start,
+        content as ProsemirrorNode,
       );
       this._outerView.dispatch(tr);
       this.forwardSelection();
@@ -256,27 +256,25 @@ class CodeMirrorView implements NodeView {
       const lastLine = state.doc.lineAt(state.doc.length).number;
 
       if (
-          hasSelection ||
-          pos.line !== (dir < 0 ? firstLine : lastLine) ||
-          (unit === "char" &&
-              pos.ch !== (dir < 0 ? 0 : state.doc.line(pos.line).length))
+        hasSelection ||
+        pos.line !== (dir < 0 ? firstLine : lastLine) ||
+        (unit === "char" &&
+          pos.ch !== (dir < 0 ? 0 : state.doc.line(pos.line).length))
       ) {
         return false;
       }
 
       const targetPos = this.getPos() + (dir < 0 ? 0 : this.node.nodeSize);
       const pmSelection = Selection.near(
-          this._outerView.state.doc.resolve(targetPos),
-          dir,
+        this._outerView.state.doc.resolve(targetPos),
+        dir,
       );
       this._outerView.dispatch(
-          this._outerView.state.tr.setSelection(pmSelection).scrollIntoView(),
+        this._outerView.state.tr.setSelection(pmSelection).scrollIntoView(),
       );
       this._outerView.focus();
       return true;
     };
-
-
   }
 
   /**
@@ -290,8 +288,8 @@ class CodeMirrorView implements NodeView {
 
     this.node = node;
     const change = computeChange(
-        this.cm.state.doc.toString(),
-        node.textContent,
+      this.cm.state.doc.toString(),
+      node.textContent,
     );
 
     if (change) {
@@ -333,7 +331,7 @@ class CodeMirrorView implements NodeView {
   destroy() {
     this.cm.destroy();
     CodeMirrorView.instances = CodeMirrorView.instances.filter(
-        (instance) => instance !== this
+      (instance) => instance !== this,
     );
   }
 }

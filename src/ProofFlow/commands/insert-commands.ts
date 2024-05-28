@@ -1,10 +1,23 @@
 import { NodeType } from "prosemirror-model";
-import {allowedToInsert, getContainingNode, InsertionFunction} from "./helpers";
-import {Command, EditorState, NodeSelection, Transaction} from "prosemirror-state";
+import {
+  allowedToInsert,
+  getContainingNode,
+  InsertionFunction,
+} from "./helpers";
+import {
+  Command,
+  EditorState,
+  NodeSelection,
+  Transaction,
+} from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { GetPos } from "../codemirror/types.ts";
 import { CodeMirrorView } from "../codemirror";
-import { collapsibleContentType, collapsibleNodeType, collapsibleTitleNodeType } from "../editor/nodetypes.ts";
+import {
+  collapsibleContentType,
+  collapsibleNodeType,
+  collapsibleTitleNodeType,
+} from "../editor/nodetypes.ts";
 import { ProofFlowSchema } from "../editor/proofflowschema.ts";
 
 /**
@@ -78,4 +91,3 @@ export function getCodeInsertCommand(
     return true;
   };
 }
-

@@ -55,14 +55,19 @@ export class ButtonBar {
         this.addButton(column, "Delete", () => {
           if (this._editorView.state.selection instanceof NodeSelection) {
             // this works for math nodes
-            deleteSelection(this._editorView.state, this._editorView.dispatch)
+            deleteSelection(this._editorView.state, this._editorView.dispatch);
           } else {
             // this works for markdown and code blocks
             const depth = this._editorView.state.selection.$head.depth;
             const tr = this._editorView.state.tr;
-            this._editorView.dispatch(tr.delete(this._editorView.state.selection.$head.before(depth), this._editorView.state.selection.$head.after(depth)));
+            this._editorView.dispatch(
+              tr.delete(
+                this._editorView.state.selection.$head.before(depth),
+                this._editorView.state.selection.$head.after(depth),
+              ),
+            );
           }
-      });
+        });
       } else if (i === columnCount - 2) {
         // Add undo and redo buttons
         this.addButton(column, "Undo", () =>
