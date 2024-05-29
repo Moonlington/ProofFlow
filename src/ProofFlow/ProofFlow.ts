@@ -2,7 +2,7 @@ import { Schema, DOMParser, NodeType, Node } from "prosemirror-model";
 import { CodeMirrorView } from "./CodeMirror";
 import type { GetPos } from "./CodeMirror/types";
 import { ProofFlowSchema } from "./proofflowschema.ts";
-import { isClickedNode, renderedToMarkdown, markdownToRendered, wrapperCells} from "./commands/helpers.ts";
+import { isClickedNode, renderedToMarkdown, markdownToRendered, highLevelCells} from "./commands/helpers.ts";
 import {
   EditorState,
   EditorStateConfig,
@@ -77,61 +77,65 @@ export class ProofFlow {
         return mathSerializer.serializeSlice(slice);
       },
       handleClickOn(view, pos, node, nodePos, event, direct) {
-        if (node.type.name === undefined || !direct) return;
-        console.log(node.type.name)
-        let trans = view.state.tr;
+        if (node.type.name === undefined || !direct) return; // If the node being clicked is not a valid node or the click is not a user action, return
 
+        let trans = view.state.tr;
         let cursorOffset = pos;
         let clickedPos = nodePos;
         let correctPos = 0;
         let offsetToClicked = 0;
         let newNodes = Array<Node>();
-        console.log(node.type.name)
+
+        // Go through all the descendants of the document node
         view.state.doc.descendants((node, pos) => {
-          if (
-            !(
-              node.type.name === "markdown_rendered" ||
-              node.type.name === "collapsible" ||
-              node.type.name === "markdown" ||
-              node.type.name === "code_mirror" ||
-              node.type.name === "math_display"
-            )
-          )
-            return false;
+          if (!highLevelCells.includes(node.type.name))
+            return false; // Makes sure we do not treat low level nodes such as paragraphs or text nodes, cause duplication would occur
+
+          // If we are either in the clicked on markdown node or in a code_mirror or math_display node no further cases will apply
+          // hence this node will not be re-assigned and we just re-use the original node
+          let newNode: Node = node; 
+          let bIsClickedNode: boolean = isClickedNode(node, pos, clickedPos);
+          // Case: This is the clicked on rendered markdown node, hence we need to replace it with a markdown node
+          if (bIsClickedNode && node.type.name === "markdown_rendered") {
+            newNode = renderedToMarkdown(node, ProofFlowSchema);             
+          } 
+
+          // Case: This is a not-clicked-on markdown node, hence we need to render it to markdown_rendered
+          else if (!bIsClickedNode && node.type.name === "markdown") {
+            newNode = markdownToRendered(node, ProofFlowSchema);             
+          } 
 
           // Case: We are in a collapsible content node and hence need to add the new node
-          // to the "collapsible" parent node instead of directly to the doc
-          if (isClickedNode(node, pos, clickedPos) && node.type.name === "markdown_rendered") {
-            newNodes.push(renderedToMarkdown(node, ProofFlowSchema));
-          } else if (!isClickedNode(node, pos, clickedPos) && node.type.name === "markdown") {
-            newNodes.push(markdownToRendered(node, ProofFlowSchema));
-          } else if (wrapperCells.includes(node.type.name)) {
-            newNodes.push(node);
-          }
+          // to the "collapsible" parent node and then replace the old collapsible content node
+          else if (node.type.name === "collapsible") {
+            let collapsibleParentNode: Node = node; // Get the collapsible parent node
+            let collapsibleTitleNode: Node = collapsibleParentNode.firstChild!; // Get the collapsible title node
+            let collapsibleContentNode: Node = collapsibleParentNode.child(1)!; // Get the collapsible content node
+            let newCollapsibleChildNodes: Node[] = Array<Node>();
 
-          if (node.type.name === "collapsible") {
-            let collapsibleParentNode = node; // Get the collapsible parent node
-            let collapsibleTitleNode = collapsibleParentNode.firstChild!; // Get the collapsible title node
-            let collapsibleContentNode = collapsibleParentNode.child(1)!; // Get the collapsible content node
-            let newCollapsibleChildNodes = Array<Node>();
+            // Start position of the collapsible content node is the start of the collapsible node + its size
             let collapsibleParentPos = pos + collapsibleTitleNode.nodeSize;
 
             // Go trough all the descendants of the collapsible content node
             collapsibleContentNode.descendants((node, pos) => {
-              
+              if (!highLevelCells.includes(node.type.name))
+                return false; // Makes sure we do not treat low level nodes such as paragraphs or text nodes, cause duplication would occur
+
+              // If we are either in the clicked on markdown node or in a code_mirror or math_display node no further cases will apply
+              // hence this node will not be re-assigned and we just re-use the original node
+              let newChildNode: Node = node;
+              let bIsClickedCollapsibleNode: boolean = isClickedNode(node, collapsibleParentPos + pos, clickedPos);
+
               // If the child node is the clicked markdown_rendered node, replace it with a markdown node
-              console.log("Node: ", node.type.name, "Pos: ", collapsibleParentPos, "ClickedPos: ", clickedPos)
-              if (isClickedNode(node, collapsibleParentPos + pos, clickedPos) && node.type.name === "markdown_rendered") {
-                newCollapsibleChildNodes.push(renderedToMarkdown(node, ProofFlowSchema));
+              if (bIsClickedCollapsibleNode && node.type.name === "markdown_rendered") {
+                newChildNode = renderedToMarkdown(node, ProofFlowSchema);
               } 
               // If it is not the clicked node and it is a markdown node, render it to markdown_rendered
-              else if (!isClickedNode(node, collapsibleParentPos + pos, clickedPos) && node.type.name === "markdown") {
-                newCollapsibleChildNodes.push(markdownToRendered(node, ProofFlowSchema));
+              else if (!bIsClickedCollapsibleNode && node.type.name === "markdown") {
+                newChildNode = markdownToRendered(node, ProofFlowSchema);
               } 
               // If it is neither the clicked markdown_rendered node nor a markdown node, add it as is
-              else if (wrapperCells.includes(node.type.name)) {
-                newCollapsibleChildNodes.push(node);
-              }
+              newCollapsibleChildNodes.push(newChildNode);
             }); 
 
             // Create the new collapsible content node with the new child nodes
@@ -139,11 +143,11 @@ export class ProofFlow {
 
             // Replace the old colllapsible content child node of the collapsible parent node with the new one
             let newCollapsibleNode = collapsibleNodeType.create({}, [collapsibleTitleNode, newCollapsibleContentNode]);
-            newNodes.push(newCollapsibleNode); // Push the new collapsible node to the new nodes array
-            return false;
-          }
-         
+            newNode = newCollapsibleNode;            
+          } 
 
+          newNodes.push(newNode); // Push the new node to the new nodes array
+         
           /*if (isClickedNode) {
             offsetToClicked += cursorOffset - thisPos;
             correctPos = offsetToClicked;

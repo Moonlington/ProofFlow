@@ -20,7 +20,7 @@ export enum InsertionPlace {
   Underneath, // Insert underneath the current selection
 }
 
-export const wrapperCells: string[] = new Array("code_mirror", "math_display", "markdown", "markdown_rendered");
+export const highLevelCells: string[] = new Array("code_mirror", "math_display", "markdown", "markdown_rendered", "collapsible");
 
 /**
  * Represents a function that performs an insertion operation in the editor.
