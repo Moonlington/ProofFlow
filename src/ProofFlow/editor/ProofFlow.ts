@@ -25,6 +25,7 @@ import { ButtonBar } from "./ButtonBar.ts";
 import { getContent } from "../outputparser/savefile.ts";
 
 import { basicSetup } from "codemirror";
+import { EditorView as CMView } from "@codemirror/view";
 import { javascript } from "@codemirror/lang-javascript";
 import {
   defaultMarkdownParser,
@@ -192,12 +193,12 @@ export class ProofFlow {
       selection.$anchor.parent.type.name === "code_mirror"
     ) {
       const pos = selection.$anchor.before(selection.$anchor.depth);
-      const cmView = CodeMirrorView.findByPos(pos);
+      const currentCodeMirror = CodeMirrorView.findByPos(pos);
 
       // Check for not null (TypeScript mandates)
-      if (cmView) {
+      if (currentCodeMirror) {
         console.log("Moving from codemirror");
-        cmView.blurInstance();
+        currentCodeMirror.blurInstance();
       }
     }
   }
