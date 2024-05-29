@@ -105,3 +105,7 @@ div[visible="false"] {
 .input {
   border-left: 5px solid blue;
 }
+
+#input-button {
+  visibility: hidden;
+}

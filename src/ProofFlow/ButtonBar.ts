@@ -10,6 +10,7 @@ import { NodeSelection, Selection } from "prosemirror-state";
 import { Node } from "prosemirror-model";
 import { deleteSelection } from "prosemirror-commands";
 import { undo, redo } from "prosemirror-history";
+import { getInputInsertCommand } from "./commands/insert-commands";
 
 /**
  * Represents a button bar for interacting with an editor.
@@ -68,6 +69,10 @@ export class ButtonBar {
             );
           }
         });
+        this.addButton(column, "Input", () => {
+          let command = getInputInsertCommand();
+          command(this._editorView.state, this._editorView.dispatch);
+        });
       } else if (i === columnCount - 2) {
         // Add undo and redo buttons
         this.addButton(column, "Undo", () =>
@@ -97,6 +102,7 @@ export class ButtonBar {
   addButton(column: HTMLElement, label: string, callback: () => void) {
     const button = document.createElement("button");
     button.textContent = label;
+    button.id = label.toLowerCase() + "-button";
     button.addEventListener("click", callback);
     column.appendChild(button);
   }

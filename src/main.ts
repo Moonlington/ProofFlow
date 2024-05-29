@@ -7,6 +7,7 @@ import "./ProofFlow.css";
 import "./index.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
+import { switchUserMode } from "./ProofFlow/UserMode/userMode";
 
 // Get the editor and content elements
 const editorElement: HTMLElement = document.querySelector("#editor")!;
@@ -14,6 +15,8 @@ const contentElement: HTMLElement = document.querySelector("#content")!;
 
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
+
+export { proofFlow };
 
 // Button to create a new instance of the editor and content elements
 const buttonNewInstance = document.getElementById("newtextblock");
@@ -33,16 +36,14 @@ buttonNewInstance?.addEventListener("click", (e) => {
   proofFlow = new ProofFlow(editorElement, contentElement);
 });
 
-// Button to insert "hi" in the editor element
-// TODO: remove this button, it's just for testing
-const buttonInsertHi = document.getElementById("insert-hi");
-buttonInsertHi?.addEventListener("click", (e) => {
-  proofFlow.createTextArea("hi");
-});
-
 let buttonSaveFile = document.getElementById("save-file");
 buttonSaveFile?.addEventListener("click", (e) => {
   proofFlow.saveFile();
+});
+
+let userModeButton = document.getElementById("user-mode-button");
+userModeButton?.addEventListener("click", (e) => {
+  switchUserMode(userModeButton);
 });
 
 // Input to read file
