@@ -173,13 +173,13 @@ class CodeMirrorView implements NodeView {
       this._outerView.dispatch(state.tr.setSelection(selection));
     }
 
-    // Ensure only one cursor is active
-    CodeMirrorView.instances.forEach((instance) => {
-      if (instance !== this) {
-        instance.blurInstance(); // Remove focus from other CodeMirror instances
-        console.log("blurred", this.instanceNumber, instance.instanceNumber);
-      }
-    });
+    // // Ensure only one cursor is active
+    // CodeMirrorView.instances.forEach((instance) => {
+    //   if (instance !== this) {
+    //     instance.blurInstance(); // Remove focus from other CodeMirror instances
+    //     console.log("blurred", this.instanceNumber, instance.instanceNumber);
+    //   }
+    // });
   }
 
   /**
