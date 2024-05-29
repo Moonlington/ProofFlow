@@ -145,16 +145,14 @@ export class ProofFlow {
             let newCollapsibleNode = collapsibleNodeType.create({}, [collapsibleTitleNode, newCollapsibleContentNode]);
             newNode = newCollapsibleNode;            
           } 
-
-          newNodes.push(newNode); // Push the new node to the new nodes array
          
-          /*if (isClickedNode) {
-            offsetToClicked += cursorOffset - thisPos;
+          if (bIsClickedNode) {
+            offsetToClicked += cursorOffset - clickedPos;
             correctPos = offsetToClicked;
           }
 
           offsetToClicked += newNode.nodeSize;
-          newNodes.push(newNode);*/
+          newNodes.push(newNode); // Push the new node to the new nodes array
         });
 
         trans.replaceWith(0, view.state.doc.content.size, newNodes);
