@@ -57,9 +57,7 @@ class CodeMirrorView implements NodeView {
   updating = false;
 
   static instances: CodeMirrorView[] = [];
-  static instanceCount: number = 0;
   static focused: CodeMirrorView | null = null;
-  instanceNumber: number;
 
   constructor(options: CodeMirrorViewOptions) {
     // Store for later
@@ -137,11 +135,10 @@ class CodeMirrorView implements NodeView {
     });
 
     this.cm.setState(cmState);
-    this.instanceNumber = CodeMirrorView.instanceCount++;
 
-    console.log(`Created instance number ${this.instanceNumber}`);
+    // Add the newest instance to the list of instances
     CodeMirrorView.instances.push(this);
-    console.log(CodeMirrorView.instances);
+
     // Ensure the selection is synchronized from ProseMirror to codemirror
     this._outerView.dom.addEventListener("focus", () =>
       this.forwardSelection(),
@@ -159,7 +156,7 @@ class CodeMirrorView implements NodeView {
   }
 
   /**
-   * Method to move the cursor to the ProseMirror editor
+   * Method to move the cursor to the ProseMirrocr editor
    */
   forwardSelection() {
     if (!this.cm.hasFocus) {
@@ -173,26 +170,22 @@ class CodeMirrorView implements NodeView {
       this._outerView.dispatch(state.tr.setSelection(selection));
     }
 
-    // // Ensure only one cursor is active
-    // CodeMirrorView.instances.forEach((instance) => {
-    //   if (instance !== this) {
-    //     instance.blurInstance(); // Remove focus from other CodeMirror instances
-    //     console.log("blurred", this.instanceNumber, instance.instanceNumber);
-    //   }
-    // });
+    // Ensure only one cursor is active
+    if (CodeMirrorView.focused instanceof CodeMirrorView) {
+      CodeMirrorView.focused.blurInstance();
+    }
+
+    CodeMirrorView.focused = this;
   }
 
   /**
    * Method to blur the CodeMirror instance when other instances are focused
    */
   blurInstance() {
-    this.cm.dispatch({
-      selection: {
-        anchor: this.cm.state.selection.main.head,
-        head: this.cm.state.selection.main.head,
-      },
-      scrollIntoView: false,
-    });
+    this.setSelection(
+      this.cm.state.selection.main.head,
+      this.cm.state.selection.main.head,
+    );
     CodeMirrorView.focused = null;
   }
 
