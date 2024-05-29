@@ -12,14 +12,13 @@ import {
   Transaction,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { GetPos } from "../codemirror/types.ts";
-import { CodeMirrorView } from "../codemirror";
 import {
   collapsibleContentType,
   collapsibleNodeType,
   collapsibleTitleNodeType,
-} from "../editor/nodetypes.ts";
-import { ProofFlowSchema } from "../editor/proofflowschema.ts";
+  inputNodeType,
+} from "../editor/nodetypes";
+import { ProofFlowSchema } from "../editor/proofflowschema";
 
 /**
  * Returns a command function for inserting a node of type `mdNodeType`.

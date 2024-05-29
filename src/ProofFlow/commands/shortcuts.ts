@@ -5,6 +5,8 @@ import {
   getCollapsibleInsertCommand,
   getInputInsertCommand,
 } from "./insert-commands";
+import { proofFlow } from "../../main";
+import { UserMode } from "../UserMode/userMode";
 
 /**
  * Applies global key bindings to the editor view.
@@ -26,7 +28,11 @@ export function applyGlobalKeyBindings(editorView: EditorView): void {
       event.preventDefault();
       let command = getCollapsibleInsertCommand();
       command(editorView.state, editorView.dispatch);
-    } else if (event.key === "i" && (event.ctrlKey || event.metaKey)) {
+    } else if (
+      event.key === "i" &&
+      (event.ctrlKey || event.metaKey) &&
+      proofFlow.userMode === UserMode.Teacher
+    ) {
       event.preventDefault();
       let command = getInputInsertCommand();
       command(editorView.state, editorView.dispatch);

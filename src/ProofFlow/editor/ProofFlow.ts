@@ -40,6 +40,7 @@ import {
   collapsibleTitleNodeType,
   collapsibleContentType,
 } from "./nodetypes.ts";
+import { UserMode } from "../UserMode/userMode.ts";
 // CSS
 
 export class ProofFlow {
@@ -48,6 +49,8 @@ export class ProofFlow {
   private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
 
   private editorView: EditorView; // The view of the editor
+
+  public userMode: UserMode = UserMode.Student; // The teacher mode of the editor
 
   private fileName: string = "file.txt";
 
@@ -94,7 +97,8 @@ export class ProofFlow {
               node.type.name === "collapsible" ||
               node.type.name === "markdown" ||
               node.type.name === "code_mirror" ||
-              node.type.name === "math_display"
+              node.type.name === "math_display" ||
+              node.type.name === "input"
             )
           )
             return false;
