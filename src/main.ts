@@ -84,6 +84,8 @@ function readSingleFile(e: Event) {
         proofFlow.openOriginalCoqFile(result);
       } else if (fileType == AcceptedFileTypes.CoqMD) {
         proofFlow.openMarkdownCoqFile(result);
+      } else if (fileType == AcceptedFileTypes.Lean) {
+        proofFlow.openLeanFile(result);
       }
     }
   };

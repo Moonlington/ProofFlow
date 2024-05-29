@@ -16,6 +16,7 @@ import {
   cmdInsertMath,
 } from "./commands/commands";
 import { InsertionPlace } from "./commands/helpers";
+import { collapsibleAreaPlugin } from "./collapsiblearea.ts";
 import { testPlugin } from "./plugins/plugin-markdown.ts";
 
 // Create input rules using default regex
@@ -35,6 +36,8 @@ export function createPlugins(schema: Schema): Plugin[] {
 
   // Add math plugin
   plugins.push(mathPlugin);
+
+  plugins.push(collapsibleAreaPlugin);
 
   // Add test plugin
   plugins.push(testPlugin);
