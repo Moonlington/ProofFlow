@@ -17,7 +17,7 @@ import {
 } from "./commands/commands";
 import { InsertionPlace } from "./commands/helpers";
 import { collapsibleAreaPlugin } from "./collapsiblearea.ts";
-import { testPlugin } from "./plugins/plugin-markdown.ts";
+import { markdownPlugin } from "./plugins/plugin-markdown.ts";
 
 // Create input rules using default regex
 const blockMathInputRule = makeBlockMathInputRule(
@@ -39,8 +39,8 @@ export function createPlugins(schema: Schema): Plugin[] {
 
   plugins.push(collapsibleAreaPlugin);
 
-  // Add test plugin
-  plugins.push(testPlugin);
+  // Add markdown rendering plugin
+  plugins.push(markdownPlugin);
   
   // Add keymap plugin with keybindings for various commands
   plugins.push(
