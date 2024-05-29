@@ -115,6 +115,8 @@ export class ProofFlow {
 
             // Start position of the collapsible content node is the start of the collapsible node + its size
             let collapsibleParentPos = pos + collapsibleTitleNode.nodeSize;
+            // Position offset from the start of the collapsible node to the clicked child of collapsible content node
+            let innerOffsetToClicked = collapsibleTitleNode.nodeSize;
 
             // Go trough all the descendants of the collapsible content node
             collapsibleContentNode.descendants((node, pos) => {
@@ -134,6 +136,14 @@ export class ProofFlow {
               else if (!bIsClickedCollapsibleNode && node.type.name === "markdown") {
                 newChildNode = markdownToRendered(node, ProofFlowSchema);
               } 
+
+              if (bIsClickedCollapsibleNode) {
+                // Get the correct offset to where the clicked node will be in the new doc
+                // offset of 2 for the start of the collapsible node and the start of the collapsible content node
+                offsetToClicked += innerOffsetToClicked + 2;
+              }
+              innerOffsetToClicked += newChildNode.nodeSize;
+
               // If it is neither the clicked markdown_rendered node nor a markdown node, add it as is
               newCollapsibleChildNodes.push(newChildNode);
             }); 
@@ -149,6 +159,7 @@ export class ProofFlow {
           if (bIsClickedNode) {
             offsetToClicked += cursorOffset - clickedPos;
             correctPos = offsetToClicked;
+            console.log("Clicked pos: " + clickedPos + " offset to clicked: " + offsetToClicked + " correct pos: " + correctPos);
           }
 
           offsetToClicked += newNode.nodeSize;
