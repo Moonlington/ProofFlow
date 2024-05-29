@@ -139,7 +139,6 @@ class CodeMirrorView implements NodeView {
     // Add the newest instance to the list of instances
     CodeMirrorView.instances.push(this);
 
-
     // Ensure the selection is synchronized from ProseMirror to codemirror
     this._outerView.dom.addEventListener("focus", () =>
       this.forwardSelection(),
@@ -172,18 +171,21 @@ class CodeMirrorView implements NodeView {
     }
 
     // Ensure only one cursor is active
-      if (CodeMirrorView.focused instanceof CodeMirrorView) {
-        CodeMirrorView.focused.blurInstance();
-      }
+    if (CodeMirrorView.focused instanceof CodeMirrorView) {
+      CodeMirrorView.focused.blurInstance();
+    }
 
-      CodeMirrorView.focused = this;
+    CodeMirrorView.focused = this;
   }
 
   /**
    * Method to blur the CodeMirror instance when other instances are focused
    */
   blurInstance() {
-    this.setSelection(this.cm.state.selection.main.head,this.cm.state.selection.main.head)
+    this.setSelection(
+      this.cm.state.selection.main.head,
+      this.cm.state.selection.main.head,
+    );
     CodeMirrorView.focused = null;
   }
 
