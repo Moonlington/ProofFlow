@@ -1,20 +1,17 @@
 import { Schema, DOMParser, Node } from "prosemirror-model";
-import { CodeMirrorView } from "../codemirror";
-import type { GetPos } from "../codemirror/types.ts";
+import { CodeMirrorView } from "../CodeMirror/index.ts";
+import type { GetPos } from "../CodeMirror/types.ts";
 import { ProofFlowSchema } from "./proofflowschema.ts";
-import { isClickedNode, renderedToMarkdown, markdownToRendered, highLevelCells} from "./commands/helpers.ts";
 import {
   EditorState,
   EditorStateConfig,
   Transaction,
   Selection,
-  TextSelection,
-  NodeSelection,
 } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { createPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
-import { Area, AreaType } from "../parser/area.ts";
+import { AreaType } from "../parser/area.ts";
 import {
   parseToAreasMV,
   parseToAreasV,
@@ -25,12 +22,8 @@ import { ButtonBar } from "./ButtonBar.ts";
 import { getContent } from "../outputparser/savefile.ts";
 
 import { basicSetup } from "codemirror";
-import { EditorView as CMView } from "@codemirror/view";
 import { javascript } from "@codemirror/lang-javascript";
-import {
-  defaultMarkdownParser,
-  defaultMarkdownSerializer,
-} from "prosemirror-markdown";
+
 import { applyGlobalKeyBindings } from "../commands/shortcuts";
 import { Wrapper, WrapperType } from "../parser/wrapper.ts";
 import {

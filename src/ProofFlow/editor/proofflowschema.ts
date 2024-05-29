@@ -1,5 +1,5 @@
 import { Node, Schema } from "prosemirror-model";
-import { node as codeMirrorNode } from "../codemirror";
+import { node as codeMirrorNode } from "../CodeMirror";
 /**
  * The cell types available in ProofFlow.
  * Can be markdown, math_display, or codecell.

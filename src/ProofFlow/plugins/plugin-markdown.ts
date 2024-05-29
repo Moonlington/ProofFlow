@@ -1,11 +1,10 @@
-import {EditorState, Plugin} from "prosemirror-state";
+import { Plugin } from "prosemirror-state";
 import { Node } from "prosemirror-model";
 import { collapsibleContentType, collapsibleNodeType } from "../nodetypes.ts";
 import { TextSelection } from "prosemirror-state";
-import {EditorView} from "prosemirror-view";
-import { getContainingNode } from "../commands/helpers";
+
 import { isClickedNode, renderedToMarkdown, markdownToRendered, highLevelCells} from "../commands/helpers.ts";
-import { ProofFlowSchema } from "../proofflowschema.ts";
+import { ProofFlowSchema } from "../editor/proofflowschema.ts"
 
 export const markdownPlugin = new Plugin({
     
