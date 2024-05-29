@@ -7,7 +7,7 @@ import type { Node as ProsemirrorNode } from "prosemirror-model";
 import type { Extension } from "@codemirror/state";
 
 /**
- *  values used for calculating the change in the CodeMirror editor
+ *  values used for calculating the change in the codemirror editor
  *  to the ProseMirror editor
  */
 export interface ComputeChange {

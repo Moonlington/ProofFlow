@@ -27,6 +27,4 @@ const codeMirrorNodeSpec: NodeSpec = {
   },
 };
 
-// TODO: Add more custom node specs here
-
 export default codeMirrorNodeSpec;

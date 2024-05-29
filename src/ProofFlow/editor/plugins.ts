@@ -14,9 +14,9 @@ import {
   cmdInsertCode,
   cmdInsertMarkdown,
   cmdInsertMath,
-} from "./commands/commands";
-import { InsertionPlace } from "./commands/helpers";
-
+} from "../commands/commands.ts";
+import { InsertionPlace } from "../commands/helpers.ts";
+import { collapsibleAreaPlugin } from "../collapsiblearea.ts";
 // Create input rules using default regex
 const blockMathInputRule = makeBlockMathInputRule(
   REGEX_BLOCK_MATH_DOLLARS,
@@ -35,9 +35,17 @@ export function createPlugins(schema: Schema): Plugin[] {
   // Add math plugin
   plugins.push(mathPlugin);
 
+  plugins.push(collapsibleAreaPlugin);
+
   // Add keymap plugin with keybindings for various commands
   plugins.push(
     keymap({
+      Tab: (state, dispatch) => {
+        if (dispatch) {
+          dispatch(state.tr.insertText("\t"));
+        }
+        return true;
+      },
       Backspace: deleteSelection,
       Delete: deleteSelection,
       Enter: newlineInCode, // This only works in code sections
