@@ -1,7 +1,8 @@
-import { NodeType } from "prosemirror-model";
+import { NodeType, Node } from "prosemirror-model";
 import {
   allowedToInsert,
   getContainingNode,
+  getSelectionType,
   InsertionFunction,
 } from "./helpers";
 import {
@@ -88,6 +89,48 @@ export function getCodeInsertCommand(
     trans = insertionFunction(state, state.tr, codeblockNodeType);
     if (dispatch && trans) dispatch(trans);
 
+    return true;
+  };
+}
+
+export function getCollapsibleInsertCommand(): Command {
+  return (
+    state: EditorState,
+    dispatch?: (tr: Transaction) => void,
+    view?: EditorView,
+  ): boolean => {
+    if (!allowedToInsert(state)) return false;
+    let selection = state.selection;
+    let parent = getContainingNode(selection);
+    if (parent == undefined || parent.type.name != "doc") return false;
+    let oldNode = null;
+    let selectionType = getSelectionType(selection);
+    if (selectionType.isTextSelection) {
+      oldNode = selection.$from.node();
+    } else if (selectionType.isNodeSelection) {
+      oldNode = (selection as NodeSelection).node;
+    }
+    if (oldNode == null) return false;
+
+    let textNode: Node = collapsibleTitleNodeType.create(null, [
+      ProofFlowSchema.text("Collapsible: "),
+    ]);
+    let contentNode: Node = collapsibleContentType.create({ visible: true }, [
+      oldNode,
+    ]);
+    let collapsibleNode: Node = collapsibleNodeType.create({}, [
+      textNode,
+      contentNode,
+    ]);
+    let trans: Transaction = state.tr;
+    if (selectionType.isTextSelection) {
+      let resolved = selection.$from;
+      console.log(resolved.start(), resolved.end());
+      trans.replaceWith(resolved.start() - 1, resolved.end(), collapsibleNode);
+    } else if (selectionType.isNodeSelection) {
+      trans.replaceSelectionWith(collapsibleNode);
+    }
+    if (dispatch && trans) dispatch(trans);
     return true;
   };
 }

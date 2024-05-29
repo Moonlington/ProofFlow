@@ -33,7 +33,7 @@ collapsible_title {
   border-style: dashed;
 }
 
-code-mirror {
+codecell {
   background-color: #2701ff19;
   display: block;
   width: 100%;
