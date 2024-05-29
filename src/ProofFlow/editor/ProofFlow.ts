@@ -26,13 +26,12 @@ import { getContent } from "../outputparser/savefile.ts";
 
 import { basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
-import { applyGlobalKeyBindings } from "../commands/shortcuts.ts";
 import {
   defaultMarkdownParser,
   defaultMarkdownSerializer,
 } from "prosemirror-markdown";
 import { applyGlobalKeyBindings } from "../commands/shortcuts";
-import { Wrapper, WrapperType } from "./parser/wrapper.ts";
+import { Wrapper, WrapperType } from "../parser/wrapper.ts";
 import {
   mathblockNodeType,
   codeblockNodeType,
@@ -203,15 +202,6 @@ export class ProofFlow {
     }
   }
 
-  /**
-   * Opens the original Coq file and creates text or code areas based on the parsed content.
-   *
-   * @param text - The content of the Coq file.
-   */
-  public openOriginalCoqFile(text: string): void {
-    // Parse the text to create the proof flow
-    let wrappers = parseToProofFlow(text, parseToAreasV);
-    console.log(wrappers);
   public openFile(wrappers: Wrapper[]): void {
     // console.log(wrappers);
     for (let wrapper of wrappers) {
