@@ -1,6 +1,6 @@
-import { Schema, DOMParser, NodeType, Node } from "prosemirror-model";
-import { CodeMirrorView } from "./CodeMirror";
-import type { GetPos } from "./CodeMirror/types";
+import { Schema, DOMParser, Node } from "prosemirror-model";
+import { CodeMirrorView } from "../codemirror";
+import type { GetPos } from "../codemirror/types.ts";
 import { ProofFlowSchema } from "./proofflowschema.ts";
 import { isClickedNode, renderedToMarkdown, markdownToRendered, highLevelCells} from "./commands/helpers.ts";
 import {
@@ -14,24 +14,25 @@ import {
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { createPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
-import { Area, AreaType } from "./parser/area";
+import { Area, AreaType } from "../parser/area.ts";
 import {
   parseToAreasMV,
   parseToAreasV,
   parseToProofFlow,
   parseToAreasLean,
-} from "./parser/parse-to-proofflow.ts";
-import { ButtonBar } from "./ButtonBar";
-import { getContent } from "./outputparser/savefile";
-import { schema } from "prosemirror-markdown";
-import { minimalSetup } from "codemirror";
+} from "../parser/parse-to-proofflow.ts";
+import { ButtonBar } from "./ButtonBar.ts";
+import { getContent } from "../outputparser/savefile.ts";
+
+import { basicSetup } from "codemirror";
+import { EditorView as CMView } from "@codemirror/view";
 import { javascript } from "@codemirror/lang-javascript";
 import {
   defaultMarkdownParser,
   defaultMarkdownSerializer,
 } from "prosemirror-markdown";
-import { applyGlobalKeyBindings } from "./commands/shortcuts";
-import { Wrapper, WrapperType } from "./parser/wrapper.ts";
+import { applyGlobalKeyBindings } from "../commands/shortcuts";
+import { Wrapper, WrapperType } from "../parser/wrapper.ts";
 import {
   mathblockNodeType,
   codeblockNodeType,
@@ -85,7 +86,11 @@ export class ProofFlow {
             view,
             getPos,
             cmOptions: {
-              extensions: [minimalSetup, javascript()],
+              extensions: [
+                // will be changed, and later code from basic setup will be added to the codebase
+                basicSetup,
+                javascript(),
+              ],
             },
           }),
       },
@@ -96,8 +101,37 @@ export class ProofFlow {
     const buttonBar = new ButtonBar(this._schema, this.editorView);
     buttonBar.render(this._editorElem);
 
-    // Apply global keymap and input rules
+    // Synchronize ProseMirror selection changes with codemirror
+    this.editorView.dom.addEventListener("focus", () => {
+      this.syncProseMirrorToCodeMirror();
+    });
+
+    // Apply global key bindings
     applyGlobalKeyBindings(this.editorView);
+  }
+
+  /**
+   * Synchronizes the ProseMirror selection with the CodeMirror selection.
+   * Helps with navigating from code mirror to other node types
+   */
+  syncProseMirrorToCodeMirror() {
+    const { state } = this.editorView;
+    const { selection } = state;
+
+    // Check if the current selection is within a code_mirror node
+    if (
+      selection.empty &&
+      selection.$anchor.parent.type.name === "code_mirror"
+    ) {
+      const pos = selection.$anchor.before(selection.$anchor.depth);
+      const currentCodeMirror = CodeMirrorView.findByPos(pos);
+
+      // Check for not null (TypeScript mandates)
+      if (currentCodeMirror) {
+        console.log("Moving from codemirror");
+        currentCodeMirror.blurInstance();
+      }
+    }
   }
 
   public openFile(wrappers: Wrapper[]): void {

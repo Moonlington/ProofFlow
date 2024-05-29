@@ -1,4 +1,4 @@
-import { ProofFlowSchema } from "./editor/proofflowschema";
+import { ProofFlowSchema } from "./proofflowschema.ts";
 
 export const mathblockNodeType = ProofFlowSchema.nodes["math_display"];
 export const codeblockNodeType = ProofFlowSchema.nodes["code_mirror"];
