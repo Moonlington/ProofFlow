@@ -23,7 +23,7 @@ export const ProofFlowSchema: Schema = new Schema({
     },
 
     input: {
-      content: `${containercontent}`,
+      content: `${containercontent}+`,
       parseDOM: [{ tag: "input" }],
       toDOM(node: Node) {
         return ["div", { class: "input" }, 0];
