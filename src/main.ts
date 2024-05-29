@@ -7,6 +7,7 @@ import "./ProofFlow/styles/ProofFlow.css";
 import "./ProofFlow/styles/index.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
+import {Utils} from "./ProofFlow/editor/utils.ts";
 
 // Get the editor and content elements
 const editorElement: HTMLElement = document.querySelector("#editor")!;
@@ -14,6 +15,7 @@ const contentElement: HTMLElement = document.querySelector("#content")!;
 
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
+let utils = new Utils();
 
 // Button to create a new instance of the editor and content elements
 const buttonNewInstance = document.getElementById("newtextblock");
@@ -31,18 +33,19 @@ buttonNewInstance?.addEventListener("click", (e) => {
 
   // Create a new instance of the ProofFlow class
   proofFlow = new ProofFlow(editorElement, contentElement);
+
 });
 
 // Button to insert "hi" in the editor element
 // TODO: remove this button, it's just for testing
 const buttonInsertHi = document.getElementById("insert-hi");
 buttonInsertHi?.addEventListener("click", (e) => {
-  proofFlow.createTextArea("hi");
+  utils.createTextArea("hi", proofFlow);
 });
 
 let buttonSaveFile = document.getElementById("save-file");
 buttonSaveFile?.addEventListener("click", (e) => {
-  proofFlow.saveFile();
+  utils.saveFile(proofFlow);
 });
 
 // Input to read file
@@ -77,15 +80,15 @@ function readSingleFile(e: Event) {
     if (readerEvent?.target?.result) {
       // Get the result from the reader event
       const result = readerEvent.target.result.toString();
-      proofFlow.setFileName(file.name);
+      utils.setFileName(file.name, proofFlow);
 
       // Process the file content
       if (fileType == AcceptedFileTypes.Coq) {
-        proofFlow.openOriginalCoqFile(result);
+        utils.openOriginalCoqFile(result, proofFlow);
       } else if (fileType == AcceptedFileTypes.CoqMD) {
-        proofFlow.openMarkdownCoqFile(result);
+        utils.openMarkdownCoqFile(result, proofFlow);
       } else if (fileType == AcceptedFileTypes.Lean) {
-        proofFlow.openLeanFile(result);
+        utils.openLeanFile(result, proofFlow);
       }
     }
   };

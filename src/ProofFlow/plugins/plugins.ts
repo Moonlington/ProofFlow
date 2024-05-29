@@ -9,14 +9,14 @@ import {
   makeBlockMathInputRule,
   REGEX_BLOCK_MATH_DOLLARS,
 } from "@benrbray/prosemirror-math";
-import { ProofFlowSchema } from "./proofflowschema.ts";
+import { ProofFlowSchema } from "../editor/proofflowschema.ts";
 import {
   cmdInsertCode,
   cmdInsertMarkdown,
   cmdInsertMath,
 } from "../commands/commands.ts";
 import { InsertionPlace } from "../commands/helpers.ts";
-import { collapsibleAreaPlugin } from "../collapsiblearea.ts";
+import { collapsibleAreaPlugin } from "./collapsiblearea.ts";
 // Create input rules using default regex
 const blockMathInputRule = makeBlockMathInputRule(
   REGEX_BLOCK_MATH_DOLLARS,
