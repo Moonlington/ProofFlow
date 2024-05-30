@@ -1,3 +1,4 @@
+import { AcceptedFileTypes } from "./accepted-file-types";
 import { Area, AreaType } from "./area";
 import { Wrapper, WrapperType } from "./wrapper";
 
@@ -41,8 +42,7 @@ export function parseToProofFlow(
   let wrapper = new Wrapper();
 
   if (areaParsingFunction == parseToAreasLean) {
-    let leanParser: LeanParser = new LeanParser(text);
-    return convertGenericToRenderable(leanParser.parse());
+    return parseToAreasLean(text);
   }
 
   function insertInWrapper(endIndex: number, endTagLength: number) {
@@ -217,7 +217,31 @@ export function parseToAreasMV(text: string): Area[] {
   return areas;
 }
 
-enum GenericAreaType {
+/**
+ * Converts a lean file with the ProofFlow genre into different areas for easier conversion to the Prosemirror format.
+ * @param text - The input text to parse.
+ * @returns An array of areas representing the parsed text.
+ */
+export function parseToAreasLean(text: string): Wrapper[] {
+  let parser = new LeanParser(text);
+  let genericAreas: LeanArea[] = parser.parse();
+  return convertAreasToRenderable(genericAreas);
+}
+
+/**
+ * Converts an array given in JSON containing objects describing areas into different areas for easier conversion to the Prosemirror format.
+ * @param json - currently a placeholder to receive the list containing the objects to be rendered.
+ * @returns An array of areas representing the parsed text.
+ */
+export function parseToAreasJSON(json: string): Wrapper[] {
+  let areas = convertJSONToAreas([{"content": "", "input": false, "subAreas": [{"content": "text", "input": false, "subAreas": [], "type": "Text"}], "type": "Collapsible"}]);
+  return convertAreasToRenderable(areas);
+} 
+
+/**
+ * Enum representing the different kinds of areas present in the prosemirror format.
+ */
+enum ParseAreaType {
   Text = "Text",
   Code = "Code",
   Math = "Math",
@@ -226,51 +250,104 @@ enum GenericAreaType {
   Input = "Input",
 }
 
-class GenericArea {
-  type: GenericAreaType;
-  content: string = "";
-  subareas: GenericArea[] = [];
+/**
+ * An interface for defining different classes describing Areas to be parsed to the prosemirror format.
+ */
+interface ParseArea {
+  type: ParseAreaType;
+  content: string;
+  subAreas: ParseArea[];
+  input: boolean;
+}
 
-  constructor (type: GenericAreaType) {
+/**
+ * A class describing areas in Lean documents according to the Verso genre defined in /verso-genre.
+ */
+class LeanArea implements ParseArea {
+  type: ParseAreaType;
+  content: string = "";
+  subAreas: LeanArea[] = [];
+  input: boolean = false;
+
+  constructor (type: ParseAreaType) {
     this.type = type;
   }
 
-  addAreas(genericArea: GenericArea): void {
-    this.subareas.push(genericArea);
+  addAreas(genericArea: LeanArea): void {
+    this.subAreas.push(genericArea);
   }
-
 }
 
-function convertGenericToRenderable(genericArray: GenericArea[]): Wrapper[] {
+/**
+ * A class describing areas as contained in the json lists passed by (TODO: add location). 
+ */
+class JSONArea implements ParseArea {
+  type: ParseAreaType = ParseAreaType.Text;
+  content: string = "";
+  subAreas: JSONArea[] = [];
+  input: boolean = false;
+}
+
+/**
+ * Converts a list of json objects as passed by (TODO: add location) to a list of JSONAreas. 
+ * @param jsonList a list of json objects.
+ * @returns a list of JSONAreas.
+ */
+function convertJSONToAreas(jsonList: {content:string, input: boolean, subAreas: {content:string, input: boolean, subAreas: [], type: string}[], type: string}[]): JSONArea[] {
+  let result : JSONArea[] = new Array;
+  for(let i of jsonList) {
+    let jsonArea : JSONArea = new JSONArea;
+    jsonArea.type = i.type as ParseAreaType;
+    jsonArea.content = i.content;
+    jsonArea.input = i.input;
+    i.subAreas.forEach(element => {
+      let JSONSubArea: JSONArea = new JSONArea;
+      JSONSubArea.type = element.type as ParseAreaType;
+      JSONSubArea.content = element.content;
+      JSONSubArea.input = element.input;
+      jsonArea.subAreas.push(JSONSubArea);
+    });
+    result.push(jsonArea)
+  }
+  console.log(result);
+  return result;
+}
+
+/**
+ * Converts a list of areas to a list of objects renderable in the ProseMirror format.
+ * @param AreaArray An array of ParseArea objects.
+ * @returns An array of Wrapper objects.
+ */
+function convertAreasToRenderable(AreaArray: ParseArea[]): Wrapper[] {
   let wrappers : Wrapper[] = new Array;
-  for(let i = 0; i < genericArray.length; i++) {
+  for(let i = 0; i < AreaArray.length; i++) {
     let wrapper = new Wrapper();
-    switch (genericArray[i].type) {
-      case (GenericAreaType.Collapsible):
+    switch (AreaArray[i].type) {
+      case (ParseAreaType.Collapsible):
         wrapper.wrapperType = WrapperType.Collapsible;
         wrapper.info = " ";
         break
-      case (GenericAreaType.Input):
+      case (ParseAreaType.Input):
         wrapper.wrapperType = WrapperType.Input;
         break;
       default:
         wrapper.wrapperType = WrapperType.None;
         break;
     }
-    for (let j = 0; j < genericArray[i].subareas.length; j++) {
+    for (let j = 0; j < AreaArray[i].subAreas.length; j++) {
       let area: Area = new Area(AreaType.None);
-      switch (genericArray[i].subareas[j].type) {
-        case (GenericAreaType.Text):
+      switch (AreaArray[i].subAreas[j].type) {
+        case (ParseAreaType.Text):
           area.areaType = AreaType.Markdown;
           break;
-        case (GenericAreaType.Math):
+        case (ParseAreaType.Math):
           area.areaType = AreaType.Math;
           break;
-        case (GenericAreaType.Code):
+        case (ParseAreaType.Code):
           area.areaType = AreaType.Code;
           break;
       }
-      area.text = genericArray[i].subareas[j].content;
+      area.text = AreaArray[i].subAreas[j].content;
       wrapper.areas.push(area);
     }
     if (wrapper.areas.length < 1) continue;
@@ -279,19 +356,21 @@ function convertGenericToRenderable(genericArray: GenericArea[]): Wrapper[] {
   return wrappers;
 }
 
-interface GenericParser {
-  parse(): GenericArea[];
+/**
+ * An interface for defining Parsers for diferrent filetypes.
+ */
+interface Parser {
+  parse(): ParseArea[];
 }
 
-type GenericConfig = {
-  [key: string]: [string, string];
-}
-
-class LeanParser implements GenericParser {
-  defaultAreaType: GenericAreaType = GenericAreaType.Text;
+/**
+ * A Parser for Lean files adhering to the genre defined in /verso-genre
+ */
+class LeanParser implements Parser {
+  defaultAreaType: ParseAreaType = ParseAreaType.Text;
   document: String;
 
-  parsedDocument: GenericArea[] = [];
+  parsedDocument: LeanArea[] = [];
 
   inTrueWrapper: boolean = false;
   inText: boolean = true;
@@ -301,12 +380,23 @@ class LeanParser implements GenericParser {
     this.document = document;
   }
 
-  createArea(content: string, areaType: GenericAreaType): GenericArea{
-    let area = new GenericArea(areaType);
+  /**
+   * Creates a LeanArea with the given type and adds the string provided to its contents.
+   * @param content The string to be added to the area.
+   * @param areaType The type that should be assigned to the new area
+   * @returns A LeanArea with the type and contents provided.
+   */
+  createArea(content: string, areaType: ParseAreaType): LeanArea{
+    let area = new LeanArea(areaType);
     area.content = content;
     return area;
   }
 
+  /**
+   * A function to parse the contents of LeanAreas designated as subareas, i.e. areas with the types Text, Code or Math.
+   * @param start The starting index of the underlying document from which the parsing will begin.
+   * @returns The ending index upon which the parsing ended, either because it encountered a higher level area or because the document ended.
+   */
   parseSubAreas(start: number): number {
     let i: number = start;
     while (i < this.document.length) {
@@ -316,7 +406,7 @@ class LeanParser implements GenericParser {
             if (content.length == 0) {
               content = " ";
             }
-            const subarea = this.createArea(content, GenericAreaType.Text);
+            const subarea = this.createArea(content, ParseAreaType.Text);
             console.log("Text length: %d", content.length);
             this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
         }
@@ -327,7 +417,7 @@ class LeanParser implements GenericParser {
           if (content.length == 0) {
             content = " ";
           }
-          const subarea = this.createArea(content, GenericAreaType.Text);
+          const subarea = this.createArea(content, ParseAreaType.Text);
           console.log("Text length: %d", content.length);
           this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
         }
@@ -337,7 +427,7 @@ class LeanParser implements GenericParser {
         for(let j = pos; j < this.document.length; j++) {
           if(this.document.startsWith(":::", j)) {
             const content = this.document.substring(pos, j - 1);
-            const subarea = this.createArea(content, GenericAreaType.Math);
+            const subarea = this.createArea(content, ParseAreaType.Math);
             this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
             this.inText = true;
             this.textStart = j + ":::\n".length;
@@ -350,7 +440,7 @@ class LeanParser implements GenericParser {
         for(let j = pos; j < this.document.length; j++) {
           if(!this.document.startsWith(":::", j)) continue;
           const content = this.document.substring(pos, j - 1);
-          const subarea = this.createArea(content, GenericAreaType.Code);
+          const subarea = this.createArea(content, ParseAreaType.Code);
           this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
           this.inText = true;
           this.textStart = j + ":::\n".length;
@@ -376,24 +466,28 @@ class LeanParser implements GenericParser {
     return i;
   }
   
-  parse(): GenericArea[] {
+  /**
+   * Starts the parsing of the document provided in the construction of the class. It generates top-level areas (Empty, Collapsible, Input) which will contain all subareas (Text, Code, Math).
+   * @returns An array of LeanAreas containing the contents of the document.
+   */
+  parse(): LeanArea[] {
     let i = 0
     while (i < this.document.length) {
       if (this.document.startsWith(":::collapsible", i)) {
         this.inTrueWrapper = true;
-        this.parsedDocument.push(new GenericArea(GenericAreaType.Collapsible));
+        this.parsedDocument.push(new LeanArea(ParseAreaType.Collapsible));
         this.inText = true;
         this.textStart = i + ":::collapsible\n".length;
         i = this.parseSubAreas(i + ":::collapsible\n".length);
       } else if (this.document.startsWith(":::input", i)) {
         this.inTrueWrapper = true;
-        this.parsedDocument.push(new GenericArea(GenericAreaType.Input));
+        this.parsedDocument.push(new LeanArea(ParseAreaType.Input));
         this.inText = true;
         this.textStart = i + ":::input\n".length;
         i = this.parseSubAreas(i + ":::input\n".length);
       } else {
         console.log(i);
-        this.parsedDocument.push(new GenericArea(GenericAreaType.Empty));
+        this.parsedDocument.push(new LeanArea(ParseAreaType.Empty));
         this.inText = true;
         this.textStart = i;
         i = this.parseSubAreas(i);
@@ -404,47 +498,3 @@ class LeanParser implements GenericParser {
     return this.parsedDocument;
   }
 }
-
-
-/**
- * Converts a lean file with the ProofFlow genre into different areas for easier conversion to the Prosemirror format.
- * @param text - The input text to parse.
- * @returns An array of areas representing the parsed text.
- */
-export function parseToAreasLean(text: string): Area[] {return []}
-//   let areas : Area[] = new Array();
-//   let areaType: AreaType = AreaType.Code;
-//   let startIndex = 0;
-//   let skip = false;
-//   for (let i = 0; i < text.length; i++) {
-//     if (!text.startsWith(":::", i)) continue;
-//     if (startIndex == 0) {
-//       let area = createArea(text.substring(startIndex, i), areaType);
-//       areas.push(area);
-//     }
-//     if (text.startsWith(":::text\n", i)) {
-//       areaType = AreaType.Markdown;
-//       startIndex = i + ":::text\n".length;
-//       continue;
-//     } else if (text.startsWith(":::math\n", i)) {
-//       areaType = AreaType.Math;
-//       startIndex = i + ":::math\n".length;
-//       continue;
-//     } else if (text.startsWith(":::code\n", i)) {
-//       areaType = AreaType.Code;
-//       startIndex = i + ":::code\n".length;
-//       continue;
-//     }
-
-//     if (areaType == AreaType.Code && text.startsWith(":::", i)) {
-//       let area = createArea(text.substring(startIndex, i), areaType);
-//       areas.push(area);
-//       console.log(startIndex, i);
-//     } else if ((areaType == AreaType.Math || areaType == AreaType.Markdown) && text.startsWith(":::", i)) {
-//       let area = createArea(text.substring(startIndex, i), areaType);
-//       areas.push(area);
-//       console.log(startIndex, i);
-//     }
-//   }
-//   return areas;
-// }
