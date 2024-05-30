@@ -248,6 +248,7 @@ function convertGenericToRenderable(genericArray: GenericArea[]): Wrapper[] {
     switch (genericArray[i].type) {
       case (GenericAreaType.Collapsible):
         wrapper.wrapperType = WrapperType.Collapsible;
+        wrapper.info = " ";
         break
       case (GenericAreaType.Input):
         wrapper.wrapperType = WrapperType.Input;
@@ -309,7 +310,18 @@ class LeanParser implements GenericParser {
   parseSubAreas(start: number): number {
     let i: number = start;
     while (i < this.document.length) {
-      if (this.document.startsWith(":::", i) && this.inText) {
+      if ( i == this.document.length - 1 && this.inText) {
+        if (i > this.textStart) {
+          let content = this.document.substring(this.textStart, this.document.length);
+            if (content.length == 0) {
+              content = " ";
+            }
+            const subarea = this.createArea(content, GenericAreaType.Text);
+            console.log("Text length: %d", content.length);
+            this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
+        }
+        this.inText = false;
+      } else if (this.document.startsWith(":::", i) && this.inText) {
         if (i > this.textStart) {
           let content = this.document.substring(this.textStart, i - 1);
           if (content.length == 0) {
@@ -388,6 +400,7 @@ class LeanParser implements GenericParser {
         console.log(i);
       }
     }
+    console.log("DONE");
     return this.parsedDocument;
   }
 }
