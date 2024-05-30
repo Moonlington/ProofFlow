@@ -237,16 +237,3 @@ export function renderedToMarkdown(node: Node, schema: Schema) {
 
   return markdownNode;
 }
-
-export function getTrueNodePos() {
-  const { selection } = proofFlow.editorView.state;
-  let pos;
-
-  if (selection.empty) {
-    pos = selection.$anchor.before(selection.$anchor.depth);
-  } else {
-    pos = selection.from;
-  }
-
-  return pos;
-}
