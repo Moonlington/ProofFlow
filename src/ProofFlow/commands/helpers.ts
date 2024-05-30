@@ -12,6 +12,7 @@ import {
   defaultMarkdownSerializer,
 } from "prosemirror-markdown";
 import { proofFlow } from "../../main";
+import { UserMode } from "../UserMode/userMode";
 
 /**
  * Represents the possible places where an insertion can occur.
@@ -27,7 +28,7 @@ export const highLevelCells: string[] = new Array(
   "markdown",
   "markdown_rendered",
   "collapsible",
-  "input"
+  "input",
 );
 
 /**
@@ -199,7 +200,13 @@ export function allowedToInsert(state: EditorState): boolean {
   let selection = state.selection;
   let selectionType = getSelectionType(selection);
   console.log(selection);
-  console.log("here wer are");
+  let parent = getContainingNode(selection);
+  let parentType = parent?.type.name;
+  if (
+    proofFlow.userMode === UserMode.Student &&
+    !(parentType == "input_content")
+  )
+    return false;
   if (selectionType.isTextSelection) {
     let node = selection.$from.node();
     if (node == null) return true;
@@ -208,6 +215,7 @@ export function allowedToInsert(state: EditorState): boolean {
     let node = (selection as NodeSelection).node;
     if (node.type.name == "collapsible_content") return false;
     if (node.type.name == "collapsible_title") return false;
+    if (node.type.name == "input_content") return false;
   }
   return true;
 }

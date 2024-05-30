@@ -26,7 +26,7 @@ export const markdownPlugin = new Plugin({
       let correctPos = 0;
       let offsetToClicked = 0;
       let newNodes = Array<Node>();
-      
+
       // Go through all the descendants of the document node
       view.state.doc.descendants((node, pos) => {
         if (!highLevelCells.includes(node.type.name)) return false; // Makes sure we do not treat low level nodes such as paragraphs or text nodes, cause duplication would occur
@@ -109,9 +109,7 @@ export const markdownPlugin = new Plugin({
             newCollapsibleContentNode,
           ]);
           newNode = newCollapsibleNode;
-        } 
-
-        else if (node.type.name === "input") {
+        } else if (node.type.name === "input") {
           let inputParentNode: Node = node;
           let inputContentNode: Node = inputParentNode.child(0)!;
           let newInputChildNodes: Node[] = Array<Node>();
@@ -132,10 +130,7 @@ export const markdownPlugin = new Plugin({
 
             if (bIsClickedInputNode && node.type.name === "markdown_rendered") {
               newChildNode = renderedToMarkdown(node, ProofFlowSchema);
-            } else if (
-              !bIsClickedInputNode &&
-              node.type.name === "markdown"
-            ) {
+            } else if (!bIsClickedInputNode && node.type.name === "markdown") {
               newChildNode = markdownToRendered(node, ProofFlowSchema);
             }
 
@@ -150,12 +145,11 @@ export const markdownPlugin = new Plugin({
           let newInputContentNode = inputContentType.create(
             { visible: true },
             newInputChildNodes,
-          )
+          );
 
           let newInputNode = inputNodeType.create({}, newInputContentNode);
 
           newNode = newInputNode;
-
         }
 
         if (bIsClickedNode) {
@@ -163,13 +157,13 @@ export const markdownPlugin = new Plugin({
           correctPos = offsetToClicked;
           console.log(
             "Clicked pos: " +
-            clickedPos +
-            " offset to clicked: " +
-            offsetToClicked +
-            " correct pos: " +
-            correctPos +
-            " node type: " +
-            newNode.type.name,
+              clickedPos +
+              " offset to clicked: " +
+              offsetToClicked +
+              " correct pos: " +
+              correctPos +
+              " node type: " +
+              newNode.type.name,
           );
         }
 

@@ -159,9 +159,7 @@ export function getInputInsertCommand(): Command {
     let contentNode: Node = inputContentType.create({ visible: true }, [
       oldNode,
     ]);
-    let collapsibleNode: Node = inputNodeType.create({}, [
-      contentNode,
-    ]);
+    let collapsibleNode: Node = inputNodeType.create({}, [contentNode]);
     let trans: Transaction = state.tr;
     if (selectionType.isTextSelection) {
       let resolved = selection.$from;

@@ -38,18 +38,13 @@ export const ProofFlowSchema: Schema = new Schema({
           tag: "input_content",
           getAttrs(dom) {
             return {
-              title:
-                (dom as HTMLElement).getAttribute("title") ?? "input",
+              title: (dom as HTMLElement).getAttribute("title") ?? "input",
             };
           },
         },
       ],
       toDOM(node: Node) {
-        return [
-          "div",
-          { class: "input_content", visible: true },
-          0,
-        ];
+        return ["div", { class: "input_content", visible: true }, 0];
       },
     },
 
