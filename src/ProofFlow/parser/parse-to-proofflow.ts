@@ -40,6 +40,11 @@ export function parseToProofFlow(
 
   let wrapper = new Wrapper();
 
+  if (areaParsingFunction == parseToAreasLean) {
+    let leanParser: LeanParser = new LeanParser(text);
+    return convertGenericToRenderable(leanParser.parse());
+  }
+
   function insertInWrapper(endIndex: number, endTagLength: number) {
     let areasText = text.substring(startIndex, endIndex);
     wrapper.areas = areaParsingFunction(areasText);
@@ -109,7 +114,7 @@ function parseNonCode(text: string): Area[] {
 
   matches.forEach((m) => {
     if (m.length == 0) return;
-    let area = new Area();
+    let area = new Area(AreaType.None);
     area.text = m;
     if (m.startsWith("$")) {
       area.areaType = AreaType.Math;
@@ -136,7 +141,7 @@ export function parseToAreasV(text: string): Area[] {
   const reqCoqdocNoUse = /^\s*\(\**\)\s*/;
   const regCode = /^\s*(.|\n)*?(?=\(\*)\s*/;
   while (text.length > 0) {
-    let area = new Area();
+    let area = new Area(AreaType.None);
     let coqdoc = text.match(regCoqdoc);
     if (coqdoc != null) {
       // For Coqdoc sections
@@ -198,8 +203,7 @@ export function parseToAreasMV(text: string): Area[] {
       inCode = true;
       startIndex = i + "```coq\n".length;
     } else {
-      let area = new Area();
-      area.areaType = AreaType.Code;
+      let area = new Area(AreaType.Code);
       area.text = text.substring(startIndex, i);
       areas.push(area);
       inCode = false;
@@ -213,54 +217,209 @@ export function parseToAreasMV(text: string): Area[] {
   return areas;
 }
 
+enum GenericAreaType {
+  Text = "Text",
+  Code = "Code",
+  Math = "Math",
+  Empty = "Empty",
+  Collapsible = "Collapsible",
+  Input = "Input",
+}
+
+class GenericArea {
+  type: GenericAreaType;
+  content: string = "";
+  subareas: GenericArea[] = [];
+
+  constructor (type: GenericAreaType) {
+    this.type = type;
+  }
+
+  addAreas(genericArea: GenericArea): void {
+    this.subareas.push(genericArea);
+  }
+
+}
+
+function convertGenericToRenderable(genericArray: GenericArea[]): Wrapper[] {
+  let wrappers : Wrapper[] = new Array;
+  for(let i = 0; i < genericArray.length; i++) {
+    let wrapper = new Wrapper();
+    switch (genericArray[i].type) {
+      case (GenericAreaType.Collapsible):
+        wrapper.wrapperType = WrapperType.Collapsible;
+        break
+      case (GenericAreaType.Input):
+        wrapper.wrapperType = WrapperType.Input;
+        break;
+      default:
+        wrapper.wrapperType = WrapperType.None;
+        break;
+    }
+    for (let j = 0; j < genericArray[i].subareas.length; j++) {
+      let area: Area = new Area(AreaType.None);
+      switch (genericArray[i].subareas[j].type) {
+        case (GenericAreaType.Text):
+          area.areaType = AreaType.Markdown;
+          break;
+        case (GenericAreaType.Math):
+          area.areaType = AreaType.Math;
+          break;
+        case (GenericAreaType.Code):
+          area.areaType = AreaType.Code;
+          break;
+      }
+      area.text = genericArray[i].subareas[j].content;
+      wrapper.areas.push(area);
+    }
+    if (wrapper.areas.length < 1) continue;
+    wrappers.push(wrapper);
+  }
+  return wrappers;
+}
+
+interface GenericParser {
+  parse(): GenericArea[];
+}
+
+type GenericConfig = {
+  [key: string]: [string, string];
+}
+
+class LeanParser implements GenericParser {
+  defaultAreaType: GenericAreaType = GenericAreaType.Text;
+  document: String;
+
+  parsedDocument: GenericArea[] = [];
+
+  inTrueWrapper: boolean = false;
+  inText: boolean = true;
+
+  constructor (document: String) {
+    this.document = document;
+  }
+
+  createArea(content: string, areaType: GenericAreaType): GenericArea{
+    let area = new GenericArea(areaType);
+    area.content = content;
+    return area;
+  }
+
+  parseSubAreas(start: number): number {
+    let i: number = start;
+    while (i < this.document.length) {
+      if (this.document.startsWith(":::text", i)) {
+        let pos = i + ":::text\n".length;
+        console.log(this.document.startsWith(":::text", i));
+        for(let j = pos; j < this.document.length; j++) {
+          if(!this.document.startsWith(":::", j)) continue;
+          const content = this.document.substring(pos, j);
+          const subarea = this.createArea(content, GenericAreaType.Text);
+          this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
+          i = j + ":::\n".length;
+          break;
+        }
+      } else if (this.document.startsWith(":::math", i)) {
+        let pos = i + ":::math\n".length;
+        for(let j = pos; j < this.document.length; j++) {
+          if(!this.document.startsWith(":::", j)) continue;
+          const content = this.document.substring(pos, j - 1);
+          const subarea = this.createArea(content, GenericAreaType.Math);
+          this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
+          i = j + ":::\n".length;
+          break;
+        }
+      } else if (this.document.startsWith(":::code", i)) {
+        let pos = i + ":::code\n".length;
+        for(let j = pos; j < this.document.length; j++) {
+          if(!this.document.startsWith(":::", j)) continue;
+          const content = this.document.substring(pos, j - 1);
+          const subarea = this.createArea(content, GenericAreaType.Code);
+          this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
+          i = j + ":::\n".length;
+          break;
+        }
+      } else if (this.document.startsWith(":::", i) && this.inTrueWrapper) {
+        console.log(i);
+        console.log(this.document.slice(i, this.document.length));
+        console.log(this.document.slice(i, this.document.length).length);
+        i += ":::\n".length;
+        this.inTrueWrapper = false;
+        console.log(i);
+        console.log(this.document.slice(i, this.document.length));
+        console.log(this.document.slice(i, this.document.length).length);
+        return i;
+      } else if (this.document.startsWith(":::collapsible", i) ||this.document.startsWith(":::input", i)) {
+        return i;
+      } else {
+        i++;
+      }
+    }
+    return i;
+  }
+  
+  parse(): GenericArea[] {
+    let i = 0
+    while (i < this.document.length) {
+      if (this.document.startsWith(":::collapsible", i)) {
+        this.inTrueWrapper = true;
+        this.parsedDocument.push(new GenericArea(GenericAreaType.Collapsible));
+        i = this.parseSubAreas(i + ":::collapsible".length);
+      } else if (this.document.startsWith(":::input", i)) {
+        this.inTrueWrapper = true;
+        this.parsedDocument.push(new GenericArea(GenericAreaType.Input));
+        i = this.parseSubAreas(i + ":::input".length);
+      } else {
+        console.log(i);
+        this.parsedDocument.push(new GenericArea(GenericAreaType.Empty));
+        i = this.parseSubAreas(i);
+        console.log(i);
+      }
+    }
+    return this.parsedDocument;
+  }
+}
+
+
 /**
  * Converts a lean file with the ProofFlow genre into different areas for easier conversion to the Prosemirror format.
  * @param text - The input text to parse.
  * @returns An array of areas representing the parsed text.
  */
-export function parseToAreasLean(text: string): Area[] {
-  let areas: Area[] = new Array();
-  let areatype: AreaType = AreaType.Code;
-  let startIndex = 0;
-  let skip = false;
-  for (let i = 0; i < text.length; i++) {
-    if (!text.startsWith(":::", i)) continue;
-    if (startIndex == 0) {
-      let area = new Area();
-      area.text = text.substring(startIndex, i);
-      area.areaType = areatype;
-      areas.push(area);
-    }
-    if (text.startsWith(":::text\n", i)) {
-      areatype = AreaType.Markdown;
-      startIndex = i + ":::text\n".length;
-      continue;
-    } else if (text.startsWith(":::math\n", i)) {
-      areatype = AreaType.Math;
-      startIndex = i + ":::math\n".length;
-      continue;
-    } else if (text.startsWith(":::code\n", i)) {
-      areatype = AreaType.Code;
-      startIndex = i + ":::code\n".length;
-      continue;
-    }
+export function parseToAreasLean(text: string): Area[] {return []}
+//   let areas : Area[] = new Array();
+//   let areaType: AreaType = AreaType.Code;
+//   let startIndex = 0;
+//   let skip = false;
+//   for (let i = 0; i < text.length; i++) {
+//     if (!text.startsWith(":::", i)) continue;
+//     if (startIndex == 0) {
+//       let area = createArea(text.substring(startIndex, i), areaType);
+//       areas.push(area);
+//     }
+//     if (text.startsWith(":::text\n", i)) {
+//       areaType = AreaType.Markdown;
+//       startIndex = i + ":::text\n".length;
+//       continue;
+//     } else if (text.startsWith(":::math\n", i)) {
+//       areaType = AreaType.Math;
+//       startIndex = i + ":::math\n".length;
+//       continue;
+//     } else if (text.startsWith(":::code\n", i)) {
+//       areaType = AreaType.Code;
+//       startIndex = i + ":::code\n".length;
+//       continue;
+//     }
 
-    if (areatype == AreaType.Code && text.startsWith(":::", i)) {
-      let area = new Area();
-      area.text = text.substring(startIndex, i);
-      area.areaType = areatype;
-      areas.push(area);
-      console.log(startIndex, i);
-    } else if (
-      (areatype == AreaType.Math || areatype == AreaType.Markdown) &&
-      text.startsWith(":::", i)
-    ) {
-      let area = new Area();
-      area.text = text.substring(startIndex, i);
-      area.areaType = areatype;
-      areas.push(area);
-      console.log(startIndex, i);
-    }
-  }
-  return areas;
-}
+//     if (areaType == AreaType.Code && text.startsWith(":::", i)) {
+//       let area = createArea(text.substring(startIndex, i), areaType);
+//       areas.push(area);
+//       console.log(startIndex, i);
+//     } else if ((areaType == AreaType.Math || areaType == AreaType.Markdown) && text.startsWith(":::", i)) {
+//       let area = createArea(text.substring(startIndex, i), areaType);
+//       areas.push(area);
+//       console.log(startIndex, i);
+//     }
+//   }
+//   return areas;
+// }
