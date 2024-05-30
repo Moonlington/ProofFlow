@@ -41,6 +41,7 @@ import {
   collapsibleTitleNodeType,
   collapsibleContentType,
 } from "./nodetypes.ts";
+import { Minimap } from "../minimap.ts";
 // CSS
 
 export class ProofFlow {
@@ -51,6 +52,8 @@ export class ProofFlow {
   private editorView: EditorView; // The view of the editor
 
   private fileName: string = "file.txt";
+
+  private minimap: Minimap;
 
   /**
    * Represents the ProofFlow class.
@@ -177,6 +180,8 @@ export class ProofFlow {
 
     // Apply global key bindings
     applyGlobalKeyBindings(this.editorView);
+
+    this.minimap = new Minimap();
   }
 
   /**
