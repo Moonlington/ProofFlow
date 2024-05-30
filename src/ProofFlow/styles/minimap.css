@@ -6,7 +6,7 @@
     /* min-height: 100px; */
     z-index: 100;
     border: 5px solid #0000009a;
-
+    overflow: hidden;
 }
 
 .minimap__size{
@@ -36,5 +36,4 @@
     z-index: -1;
     transform-origin: 0 0;
     border: 1px solid white;
-    
 }
