@@ -41,7 +41,7 @@ export class ProofFlow {
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
   private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
 
-  private editorView: EditorView; // The view of the editor
+  public editorView: EditorView; // The view of the editor
 
   private fileName: string = "file.txt";
 

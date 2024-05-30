@@ -2,12 +2,12 @@ import { Plugin } from "prosemirror-state";
 import { Node } from "prosemirror-model";
 import { collapsibleContentType, collapsibleNodeType } from "../nodetypes.ts";
 import { TextSelection } from "prosemirror-state";
-
 import {
   isClickedNode,
   renderedToMarkdown,
   markdownToRendered,
   highLevelCells,
+  getTrueNodePos,
 } from "../commands/helpers.ts";
 import { ProofFlowSchema } from "../editor/proofflowschema.ts";
 
@@ -15,6 +15,8 @@ export const markdownPlugin = new Plugin({
   props: {
     handleClickOn(view, pos, node, nodePos, event, direct) {
       if (node.type.name === undefined || !direct) return; // If the node being clicked is not a valid node or the click is not a user action, return
+
+      nodePos = getTrueNodePos();
 
       let trans = view.state.tr;
       let cursorOffset = pos;
