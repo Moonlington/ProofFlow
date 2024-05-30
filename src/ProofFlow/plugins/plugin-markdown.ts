@@ -1,6 +1,6 @@
 import { Plugin } from "prosemirror-state";
 import { Node } from "prosemirror-model";
-import { collapsibleContentType, collapsibleNodeType } from "../nodetypes.ts";
+import { collapsibleContentType, collapsibleNodeType } from "../editor/nodetypes";
 import { TextSelection } from "prosemirror-state";
 import {
   isClickedNode,
