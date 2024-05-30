@@ -14,6 +14,9 @@ export class Minimap {
     private _config = { attributes: true, childList: true, subtree: true };
     private observer: MutationObserver;
 
+    private timeoutId = 0;
+    private debounceDelay = 300; // Adjust delay as needed
+
     constructor() {
         this._minimapDiv = document.createElement('div');
         this._minimapSizeDiv = document.createElement('div');
@@ -28,6 +31,7 @@ export class Minimap {
         this._minimapDiv.append(this._minimapSizeDiv, this._minimapViewerDiv, this._minimapContentDiv);
         document.body.appendChild(this._minimapDiv);
 
+        this.updateHTML.bind(this);
         this.updateHTML();
 
         this.getDimensions()
@@ -51,10 +55,14 @@ export class Minimap {
     }
 
     private callback = (mutationList: MutationRecord[], observer: MutationObserver) => {
-        this.updateHTML();
+        if (this.timeoutId != 0) return;
+        setTimeout(this.updateHTML.bind(this), this.debounceDelay);
     };
 
     public updateHTML() {
+        console.log("updateHTML");
+        this.timeoutId = 0;
+
         const editor = document.getElementById("editor");
         const html = editor!.innerHTML;
 
