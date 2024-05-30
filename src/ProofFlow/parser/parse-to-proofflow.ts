@@ -294,6 +294,7 @@ class LeanParser implements GenericParser {
 
   inTrueWrapper: boolean = false;
   inText: boolean = true;
+  textStart: number = 0;
 
   constructor (document: String) {
     this.document = document;
@@ -308,26 +309,29 @@ class LeanParser implements GenericParser {
   parseSubAreas(start: number): number {
     let i: number = start;
     while (i < this.document.length) {
-      if (this.document.startsWith(":::text", i)) {
-        let pos = i + ":::text\n".length;
-        console.log(this.document.startsWith(":::text", i));
-        for(let j = pos; j < this.document.length; j++) {
-          if(!this.document.startsWith(":::", j)) continue;
-          const content = this.document.substring(pos, j);
+      if (this.document.startsWith(":::", i) && this.inText) {
+        if (i > this.textStart) {
+          let content = this.document.substring(this.textStart, i - 1);
+          if (content.length == 0) {
+            content = " ";
+          }
           const subarea = this.createArea(content, GenericAreaType.Text);
+          console.log("Text length: %d", content.length);
           this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
-          i = j + ":::\n".length;
-          break;
         }
+        this.inText = false;
       } else if (this.document.startsWith(":::math", i)) {
         let pos = i + ":::math\n".length;
         for(let j = pos; j < this.document.length; j++) {
-          if(!this.document.startsWith(":::", j)) continue;
-          const content = this.document.substring(pos, j - 1);
-          const subarea = this.createArea(content, GenericAreaType.Math);
-          this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
-          i = j + ":::\n".length;
-          break;
+          if(this.document.startsWith(":::", j)) {
+            const content = this.document.substring(pos, j - 1);
+            const subarea = this.createArea(content, GenericAreaType.Math);
+            this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
+            this.inText = true;
+            this.textStart = j + ":::\n".length;
+            i = j + ":::\n".length;
+            break;
+          }
         }
       } else if (this.document.startsWith(":::code", i)) {
         let pos = i + ":::code\n".length;
@@ -336,6 +340,8 @@ class LeanParser implements GenericParser {
           const content = this.document.substring(pos, j - 1);
           const subarea = this.createArea(content, GenericAreaType.Code);
           this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
+          this.inText = true;
+          this.textStart = j + ":::\n".length;
           i = j + ":::\n".length;
           break;
         }
@@ -364,14 +370,20 @@ class LeanParser implements GenericParser {
       if (this.document.startsWith(":::collapsible", i)) {
         this.inTrueWrapper = true;
         this.parsedDocument.push(new GenericArea(GenericAreaType.Collapsible));
-        i = this.parseSubAreas(i + ":::collapsible".length);
+        this.inText = true;
+        this.textStart = i + ":::collapsible\n".length;
+        i = this.parseSubAreas(i + ":::collapsible\n".length);
       } else if (this.document.startsWith(":::input", i)) {
         this.inTrueWrapper = true;
         this.parsedDocument.push(new GenericArea(GenericAreaType.Input));
-        i = this.parseSubAreas(i + ":::input".length);
+        this.inText = true;
+        this.textStart = i + ":::input\n".length;
+        i = this.parseSubAreas(i + ":::input\n".length);
       } else {
         console.log(i);
         this.parsedDocument.push(new GenericArea(GenericAreaType.Empty));
+        this.inText = true;
+        this.textStart = i;
         i = this.parseSubAreas(i);
         console.log(i);
       }
