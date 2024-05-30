@@ -407,7 +407,6 @@ class LeanParser implements Parser {
               content = " ";
             }
             const subarea = this.createArea(content, ParseAreaType.Text);
-            console.log("Text length: %d", content.length);
             this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
         }
         this.inText = false;
@@ -418,7 +417,6 @@ class LeanParser implements Parser {
             content = " ";
           }
           const subarea = this.createArea(content, ParseAreaType.Text);
-          console.log("Text length: %d", content.length);
           this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
         }
         this.inText = false;
@@ -448,14 +446,8 @@ class LeanParser implements Parser {
           break;
         }
       } else if (this.document.startsWith(":::", i) && this.inTrueWrapper) {
-        console.log(i);
-        console.log(this.document.slice(i, this.document.length));
-        console.log(this.document.slice(i, this.document.length).length);
         i += ":::\n".length;
         this.inTrueWrapper = false;
-        console.log(i);
-        console.log(this.document.slice(i, this.document.length));
-        console.log(this.document.slice(i, this.document.length).length);
         return i;
       } else if (this.document.startsWith(":::collapsible", i) ||this.document.startsWith(":::input", i)) {
         return i;
@@ -491,10 +483,8 @@ class LeanParser implements Parser {
         this.inText = true;
         this.textStart = i;
         i = this.parseSubAreas(i);
-        console.log(i);
       }
     }
-    console.log("DONE");
     return this.parsedDocument;
   }
 }
