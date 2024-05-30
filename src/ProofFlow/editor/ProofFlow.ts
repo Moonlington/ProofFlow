@@ -1,5 +1,5 @@
 import { Schema, DOMParser, Node } from "prosemirror-model";
-import { CodeMirrorView } from "../codemirror/index.ts";
+import { CodeMirrorView } from "../CodeMirror/index.ts";
 import type { GetPos } from "../CodeMirror/types.ts";
 import { ProofFlowSchema } from "./proofflowschema.ts";
 import {
@@ -70,7 +70,7 @@ export class ProofFlow {
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
-
+      
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
