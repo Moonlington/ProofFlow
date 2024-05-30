@@ -18,6 +18,7 @@ import {
   collapsibleContentType,
   collapsibleNodeType,
   collapsibleTitleNodeType,
+  inputContentType,
   inputNodeType,
 } from "../editor/nodetypes";
 import { ProofFlowSchema } from "../editor/proofflowschema";
@@ -155,14 +156,19 @@ export function getInputInsertCommand(): Command {
     }
     if (oldNode == null) return false;
 
-    let contentNode: Node = oldNode;
-    let inputNode: Node = inputNodeType.create({}, [contentNode]);
+    let contentNode: Node = inputContentType.create({ visible: true }, [
+      oldNode,
+    ]);
+    let collapsibleNode: Node = inputNodeType.create({}, [
+      contentNode,
+    ]);
     let trans: Transaction = state.tr;
     if (selectionType.isTextSelection) {
       let resolved = selection.$from;
-      trans.replaceWith(resolved.start() - 1, resolved.end(), inputNode);
+      console.log(resolved.start(), resolved.end());
+      trans.replaceWith(resolved.start() - 1, resolved.end(), collapsibleNode);
     } else if (selectionType.isNodeSelection) {
-      trans.replaceSelectionWith(inputNode);
+      trans.replaceSelectionWith(collapsibleNode);
     }
     if (dispatch && trans) dispatch(trans);
     return true;

@@ -31,6 +31,28 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    input_content: {
+      content: `${containercontent}+`,
+      parseDOM: [
+        {
+          tag: "input_content",
+          getAttrs(dom) {
+            return {
+              title:
+                (dom as HTMLElement).getAttribute("title") ?? "input",
+            };
+          },
+        },
+      ],
+      toDOM(node: Node) {
+        return [
+          "div",
+          { class: "input_content", visible: true },
+          0,
+        ];
+      },
+    },
+
     collapsible: {
       content: `(collapsible_title)(collapsible_content)`,
       parseDOM: [{ tag: "collapsible" }],

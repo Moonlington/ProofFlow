@@ -27,6 +27,7 @@ export const highLevelCells: string[] = new Array(
   "markdown",
   "markdown_rendered",
   "collapsible",
+  "input"
 );
 
 /**
@@ -198,6 +199,7 @@ export function allowedToInsert(state: EditorState): boolean {
   let selection = state.selection;
   let selectionType = getSelectionType(selection);
   console.log(selection);
+  console.log("here wer are");
   if (selectionType.isTextSelection) {
     let node = selection.$from.node();
     if (node == null) return true;

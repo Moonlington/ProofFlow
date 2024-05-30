@@ -9,3 +9,4 @@ export const collapsibleTitleNodeType =
   ProofFlowSchema.nodes["collapsible_title"];
 export const markdownblockNodeType = ProofFlowSchema.nodes["markdown"];
 export const inputNodeType = ProofFlowSchema.nodes["input"];
+export const inputContentType = ProofFlowSchema.nodes["input_content"];
