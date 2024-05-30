@@ -11,7 +11,6 @@ import {
   defaultMarkdownParser,
   defaultMarkdownSerializer,
 } from "prosemirror-markdown";
-import { proofFlow } from "../../main";
 
 /**
  * Represents the possible places where an insertion can occur.
@@ -236,17 +235,4 @@ export function renderedToMarkdown(node: Node, schema: Schema) {
   let markdownNode: Node = markdownNodeType.create(null, [schema.text(text)]);
 
   return markdownNode;
-}
-
-export function getTrueNodePos() {
-  const { selection } = proofFlow.editorView.state;
-  let pos;
-
-  if (selection.empty) {
-    pos = selection.$anchor.before(selection.$anchor.depth);
-  } else {
-    pos = selection.from;
-  }
-
-  return pos;
 }
