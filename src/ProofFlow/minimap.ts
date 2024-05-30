@@ -1,12 +1,18 @@
+import { Plugin } from "prosemirror-state";
+
+export let minimapPlugin: Plugin = new Plugin({
+
+})
+
 export class Minimap {
     private _minimapDiv: HTMLDivElement;
     private _minimapSizeDiv: HTMLDivElement;
     private _minimapViewerDiv: HTMLDivElement;
     private _minimapContentDiv: HTMLIFrameElement;
-    private scale = 0.1;
-    private realScale = 0;
+    private _bodyScale = 0;
+    private _realScale = 0;
 
-    constructor() {
+    constructor(html: string) {
         this._minimapDiv = document.createElement('div');
         this._minimapSizeDiv = document.createElement('div');
         this._minimapViewerDiv = document.createElement('div');
@@ -17,10 +23,20 @@ export class Minimap {
         this._minimapViewerDiv.className = 'minimap__viewer';
         this._minimapContentDiv.className = 'minimap__content';
 
-        this._minimapDiv.append(this._minimapSizeDiv, this._minimapContentDiv, this._minimapContentDiv);
+        this._minimapDiv.append(this._minimapSizeDiv, this._minimapViewerDiv, this._minimapContentDiv);
         document.body.appendChild(this._minimapDiv);
 
-        let html = document.documentElement.outerHTML.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        this.updateHTML();
+
+        this.getDimensions()
+        const editor = document.getElementById("editor");
+        editor!.addEventListener('scroll', () => this.trackScroll())
+        editor!.addEventListener('resize', () => this.getDimensions())
+    }
+
+    public updateHTML() {
+        const editor = document.getElementById("editor");
+        const html = editor!.innerHTML;
 
         let iframeDoc = this._minimapContentDiv.contentWindow!.document;
 
@@ -28,30 +44,46 @@ export class Minimap {
         iframeDoc.write(html);
         iframeDoc.close();
 
-        this.getDimensions()
-        window.addEventListener('scroll', this.trackScroll)
-        window.addEventListener('resize', this.getDimensions)
+        const styleTags = document.querySelectorAll('style');
+        styleTags.forEach(styleTag => {
+            const newStyleTag = iframeDoc.createElement('style');
+            newStyleTag.textContent = styleTag.textContent;
+            iframeDoc.head.appendChild(newStyleTag);
+        });
+        
+        this.trackScroll();
+        this.getDimensions();
     }
 
     private getDimensions(){
-        let bodyWidth = document.body.clientWidth;
-        let bodyRatio = document.body.clientHeight / bodyWidth;
+        const editor = document.getElementById("editor");
+
+        let bodyWidth = editor!.clientWidth;
+        let bodyHeight = editor!.scrollHeight;
+        let bodyRatio = bodyHeight / bodyWidth;
         let winRatio = window.innerHeight / window.innerWidth;
     
-        console.log(this._minimapDiv.style);
         this._minimapDiv.style.width = '15%';
-    
-        this.realScale = this._minimapDiv.clientWidth / bodyWidth;
+        
+
+        this._realScale = this._minimapDiv.clientWidth / bodyWidth;
+        this._bodyScale = this._minimapDiv.clientWidth / document.body.clientWidth;
     
         this._minimapSizeDiv.style.paddingTop = `${bodyRatio * 100}%`
         this._minimapViewerDiv.style.paddingTop = `${winRatio * 100}%`;
+
+        console.log(editor!.clientHeight, this._realScale);
+        this._minimapViewerDiv.style.height = `${(editor!.clientHeight * this._bodyScale)}px`
     
-        this._minimapContentDiv.style.transform = `scale(${this.realScale})`;
-        this._minimapContentDiv.style.width = `${(100 / this.realScale)}%`
-        this._minimapContentDiv.style.height = `${(100 / this.realScale)}%`
+        this._minimapContentDiv.style.transform = `scale(${this._realScale})`;
+        this._minimapContentDiv.style.width = `${(100 / this._realScale)}%`
+        this._minimapContentDiv.style.height = `${(100 / this._realScale)}%`
     }
     
     private trackScroll(){
-        this._minimapViewerDiv.style.transform = `translateY(${window.scrollY * this.realScale}px)`
+        // console.log(this);
+        const editor = document.getElementById("editor");
+        this._minimapViewerDiv.style.transform = `translateY(${editor!.scrollTop * this._realScale}px)`
+        // this._minimapContentDiv.style.transform = `translateY(${-editor!.scrollTop * this._realScale}px)`
     }
 }

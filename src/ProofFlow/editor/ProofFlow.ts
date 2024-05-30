@@ -228,6 +228,8 @@ export class ProofFlow {
         }
       }
     }
+
+    this.minimap.updateHTML();
   }
 
   /**

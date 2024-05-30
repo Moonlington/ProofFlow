@@ -3,7 +3,9 @@
     top: 30px;
     left: 50%;
     min-width: 20px;
+    /* min-height: 100px; */
     z-index: 100;
+    border: 5px solid #0000009a;
 
 }
 
@@ -21,6 +23,8 @@
     transform-origin: 0 0;
     z-index: 100;
     border: 1px solid #0000009a;
+    background-color: rgb(127, 127, 127, 0.2);
+    mix-blend-mode: normal;
 }
 
 .minimap__content{
