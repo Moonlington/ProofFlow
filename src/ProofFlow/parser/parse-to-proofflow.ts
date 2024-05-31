@@ -302,12 +302,12 @@ type AreaObject = {
  */
 function convertJSONToAreas(jsonList: AreaObject[]): JSONArea[] {
   let result : JSONArea[] = new Array;
-  for(let i of jsonList) {
+  for(let area of jsonList) {
     let jsonArea : JSONArea = new JSONArea;
-    jsonArea.type = i.type as ParseAreaType;
-    jsonArea.content = i.content;
-    jsonArea.input = i.input;
-    jsonArea.subAreas = convertJSONToAreas(i.subAreas);
+    jsonArea.type = area.type as ParseAreaType;
+    jsonArea.content = area.content;
+    jsonArea.input = area.input;
+    jsonArea.subAreas = convertJSONToAreas(area.subAreas);
     result.push(jsonArea)
   }
   console.log(result);
