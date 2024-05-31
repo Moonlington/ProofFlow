@@ -42,7 +42,7 @@ export function parseToProofFlow(
   let wrapper = new Wrapper();
 
   if (areaParsingFunction == parseToAreasLean) {
-    return parseToAreasJSON(text);
+    return parseToAreasLean(text);
   }
 
   function insertInWrapper(endIndex: number, endTagLength: number) {
