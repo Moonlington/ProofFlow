@@ -123,20 +123,18 @@ export class Minimap {
     private trackScroll(){
         this.timeoutIdScroll = 0;
 
-        // console.log(this);
         const editor = document.getElementById("editor");
-        this._minimapContentDiv.style.transform = `translateY(${-editor!.scrollTop * this._realScale * 0.5}px) scale(${this._realScale})`;
-        this._minimapViewerDiv.style.transform = `translateY(${editor!.scrollTop * this._realScale * 0.5}px)`
-        // console.log(editor!.scrollTop, editor!.scrollTop + editor!.clientHeight, editor!.clientHeight * this._bodyScale);
-        // console.log(editor!.scrollTop, editor!.clientHeight)
 
-        /*const startViewerOffset = editor!.scrollTop * this._realScale;
-        if ((editor!.scrollTop - editor!.clientHeight) > 0) {
-            const ratio = 1 - ((editor!.scrollHeight - editor!.scrollTop - editor!.clientHeight) / (editor!.scrollHeight - 2 * editor!.clientHeight));
-            this._minimapViewerDiv.style.transform = `translateY(${startViewerOffset + ratio * this._realScale * (editor!.scrollHeight - editor!.scrollTop - editor!.clientWidth) / 2}px)`
+        const viewerOffset = editor!.scrollTop * this._realScale * 0.5;
+        const otherSpace = this._minimapDiv.clientHeight - this._minimapViewerDiv.clientHeight;
+        if (viewerOffset <= otherSpace) {
+            this._minimapContentDiv.style.transform = `translateY(${-viewerOffset}px) scale(${this._realScale})`;
+            this._minimapViewerDiv.style.transform = `translateY(${viewerOffset}px)`;
         } else {
-            this._minimapViewerDiv.style.transform = `translateY(${startViewerOffset}px)`
-        }*/
-        // this._minimapContentDiv.style.transform = `translateY(${-editor!.scrollTop * this._realScale * 0.5}px) scale(${this._realScale})`;
+            const extraOffset = editor!.scrollTop * this._realScale * 0.5;
+            this._minimapContentDiv.style.transform = `translateY(${-viewerOffset - (extraOffset - otherSpace)}px) scale(${this._realScale})`;
+            this._minimapViewerDiv.style.transform = `translateY(${otherSpace}px)`;
+        }
+        
     }
 }
