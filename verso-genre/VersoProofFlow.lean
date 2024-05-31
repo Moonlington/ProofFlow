@@ -1,28 +1,40 @@
-import Verso.Doc
-import Verso.Doc.Concrete
-import Verso.Doc.TeX
-import Verso.Doc.Html
-import Verso.Output.TeX
-import Verso.Output.Html
-import Verso.Doc.Lsp
-import Verso.Doc.Elab
+-- import Verso.Doc
+-- import Verso.Doc.Concrete
+-- import Verso.Doc.TeX
+-- import Verso.Doc.Html
+-- import Verso.Output.TeX
+-- import Verso.Output.Html
+-- import Verso.Doc.Lsp
+-- import Verso.Doc.Elab
+-- import Lean.Elab.Command
+-- import Verso.Code
 
-import Verso.Genre.Manual.Basic
-import Verso.Genre.Manual.Slug
-import Verso.Genre.Manual.TeX
-import Verso.Genre.Manual.Html
-import Verso.Genre.Manual.Html.Style
-import Verso.Genre.Manual.Docstring
+-- import Lean.Elab.InfoTree
 
-import SubVerso.Examples.Slice
-import SubVerso.Highlighting
+-- import SubVerso.Examples.Slice
+-- import SubVerso.Highlighting
+
+-- open Lean Elab
+-- open Verso Doc Elab Html
+-- open SubVerso.Examples.Slice
+-- open SubVerso.Highlighting Highlighted
+-- open Lean (Name NameMap Json ToJson FromJson)
+-- open SubVerso.Examples.Slice
+-- open SubVerso.Highlighting Highlighted
+
 import Lean.Elab.Command
 import Lean.Elab.InfoTree
 
-open Lean (Name NameMap Json ToJson FromJson)
+import Verso
+import Verso.Doc.ArgParse
+-- import Verso.Genre.Manual
+import Verso.Code
+
+import SubVerso.Examples.Slice
+import SubVerso.Highlighting
+
 open Lean Elab
-open Verso ArgParse Doc Elab Html
-open Verso.Doc Elab
+open Verso ArgParse Doc Elab Html Code
 open SubVerso.Examples.Slice
 open SubVerso.Highlighting Highlighted
 
@@ -47,24 +59,9 @@ def parserInputString [Monad m] [MonadFileMap m] (str : TSyntax `str) : m String
   code := code ++ str.getString
   return code
 
-structure LeanBlockConfig where
-  «show» : Option Bool := none
-  keep : Option Bool := none
-  name : Option Name := none
-  error : Option Bool := none
-
-def LeanBlockConfig.parse [Monad m] [MonadInfoTree m] [MonadLiftT CoreM m] [MonadEnv m] [MonadError m] : ArgParse m LeanBlockConfig :=
-  LeanBlockConfig.mk <$> .named `show .bool true <*> .named `keep .bool true <*> .named `name .name true <*> .named `error .bool true
-
-def DocElabM.withFileMap (fileMap : FileMap) (act : DocElabM α) : DocElabM α :=
-  fun ρ σ ctxt σ' mctxt rw cctxt => act ρ σ ctxt σ' mctxt rw {cctxt with fileMap := fileMap}
-
-
-@[code_block_expander VersoProofFlow.Block.code]
+@[code_block_expander code]
 def code : CodeBlockExpander
-  | args, str => do
-    let config ← LeanBlockConfig.parse.run args
-
+  | _, str => do
     let altStr ← parserInputString str
 
     let ictx := Parser.mkInputContext altStr (← getFileName)
@@ -111,44 +108,13 @@ def code : CodeBlockExpander
       -- dbg_trace (← t.format)
       pushInfoTree t
 
-    match config.error with
-    | none =>
-      for msg in cmdState.messages.msgs do
-        logMessage msg
-    | some true =>
-      if cmdState.messages.hasErrors then
-        for msg in cmdState.messages.errorsToWarnings.msgs do
-          logMessage msg
-      else
-        throwErrorAt str "Error expected in code block, but none occurred"
-    | some false =>
-      for msg in cmdState.messages.msgs do
-        logMessage msg
-      if cmdState.messages.hasErrors then
-        throwErrorAt str "No error expected in code block, one occurred"
+    for msg in cmdState.messages.msgs do
+      logMessage msg
 
     let mut hls := Highlighted.empty
     for cmd in exercises do
       hls := hls ++ (← highlight cmd cmdState.messages.msgs.toArray cmdState.infoState.trees)
-    if config.show.getD true then
-      pure #[← `(Block.other {Block.lean with data := ToJson.toJson $(quote hls)} #[Block.code $(quote str.getString)])]
-    else
-      pure #[]
-
-
-
-
-def VersoProofFlow.Block.text : Block where
-  name := `VersoProofFlow.Block.text
-  id := "text"
-
-@[directive_expander VersoProofFlow.Block.text]
-def text : DirectiveExpander
-  | #[], stxs => do
-    let args ← stxs.mapM elabBlock
-    let val ← ``(Block.other VersoProofFlow.Block.text #[ $[ $args ],* ])
-    pure #[val]
-  | _, _ => Lean.Elab.throwUnsupportedSyntax
+    pure #[]
 
 def VersoProofFlow.Block.math : Block where
   name := `VersoProofFlow.Block.math
