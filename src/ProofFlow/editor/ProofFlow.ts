@@ -178,10 +178,10 @@ export class ProofFlow {
       this.syncProseMirrorToCodeMirror();
     });
 
-    // Apply global key bindings
-    applyGlobalKeyBindings(this.editorView);
-
     this.minimap = new Minimap();
+    // Apply global key bindings
+    applyGlobalKeyBindings(this.editorView, this.minimap);
+
   }
 
   /**

@@ -18,6 +18,7 @@ export class Minimap {
     private timeoutIdScroll = 0;
     private timeoutIdResize = 0;
     private debounceDelay = 300; // Adjust delay as needed
+    private on = false;
 
     constructor() {
         this._minimapDiv = document.createElement('div');
@@ -33,28 +34,37 @@ export class Minimap {
         this._minimapDiv.append(this._minimapSizeDiv, this._minimapViewerDiv, this._minimapContentDiv);
         document.body.appendChild(this._minimapDiv);
 
-        this.updateHTML();
-
-        this.getDimensions()
-
         this.observer = new MutationObserver(this.callback);
         this.start();
     }
 
+    public switch() {
+        if (this.on) this.stop();
+        else this.start();
+    }
+
     public start() {
+        this._minimapDiv.setAttribute("visible", "true"); 
+        this.updateHTML();
+        this.getDimensions();
+        this.trackScroll();
+        
+
         const editor = document.getElementById("editor");
         this.observer.observe(editor!, this._config);
         editor!.addEventListener('scroll', () => {
             if (this.timeoutIdScroll != 0) return;
-            this.timeoutIdScroll = setTimeout(this.trackScroll.bind(this), this.debounceDelay / 3);
+            this.timeoutIdScroll = setTimeout(this.trackScroll.bind(this), this.debounceDelay / 6);
         })
         editor!.addEventListener('resize', () => {
             if (this.timeoutIdResize != 0) return;
-            this.timeoutIdResize = setTimeout(this.getDimensions.bind(this), this.debounceDelay / 3);
+            this.timeoutIdResize = setTimeout(this.getDimensions.bind(this), this.debounceDelay / 6);
         })
+        this.on = true;
     }
 
     public stop() {
+        this._minimapDiv.setAttribute("visible", "false"); 
         this.timeoutIdHTML = 0;
         this.timeoutIdScroll = 0;
         this.timeoutIdResize = 0;
@@ -62,16 +72,17 @@ export class Minimap {
         this.observer.disconnect();
         editor!.removeEventListener('scroll', () => this.trackScroll);
         editor!.addEventListener('resize', () => this.getDimensions);
+        this.on = false;
     }
 
     private callback = (mutationList: MutationRecord[], observer: MutationObserver) => {
         if (this.timeoutIdHTML != 0) return;
-        console.log("Timeout set");
+        // console.log("Timeout set");
         this.timeoutIdHTML = setTimeout(this.updateHTML.bind(this), this.debounceDelay);
     };
 
     public updateHTML() {
-        console.log("updateHTML");
+        // console.log("updateHTML");
         this.timeoutIdHTML = 0;
 
         const editor = document.getElementById("editor");
