@@ -1,33 +1,8 @@
--- import Verso.Doc
--- import Verso.Doc.Concrete
--- import Verso.Doc.TeX
--- import Verso.Doc.Html
--- import Verso.Output.TeX
--- import Verso.Output.Html
--- import Verso.Doc.Lsp
--- import Verso.Doc.Elab
--- import Lean.Elab.Command
--- import Verso.Code
-
--- import Lean.Elab.InfoTree
-
--- import SubVerso.Examples.Slice
--- import SubVerso.Highlighting
-
--- open Lean Elab
--- open Verso Doc Elab Html
--- open SubVerso.Examples.Slice
--- open SubVerso.Highlighting Highlighted
--- open Lean (Name NameMap Json ToJson FromJson)
--- open SubVerso.Examples.Slice
--- open SubVerso.Highlighting Highlighted
-
 import Lean.Elab.Command
 import Lean.Elab.InfoTree
 
 import Verso
 import Verso.Doc.ArgParse
--- import Verso.Genre.Manual
 import Verso.Code
 
 import SubVerso.Examples.Slice
