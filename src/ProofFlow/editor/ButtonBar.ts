@@ -4,7 +4,7 @@ import {
   cmdInsertMarkdown,
   cmdInsertMath,
 } from "../commands/commands.ts";
-import { InsertionPlace } from "../commands/helpers.ts";
+import { InsertionPlace, allowedToInsert } from "../commands/helpers.ts";
 import { EditorView } from "prosemirror-view";
 import { NodeSelection, Selection } from "prosemirror-state";
 import { Node } from "prosemirror-model";
