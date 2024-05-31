@@ -1,9 +1,27 @@
 import axios from 'axios';
-import express from 'express';
 
-const app = express();
+const socket = new WebSocket('ws://localhost:3000');
 
-async function startServer() {
+interface DiagnosticsMessage {
+  type: 'diagnostics';
+  data: any; // Replace 'any' with a more specific type if you have one
+}
+
+socket.addEventListener('open', () => {
+  console.log('Connected to WebSocket server');
+  // Example of sending a message to the server
+  socket.send(JSON.stringify({ type: 'init', data: 'Client initialized' }));
+});
+
+socket.addEventListener('message', (event) => {
+  const message: DiagnosticsMessage = JSON.parse(event.data);
+  if (message.type === 'diagnostics') {
+    console.log('Received diagnostics:', message.data);
+  }
+  // Add other message types as needed
+});
+
+async function startServer(): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/start_server', {
       params: {
@@ -16,7 +34,7 @@ async function startServer() {
   }
 }
 
-async function initializeServer(filePath: string) {
+async function initializeServer(filePath: string): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/initialize_server', {
       params: {
@@ -29,8 +47,7 @@ async function initializeServer(filePath: string) {
   }
 }
 
-// try these below
-async function initialized() {
+async function initialized(): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/initialized');
     console.log('Initialized Response:', response.data);
@@ -39,7 +56,7 @@ async function initialized() {
   }
 }
 
-async function shutdown() {
+async function shutdown(): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/shutdown');
     console.log('Shutdown Response:', response.data);
@@ -48,7 +65,7 @@ async function shutdown() {
   }
 }
 
-async function exit() {
+async function exit(): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/exit');
     console.log('Exit Response:', response.data);
@@ -57,7 +74,7 @@ async function exit() {
   }
 }
 
-async function didOpen(uri: string, languageId: string, text: string, version: string) {
+async function didOpen(uri: string, languageId: string, text: string, version: string): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/didOpen', {
       params: {
@@ -73,7 +90,7 @@ async function didOpen(uri: string, languageId: string, text: string, version: s
   }
 }
 
-async function didClose(uri: string) {
+async function didClose(uri: string): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/didClose', {
       params: {
@@ -86,7 +103,7 @@ async function didClose(uri: string) {
   }
 }
 
-async function documentSymbol(uri: string) {
+async function documentSymbol(uri: string): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/documentSymbol', {
       params: {
@@ -99,7 +116,7 @@ async function documentSymbol(uri: string) {
   }
 }
 
-async function references(uri: string, line: number, character: number) {
+async function references(uri: string, line: number, character: number): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/references', {
       params: {
@@ -114,11 +131,13 @@ async function references(uri: string, line: number, character: number) {
   }
 }
 
-async function definition(uri: string) {
+async function definition(uri: string, line: number, character: number): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/definition', {
       params: {
-        uri: uri
+        uri: uri,
+        line: line,
+        character: character
       }
     });
     console.log('Definition Response:', response.data);
@@ -127,11 +146,13 @@ async function definition(uri: string) {
   }
 }
 
-async function typeDefinition(uri: string) {
+async function typeDefinition(uri: string, line: number, character: number): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/typeDefinition', {
       params: {
-        uri: uri
+        uri: uri,
+        line: line,
+        character: character
       }
     });
     console.log('TypeDefinition Response:', response.data);
@@ -140,7 +161,7 @@ async function typeDefinition(uri: string) {
   }
 }
 
-async function signatureHelp(uri: string, line: number, character: number) {
+async function signatureHelp(uri: string, line: number, character: number): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/signatureHelp', {
       params: {
@@ -155,7 +176,7 @@ async function signatureHelp(uri: string, line: number, character: number) {
   }
 }
 
-async function hover(uri: string, line: number, character: number) {
+async function hover(uri: string, line: number, character: number): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/hover', {
       params: {
@@ -170,7 +191,7 @@ async function hover(uri: string, line: number, character: number) {
   }
 }
 
-async function gotoDeclaration(uri: string, line: number, character: number) {
+async function gotoDeclaration(uri: string, line: number, character: number): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/gotoDeclaration', {
       params: {
@@ -201,34 +222,3 @@ export {
   hover,
   gotoDeclaration
 };
-
-app.use(express.json());
-
-app.post('/publishDiagnostics', (req, _) => {
-  console.log('Received request:', req.body);
-
-  const { uri, version, diagnostics } = req.body;
-
-  if (diagnostics.length !== 0) {
-    console.log('Received diagnostics:');
-    console.log('URI:', uri);
-    console.log('Version:', version);
-    diagnostics.forEach((diagnostic: any) => {
-      console.log('Range:', diagnostic.range);
-      console.log('Message:', diagnostic.message);
-    });
-  }
-});
-
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
-// startServer().then(() => {
-//   initializeServer('mock\\mock.v').then(() => {
-//     initialized().then(() => {
-//       didOpen('mock\\mock.v', 'coq', 'example', '1');
-//     });
-//   });
-// });

@@ -7,7 +7,7 @@ import "./ProofFlow/styles/ProofFlow.css";
 import "./ProofFlow/styles/index.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
-import { startServer,  initializeServer} from "./basicLspFunctions";
+import { startServer,  initializeServer, initialized, didOpen} from "./basicLspFunctions";
 
 // Get the editor and content elements
 const editorElement: HTMLElement = document.querySelector("#editor")!;
@@ -16,8 +16,14 @@ const contentElement: HTMLElement = document.querySelector("#content")!;
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
 
-startServer();
-initializeServer("C:\\Users\\20212170\\OneDrive - TU Eindhoven\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v");
+
+startServer().then(() => {
+  initializeServer('C:\\Users\\20212170\\OneDrive - TU Eindhoven\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v').then(() => {
+    initialized().then(() => {
+      didOpen('C:\\Users\\20212170\\OneDrive - TU Eindhoven\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v', 'coq', 'example', '1');
+    });
+  });
+});
 
 // Button to create a new instance of the editor and content elements
 const buttonNewInstance = document.getElementById("newtextblock");
