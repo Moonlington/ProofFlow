@@ -12,8 +12,8 @@ import {
   Transaction,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { GetPos } from "../codemirror/types.ts";
-import { CodeMirrorView } from "../codemirror";
+import { GetPos } from "../CodeMirror/types.ts";
+import { CodeMirrorView } from "../codemirror/index.ts";
 import {
   collapsibleContentType,
   collapsibleNodeType,

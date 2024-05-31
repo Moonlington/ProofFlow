@@ -17,6 +17,7 @@ import {
 } from "../commands/commands.ts";
 import { InsertionPlace } from "../commands/helpers.ts";
 import { collapsibleAreaPlugin } from "../collapsiblearea.ts";
+import { markdownPlugin } from "../plugins/plugin-markdown.ts";
 // Create input rules using default regex
 const blockMathInputRule = makeBlockMathInputRule(
   REGEX_BLOCK_MATH_DOLLARS,
@@ -36,6 +37,9 @@ export function createPlugins(schema: Schema): Plugin[] {
   plugins.push(mathPlugin);
 
   plugins.push(collapsibleAreaPlugin);
+
+  // Add markdown plugin
+  plugins.push(markdownPlugin);
 
   // Add keymap plugin with keybindings for various commands
   plugins.push(
