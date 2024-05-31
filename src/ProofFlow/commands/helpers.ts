@@ -6,6 +6,7 @@ import {
   Selection,
   Transaction,
 } from "prosemirror-state";
+import { closeHistory } from "prosemirror-history";
 
 /**
  * Represents the possible places where an insertion can occur.
@@ -33,8 +34,7 @@ export type InsertionFunction = (
  * @param sel - The selection to determine the type of.
  * @returns An object with properties indicating the type of the selection.
  */
-export function selectionType(sel: Selection) {
-  console.log(sel);
+export function getSelectionType(sel: Selection) {
   return {
     isTextSelection: sel instanceof TextSelection, // True if the selection is a text selection
     isNodeSelection: sel instanceof NodeSelection, // True if the selection is a node selection
@@ -54,16 +54,14 @@ export function insertAbove(
   tr: Transaction,
   ...nodeType: NodeType[]
 ): Transaction {
-  // Determine the type of the selection and the insertion point
   const sel = state.selection;
-  const { isTextSelection, isNodeSelection } = selectionType(sel);
+  const { isTextSelection, isNodeSelection } = getSelectionType(sel);
 
-  // Initialize the transaction object
   let trans: Transaction = tr;
 
   if (isNodeSelection) {
-    // If the selection is a node selection, insert the specified node types above the current selection
-    const pos = sel.from;
+    // If the selection is a node selection, insert above that node
+    const pos = sel.from; // Get the position of the selection
     let counter = pos;
 
     nodeType.forEach((type) => {
@@ -71,10 +69,9 @@ export function insertAbove(
       counter++;
     });
   } else if (isTextSelection) {
-    // If the selection is a text selection, insert the specified node types above the current selection
-    const textSel = sel as TextSelection;
-    const from = textSel.from - 1;
-    let counter = from;
+    // If the selection is a text selection, insert above the parent node
+    const parentPos = sel.$from.depth ? sel.$from.before(sel.$from.depth) : 0; // Get the position of the parent node or 0 if it doesn't exist
+    let counter = parentPos;
 
     nodeType.forEach((type) => {
       trans = trans.insert(counter, type.create());
@@ -90,6 +87,9 @@ export function insertAbove(
       counter++;
     });
   }
+
+  // Close the history event to prevent further steps from being appended to it
+  trans = closeHistory(trans);
 
   return trans;
 }
@@ -109,7 +109,7 @@ export function insertUnder(
 ): Transaction {
   // Determine the type of the selection and the insertion point
   const sel = state.selection;
-  const { isTextSelection, isNodeSelection } = selectionType(sel);
+  const { isTextSelection, isNodeSelection } = getSelectionType(sel);
 
   // Initialize the transaction object
   let trans: Transaction = tr;
@@ -130,7 +130,7 @@ export function insertUnder(
       sel.to + (sel.$from.parent.nodeSize - textSel.$from.parentOffset) - 1;
     // Check if the to point is valid
     if (to > state.doc.nodeSize) {
-      console.log("This is no bueno");
+      console.log("Invalid insertion point");
       return trans;
     }
     let counter = to;
@@ -149,6 +149,9 @@ export function insertUnder(
     });
   }
 
+  // Close the history event to prevent further steps from being appended to it
+  trans = closeHistory(trans);
+
   return trans;
 }
 
@@ -160,7 +163,7 @@ export function insertUnder(
  */
 export function getContainingNode(sel: Selection): Node | undefined {
   // Determine the type of the selection
-  const { isTextSelection, isNodeSelection } = selectionType(sel);
+  const { isTextSelection, isNodeSelection } = getSelectionType(sel);
 
   // If the selection is a text or node selection, return the parent node of the selection
   // Otherwise, return undefined
@@ -179,5 +182,17 @@ export function getContainingNode(sel: Selection): Node | undefined {
  * @returns A boolean indicating whether insertion is allowed.
  */
 export function allowedToInsert(state: EditorState): boolean {
+  let selection = state.selection;
+  let selectionType = getSelectionType(selection);
+  console.log(selection);
+  if (selectionType.isTextSelection) {
+    let node = selection.$from.node();
+    if (node == null) return true;
+    if (node.type.name == "collapsible_title") return false;
+  } else if (selectionType.isNodeSelection) {
+    let node = (selection as NodeSelection).node;
+    if (node.type.name == "collapsible_content") return false;
+    if (node.type.name == "collapsible_title") return false;
+  }
   return true;
 }

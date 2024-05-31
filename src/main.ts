@@ -1,10 +1,10 @@
-import { ProofFlow } from "./ProofFlow/ProofFlow";
+import { ProofFlow } from "./ProofFlow/editor/ProofFlow.ts";
 import {
   AcceptedFileTypes,
   isCorrectFileType,
 } from "./ProofFlow/parser/accepted-file-types";
-import "./ProofFlow.css";
-import "./index.css";
+import "./ProofFlow/styles/ProofFlow.css";
+import "./ProofFlow/styles/index.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
 
@@ -40,6 +40,11 @@ buttonInsertHi?.addEventListener("click", (e) => {
   proofFlow.createTextArea("hi");
 });
 
+let buttonSaveFile = document.getElementById("save-file");
+buttonSaveFile?.addEventListener("click", (e) => {
+  proofFlow.saveFile();
+});
+
 // Input to read file
 document
   .getElementById("file-input")
@@ -72,9 +77,16 @@ function readSingleFile(e: Event) {
     if (readerEvent?.target?.result) {
       // Get the result from the reader event
       const result = readerEvent.target.result.toString();
+      proofFlow.setFileName(file.name);
 
       // Process the file content
-      proofFlow.openOriginalCoqFile(result);
+      if (fileType == AcceptedFileTypes.Coq) {
+        proofFlow.openOriginalCoqFile(result);
+      } else if (fileType == AcceptedFileTypes.CoqMD) {
+        proofFlow.openMarkdownCoqFile(result);
+      } else if (fileType == AcceptedFileTypes.Lean) {
+        proofFlow.openLeanFile(result);
+      }
     }
   };
 }

@@ -17,11 +17,13 @@
   "dependencies": {
     "@benrbray/prosemirror-math": "^1.0.0",
     "@codemirror/lang-javascript": "^6.2.2",
+    "@codemirror/matchbrackets": "^0.19.4",
     "codemirror": "^6.0.1",
     "prettier": "^3.2.5",
     "prosemirror-commands": "^1.5.2",
     "prosemirror-example-setup": "^1.2.2",
     "prosemirror-keymap": "^1.2.2",
+    "prosemirror-markdown": "^1.12.0",
     "prosemirror-model": "^1.21.0",
     "prosemirror-schema-basic": "^1.2.2",
     "prosemirror-state": "^1.4.3",

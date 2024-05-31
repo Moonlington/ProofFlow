@@ -20,21 +20,44 @@
   border-bottom: #2701ff13 0.5px solid;
 }
 
+collapsible_title {
+  border: #85b46f 4px;
+  width: 100%;
+  display: block;
+  border-style: solid;
+}
+
+.collapsible {
+  border: #85b46f 3px;
+  width: 100% - 4px;
+  border-style: dashed;
+}
+
 codecell {
   background-color: #2701ff19;
+  display: block;
+  width: 100%;
 }
 
 markdown {
   background-color: #ff000019;
+  display: block;
+  width: 100%;
 }
 
 math-display {
   background-color:  #f6ff0019;
+  display: block;
+  width: 100%;
+}
+
+div[visible="false"] {
+  display: none;
 }
 
 #editor {
-  background-color: #f0f0f0; 
-  float: left; 
+  background-color: #f0f0f0;
+  float: left;
 }
 
 #content {
@@ -44,6 +67,7 @@ math-display {
 
 #editor, #content {
   width: 49.5%;
+  min-width: 300px;
   height: 98vh;
   background-clip: padding-box;
   border-color: black;
@@ -59,19 +83,21 @@ math-display {
   align-items: center;
   background-color: #f0f0f0;
   border-bottom: 1px solid #ccc;
-  padding: 8px;
 }
 
 .button-bar button {
-  padding: 8px 16px;
-  background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 4px;
   cursor: pointer;
-  width: 100px;
-  margin: 4px
+  font-size: 8px;
+  width: 95%;
+  min-width: 50px;
 }
 
 .button-bar button:hover {
   background-color: #e0e0e0;
+}
+
+#container {
+  min-width: 605px;
 }

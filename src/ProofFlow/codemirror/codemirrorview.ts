@@ -2,7 +2,7 @@
  *  Adapted from https://github.com/sibiraj-s/prosemirror-codemirror-6
  *--------------------------------------------------------*/
 
-import { Selection, TextSelection } from "prosemirror-state";
+import { Selection, TextSelection, Transaction } from "prosemirror-state";
 import type { EditorView, NodeView } from "prosemirror-view";
 import type { Node as ProsemirrorNode } from "prosemirror-model";
 import { exitCode } from "prosemirror-commands";
@@ -45,20 +45,24 @@ const computeChange = (
 };
 
 /**
- * A node view for CodeMirror nodes, used for implementing the CodeMirror editor
+ * A node view for codemirror nodes, used for implementing the codemirror editor
  */
 class CodeMirrorView implements NodeView {
   node: ProsemirrorNode;
-  view: EditorView;
+  _outerView: EditorView;
+  _innerView: EditorView | undefined;
   dom: HTMLElement;
   cm: CMView;
   getPos: () => number;
   updating = false;
 
+  static instances: CodeMirrorView[] = [];
+  static focused: CodeMirrorView | null = null;
+
   constructor(options: CodeMirrorViewOptions) {
     // Store for later
     this.node = options.node;
-    this.view = options.view;
+    this._outerView = options.view;
     const cmExtensions = options.cmOptions?.extensions || [];
 
     this.getPos = options.getPos as () => number;
@@ -70,7 +74,7 @@ class CodeMirrorView implements NodeView {
       return true;
     });
 
-    // Create a CodeMirror instance
+    // Create a codemirror instance
     this.cm = new CMView({
       dispatch: this.dispatch.bind(this),
     });
@@ -78,8 +82,23 @@ class CodeMirrorView implements NodeView {
     // The editor's outer node is our DOM representation
     this.dom = this.cm.dom;
 
+    // Keymaps for the codemirror editor
+    const tabKeymap = keymap.of([
+      {
+        key: "Tab",
+        run: () => {
+          const state = this.cm.state;
+          this.cm.dispatch(state.update(state.replaceSelection("\t")));
+          return true;
+        },
+        preventDefault: true,
+      },
+    ]);
+
     const cmState = CMState.create({
       doc: this.node.textContent,
+
+      // Defining keymaps for codemirror
       extensions: [
         changeFilter,
         keymap.of([
@@ -102,8 +121,8 @@ class CodeMirrorView implements NodeView {
           {
             key: "Ctrl-Enter",
             run: () => {
-              if (exitCode(this.view.state, this.view.dispatch)) {
-                this.view.focus();
+              if (exitCode(this._outerView.state, this._outerView.dispatch)) {
+                this._outerView.focus();
                 return true;
               }
               return false;
@@ -111,33 +130,76 @@ class CodeMirrorView implements NodeView {
           },
         ]),
         cmExtensions,
+        tabKeymap,
       ],
     });
 
     this.cm.setState(cmState);
+
+    // Add the newest instance to the list of instances
+    CodeMirrorView.instances.push(this);
+
+    // Ensure the selection is synchronized from ProseMirror to codemirror
+    this._outerView.dom.addEventListener("focus", () =>
+      this.forwardSelection(),
+    );
   }
 
+  /**
+   *  Method to find a CodeMirrorView instance by its position in the ProseMirror document
+   */
+  static findByPos(pos: number): CodeMirrorView | null {
+    return (
+      CodeMirrorView.instances.find((instance) => instance.getPos() === pos) ||
+      null
+    );
+  }
+
+  /**
+   * Method to move the cursor to the ProseMirrocr editor
+   */
   forwardSelection() {
     if (!this.cm.hasFocus) {
       return;
     }
 
-    const { state } = this.view;
+    const { state } = this._outerView;
     const selection = this.asProseMirrorSelection(state.doc);
 
     if (!selection.eq(state.selection)) {
-      this.view.dispatch(state.tr.setSelection(selection));
+      this._outerView.dispatch(state.tr.setSelection(selection));
     }
+
+    // Ensure only one cursor is active
+    if (CodeMirrorView.focused instanceof CodeMirrorView) {
+      CodeMirrorView.focused.blurInstance();
+    }
+
+    CodeMirrorView.focused = this;
   }
 
-  // Converts the CodeMirror selection to a ProseMirror selection
+  /**
+   * Method to blur the CodeMirror instance when other instances are focused
+   */
+  blurInstance() {
+    this.setSelection(
+      this.cm.state.selection.main.head,
+      this.cm.state.selection.main.head,
+    );
+    CodeMirrorView.focused = null;
+  }
+
+  // Converts the codemirror selection to a ProseMirror selection
   asProseMirrorSelection(doc: ProsemirrorNode) {
     const offset = this.getPos() + 1;
     const { anchor, head } = this.cm.state.selection.main;
     return TextSelection.create(doc, anchor + offset, head + offset);
   }
 
-  // Dispatch a transaction to the ProseMirror editor
+  /**
+   * Dispatch a transaction to the codemirror editor and update the ProseMirror editor
+   * @param cmTr
+   */
   dispatch(cmTr: CMTransaction) {
     this.cm.setState(cmTr.state);
 
@@ -152,21 +214,22 @@ class CodeMirrorView implements NodeView {
       }
 
       const content = change.text
-        ? this.view.state.schema.text(change.text)
+        ? this._outerView.state.schema.text(change.text)
         : null;
 
-      const tr = this.view.state.tr.replaceWith(
+      const tr = this._outerView.state.tr.replaceWith(
         change.from + start,
         change.to + start,
         content as ProsemirrorNode,
       );
-      this.view.dispatch(tr);
+      this._outerView.dispatch(tr);
       this.forwardSelection();
     }
   }
 
   /**
-   * Escape the CodeMirror editor and move the cursor to the ProseMirror editor
+   * Escape the codemirror editor and move the cursor to the ProseMirror editor
+   * Will return false if the movement will not escape the current view
    */
   mayBeEscape(unit: "char" | "line", dir: -1 | 1): Command {
     return (view) => {
@@ -196,20 +259,20 @@ class CodeMirrorView implements NodeView {
 
       const targetPos = this.getPos() + (dir < 0 ? 0 : this.node.nodeSize);
       const pmSelection = Selection.near(
-        this.view.state.doc.resolve(targetPos),
+        this._outerView.state.doc.resolve(targetPos),
         dir,
       );
-      this.view.dispatch(
-        this.view.state.tr.setSelection(pmSelection).scrollIntoView(),
+      this._outerView.dispatch(
+        this._outerView.state.tr.setSelection(pmSelection).scrollIntoView(),
       );
-      this.view.focus();
+      this._outerView.focus();
       return true;
     };
   }
 
   /**
    * Update the node view if the node has changed
-   * and update the CodeMirror editor if the content has changed
+   * and update the codemirror editor if the content has changed
    */
   update(node: ProsemirrorNode) {
     if (node.type !== this.node.type) {
@@ -234,10 +297,9 @@ class CodeMirrorView implements NodeView {
   }
 
   /**
-   * Focus the CodeMirror editor and set the selection
+   * Focus the codemirror editor and set the selection
    */
   setSelection(anchor: number, head: number): void {
-    this.focus();
     this.updating = true;
     this.cm.dispatch({ selection: { anchor, head } });
     this.updating = false;
@@ -246,6 +308,8 @@ class CodeMirrorView implements NodeView {
   focus() {
     this.cm.focus();
     this.forwardSelection();
+    console.log("focused", this);
+    CodeMirrorView.focused = this;
   }
 
   selectNode() {
@@ -256,8 +320,12 @@ class CodeMirrorView implements NodeView {
     return true;
   }
 
+  // Ensure to remove the instance on destroy
   destroy() {
     this.cm.destroy();
+    CodeMirrorView.instances = CodeMirrorView.instances.filter(
+      (instance) => instance !== this,
+    );
   }
 }
 

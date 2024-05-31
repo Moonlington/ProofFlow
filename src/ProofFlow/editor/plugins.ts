@@ -3,6 +3,7 @@ import { keymap } from "prosemirror-keymap";
 import { Schema } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
 import { mathPlugin } from "@benrbray/prosemirror-math";
+import { history } from "prosemirror-history";
 import { inputRules } from "prosemirror-inputrules";
 import {
   makeBlockMathInputRule,
@@ -13,9 +14,9 @@ import {
   cmdInsertCode,
   cmdInsertMarkdown,
   cmdInsertMath,
-} from "./commands/commands";
-import { InsertionPlace } from "./commands/helpers";
-
+} from "../commands/commands.ts";
+import { InsertionPlace } from "../commands/helpers.ts";
+import { collapsibleAreaPlugin } from "../collapsiblearea.ts";
 // Create input rules using default regex
 const blockMathInputRule = makeBlockMathInputRule(
   REGEX_BLOCK_MATH_DOLLARS,
@@ -34,9 +35,17 @@ export function createPlugins(schema: Schema): Plugin[] {
   // Add math plugin
   plugins.push(mathPlugin);
 
+  plugins.push(collapsibleAreaPlugin);
+
   // Add keymap plugin with keybindings for various commands
   plugins.push(
     keymap({
+      Tab: (state, dispatch) => {
+        if (dispatch) {
+          dispatch(state.tr.insertText("\t"));
+        }
+        return true;
+      },
       Backspace: deleteSelection,
       Delete: deleteSelection,
       Enter: newlineInCode, // This only works in code sections
@@ -51,6 +60,9 @@ export function createPlugins(schema: Schema): Plugin[] {
 
   // Add input rules plugin with block math input rule
   plugins.push(inputRules({ rules: [blockMathInputRule] }));
+
+  // Add history plugin
+  plugins.push(history());
 
   return plugins;
 }
