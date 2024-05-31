@@ -14,9 +14,18 @@ import Verso.Genre.Manual.Html
 import Verso.Genre.Manual.Html.Style
 import Verso.Genre.Manual.Docstring
 
-open Lean (Name NameMap Json ToJson FromJson)
+import SubVerso.Examples.Slice
+import SubVerso.Highlighting
+import Lean.Elab.Command
+import Lean.Elab.InfoTree
 
+open Lean (Name NameMap Json ToJson FromJson)
+open Lean Elab
+open Verso ArgParse Doc Elab Html
 open Verso.Doc Elab
+open SubVerso.Examples.Slice
+open SubVerso.Highlighting Highlighted
+
 structure Block where
   name : Name
   id : String
@@ -25,19 +34,115 @@ def VersoProofFlow.Block.code : Block where
   name := `VersoProofFlow.Block.code
   id := "code"
 
-@[directive_expander code]
-def code : DirectiveExpander
-  | #[], stxs => do
-    let args ← stxs.mapM elabBlock
-    let val ← ``(Block.other VersoProofFlow.Block.code #[ $[ $args ],* ])
-    pure #[val]
-  | _, _ => Lean.Elab.throwUnsupportedSyntax
+def parserInputString [Monad m] [MonadFileMap m] (str : TSyntax `str) : m String := do
+  let preString := (← getFileMap).source.extract 0 (str.raw.getPos?.getD 0)
+  let mut code := ""
+  let mut iter := preString.iter
+  while !iter.atEnd do
+    if iter.curr == '\n' then code := code.push '\n'
+    else
+      for _ in [0:iter.curr.utf8Size.toNat] do
+        code := code.push ' '
+    iter := iter.next
+  code := code ++ str.getString
+  return code
+
+structure LeanBlockConfig where
+  «show» : Option Bool := none
+  keep : Option Bool := none
+  name : Option Name := none
+  error : Option Bool := none
+
+def LeanBlockConfig.parse [Monad m] [MonadInfoTree m] [MonadLiftT CoreM m] [MonadEnv m] [MonadError m] : ArgParse m LeanBlockConfig :=
+  LeanBlockConfig.mk <$> .named `show .bool true <*> .named `keep .bool true <*> .named `name .name true <*> .named `error .bool true
+
+def DocElabM.withFileMap (fileMap : FileMap) (act : DocElabM α) : DocElabM α :=
+  fun ρ σ ctxt σ' mctxt rw cctxt => act ρ σ ctxt σ' mctxt rw {cctxt with fileMap := fileMap}
+
+
+@[code_block_expander VersoProofFlow.Block.code]
+def code : CodeBlockExpander
+  | args, str => do
+    let config ← LeanBlockConfig.parse.run args
+
+    let altStr ← parserInputString str
+
+    let ictx := Parser.mkInputContext altStr (← getFileName)
+    let cctx : Command.Context := { fileName := ← getFileName, fileMap := FileMap.ofString altStr, tacticCache? := none, snap? := none}
+    let mut cmdState : Command.State := {env := ← getEnv, maxRecDepth := ← MonadRecDepth.getMaxRecDepth, scopes := [{header := ""}, {header := ""}]}
+    let mut pstate := {pos := 0, recovering := false}
+    let mut exercises := #[]
+    let mut solutions := #[]
+
+    repeat
+      let scope := cmdState.scopes.head!
+      let pmctx := { env := cmdState.env, options := scope.opts, currNamespace := scope.currNamespace, openDecls := scope.openDecls }
+      let (cmd, ps', messages) := Parser.parseCommand ictx pmctx pstate cmdState.messages
+      pstate := ps'
+      cmdState := {cmdState with messages := messages}
+
+      -- dbg_trace "Unsliced is {cmd}"
+      let slices : Slices ← DocElabM.withFileMap (FileMap.ofString altStr) (sliceSyntax cmd)
+      let sol := slices.sliced.findD "solution" slices.residual
+      solutions := solutions.push sol
+      let ex := slices.sliced.findD "exercise" slices.residual
+      exercises := exercises.push ex
+
+      cmdState ← withInfoTreeContext (mkInfoTree := pure ∘ InfoTree.node (.ofCommandInfo {elaborator := `DemoTextbook.Exts.lean, stx := cmd})) do
+        let mut cmdState := cmdState
+        -- dbg_trace "Elaborating {ex}"
+        match (← liftM <| EIO.toIO' <| (Command.elabCommand ex cctx).run cmdState) with
+        | Except.error e => logError e.toMessageData
+        | Except.ok ((), s) =>
+          cmdState := {s with env := cmdState.env}
+
+        -- dbg_trace "Elaborating {sol}"
+        match (← liftM <| EIO.toIO' <| (Command.elabCommand sol cctx).run cmdState) with
+        | Except.error e => logError e.toMessageData
+        | Except.ok ((), s) =>
+          cmdState := s
+
+        pure cmdState
+
+      if Parser.isTerminalCommand cmd then break
+
+    setEnv cmdState.env
+    for t in cmdState.infoState.trees do
+      -- dbg_trace (← t.format)
+      pushInfoTree t
+
+    match config.error with
+    | none =>
+      for msg in cmdState.messages.msgs do
+        logMessage msg
+    | some true =>
+      if cmdState.messages.hasErrors then
+        for msg in cmdState.messages.errorsToWarnings.msgs do
+          logMessage msg
+      else
+        throwErrorAt str "Error expected in code block, but none occurred"
+    | some false =>
+      for msg in cmdState.messages.msgs do
+        logMessage msg
+      if cmdState.messages.hasErrors then
+        throwErrorAt str "No error expected in code block, one occurred"
+
+    let mut hls := Highlighted.empty
+    for cmd in exercises do
+      hls := hls ++ (← highlight cmd cmdState.messages.msgs.toArray cmdState.infoState.trees)
+    if config.show.getD true then
+      pure #[← `(Block.other {Block.lean with data := ToJson.toJson $(quote hls)} #[Block.code $(quote str.getString)])]
+    else
+      pure #[]
+
+
+
 
 def VersoProofFlow.Block.text : Block where
   name := `VersoProofFlow.Block.text
   id := "text"
 
-@[directive_expander text]
+@[directive_expander VersoProofFlow.Block.text]
 def text : DirectiveExpander
   | #[], stxs => do
     let args ← stxs.mapM elabBlock
