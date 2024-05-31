@@ -42,7 +42,7 @@ export function parseToProofFlow(
   let wrapper = new Wrapper();
 
   if (areaParsingFunction == parseToAreasLean) {
-    return parseToAreasLean(text);
+    return parseToAreasJSON(text);
   }
 
   function insertInWrapper(endIndex: number, endTagLength: number) {
@@ -288,25 +288,26 @@ class JSONArea implements ParseArea {
   input: boolean = false;
 }
 
+type AreaObject = {
+  content:string,
+  input: boolean,
+  subAreas: AreaObject[],
+  type: string
+} 
+
 /**
  * Converts a list of json objects as passed by (TODO: add location) to a list of JSONAreas. 
  * @param jsonList a list of json objects.
  * @returns a list of JSONAreas.
  */
-function convertJSONToAreas(jsonList: {content:string, input: boolean, subAreas: {content:string, input: boolean, subAreas: [], type: string}[], type: string}[]): JSONArea[] {
+function convertJSONToAreas(jsonList: AreaObject[]): JSONArea[] {
   let result : JSONArea[] = new Array;
   for(let i of jsonList) {
     let jsonArea : JSONArea = new JSONArea;
     jsonArea.type = i.type as ParseAreaType;
     jsonArea.content = i.content;
     jsonArea.input = i.input;
-    i.subAreas.forEach(element => {
-      let JSONSubArea: JSONArea = new JSONArea;
-      JSONSubArea.type = element.type as ParseAreaType;
-      JSONSubArea.content = element.content;
-      JSONSubArea.input = element.input;
-      jsonArea.subAreas.push(JSONSubArea);
-    });
+    jsonArea.subAreas = convertJSONToAreas(i.subAreas);
     result.push(jsonArea)
   }
   console.log(result);
