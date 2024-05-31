@@ -12,8 +12,11 @@ import {
   renderedToMarkdown,
   markdownToRendered,
   highLevelCells,
+  getContainingNode,
 } from "../commands/helpers.ts";
 import { ProofFlowSchema } from "../editor/proofflowschema.ts";
+import { proofFlow } from "../../main.ts";
+import { UserMode } from "../UserMode/userMode.ts";
 
 export const markdownPlugin = new Plugin({
   props: {
@@ -26,6 +29,9 @@ export const markdownPlugin = new Plugin({
       let correctPos = 0;
       let offsetToClicked = 0;
       let newNodes = Array<Node>();
+      let container = getContainingNode(view.state.selection);
+
+      let notLocked: boolean = !(proofFlow.userMode === UserMode.Student && container?.type.name !== "input_content")
 
       // Go through all the descendants of the document node
       view.state.doc.descendants((node, pos) => {
@@ -36,7 +42,7 @@ export const markdownPlugin = new Plugin({
         let newNode: Node = node;
         let bIsClickedNode: boolean = isClickedNode(node, pos, clickedPos);
         // Case: This is the clicked on rendered markdown node, hence we need to replace it with a markdown node
-        if (bIsClickedNode && node.type.name === "markdown_rendered") {
+        if (bIsClickedNode && node.type.name === "markdown_rendered" && notLocked) {
           newNode = renderedToMarkdown(node, ProofFlowSchema);
         }
 
@@ -47,7 +53,7 @@ export const markdownPlugin = new Plugin({
 
         // Case: We are in a collapsible content node and hence need to add the new node
         // to the "collapsible" parent node and then replace the old collapsible content node
-        else if (node.type.name === "collapsible") {
+        else if (node.type.name === "collapsible" && notLocked) {
           let collapsibleParentNode: Node = node; // Get the collapsible parent node
           let collapsibleTitleNode: Node = collapsibleParentNode.firstChild!; // Get the collapsible title node
           let collapsibleContentNode: Node = collapsibleParentNode.child(1)!; // Get the collapsible content node
