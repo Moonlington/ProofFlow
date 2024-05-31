@@ -1,6 +1,6 @@
 import { Schema, DOMParser, Node } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/index.ts";
-import type { GetPos } from "../CodeMirror/types.ts";
+import type { GetPos } from "../codemirror/types.ts";
 import { ProofFlowSchema } from "./proofflowschema.ts";
 import {
   EditorState,

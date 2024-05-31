@@ -4,13 +4,15 @@ import {
   cmdInsertMarkdown,
   cmdInsertMath,
 } from "../commands/commands.ts";
-import { InsertionPlace, allowedToInsert } from "../commands/helpers.ts";
+import { InsertionPlace, allowedToInsert, getContainingNode } from "../commands/helpers.ts";
 import { EditorView } from "prosemirror-view";
 import { NodeSelection, Selection } from "prosemirror-state";
 import { Node } from "prosemirror-model";
 import { deleteSelection } from "prosemirror-commands";
 import { undo, redo } from "prosemirror-history";
 import { getInputInsertCommand } from "../commands/insert-commands.ts";
+import { proofFlow } from "../../main.ts";
+import { UserMode } from "../UserMode/userMode.ts";
 
 /**
  * Represents a button bar for interacting with an editor.
@@ -54,6 +56,9 @@ export class ButtonBar {
       if (i === columnCount - 1) {
         // Add delete button
         this.addButton(column, "Delete", () => {
+          const selection = this._editorView.state.selection
+          const container = getContainingNode(selection);
+          if (proofFlow.userMode === UserMode.Student && container?.type.name !== "input_content") return;
           if (this._editorView.state.selection instanceof NodeSelection) {
             // this works for math nodes
             deleteSelection(this._editorView.state, this._editorView.dispatch);
