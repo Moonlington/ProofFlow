@@ -35,7 +35,7 @@ import {
   collapsibleTitleNodeType,
   collapsibleContentType,
 } from "./nodetypes.ts";
-import { AcceptedFileTypes } from "../parser/accepted-file-types.ts";
+import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 // CSS
 
 export class ProofFlow {
@@ -140,17 +140,17 @@ export class ProofFlow {
    * @param text - The content of the Coq file.
    * @param fileType - The type of the file.
    */
-  public openFile(text: string, fileType: AcceptedFileTypes) {
+  public openFile(text: string, fileType: AcceptedFileType) {
     // Process the file content
     let areaParsingFunction: (text: string) => Area[];
     switch (fileType) {
-      case AcceptedFileTypes.Coq:
+      case AcceptedFileType.Coq:
         areaParsingFunction = parseToAreasV;
         break;
-      case AcceptedFileTypes.CoqMD:
+      case AcceptedFileType.CoqMD:
         areaParsingFunction = parseToAreasMV;
         break;
-      case AcceptedFileTypes.Lean:
+      case AcceptedFileType.Lean:
         areaParsingFunction = parseToAreasLean;
         break;
       default:

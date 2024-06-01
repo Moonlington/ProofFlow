@@ -1,6 +1,6 @@
 import { ProofFlow } from "./ProofFlow/editor/ProofFlow.ts";
 import {
-  AcceptedFileTypes,
+  AcceptedFileType,
   isCorrectFileType,
 } from "./ProofFlow/parser/accepted-file-types";
 import "./ProofFlow/styles/ProofFlow.css";
@@ -52,7 +52,7 @@ function readSingleFile(e: Event) {
   // Get the first file from the list and check if it's a correct file type
   const file = fileList[0];
   const fileType = isCorrectFileType(file);
-  if (fileType === AcceptedFileTypes.Unknown) {
+  if (fileType === AcceptedFileType.Unknown) {
     console.log("Sorry, this file type is currently not supported");
     return;
   }
