@@ -37,9 +37,14 @@ import {
 // CSS
 
 export class ProofFlow {
-  private _schema: Schema; // The schema for the editor
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
   private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
+  
+  private _schema: Schema = ProofFlowSchema; // The schema for the editor
+  private editorStateConfig: EditorStateConfig = {
+    schema: ProofFlowSchema,
+    plugins: createPlugins(ProofFlowSchema),
+  };
 
   private editorView: EditorView; // The view of the editor
 
@@ -49,58 +54,56 @@ export class ProofFlow {
    * Represents the ProofFlow class.
    * @constructor
    * @param {HTMLElement} editorElem - The HTML element that serves as the editor container.
-   * @param {HTMLElement} contentElement - The HTML element that contains the initial content for the editor.
+   * @param {HTMLElement} contentElem - The HTML element that contains the initial content for the editor.
    */
-  constructor(editorElem: HTMLElement, contentElement: HTMLElement) {
-    this._schema = ProofFlowSchema; // Set the schema for the editor
+  constructor(editorElem: HTMLElement, contentElem: HTMLElement) {
     this._editorElem = editorElem; // Set the editor element
-    this._contentElem = contentElement; // Set the content element
-
-    // Create the editor state
-    let editorStateConfig: EditorStateConfig = {
-      schema: ProofFlowSchema,
-      doc: DOMParser.fromSchema(ProofFlowSchema).parse(this._contentElem),
-      plugins: createPlugins(ProofFlowSchema),
-    };
-    const editorState = EditorState.create(editorStateConfig);
-
+    this._contentElem = contentElem; // Set the content element
     // Create the editor view
+    this.editorView = this.createEditorView();
+  }
+
+  private createEditorView(): EditorView {
+    // Create the editor state
+    const editorState = EditorState.create(this.editorStateConfig);
     let directEditorProps: DirectEditorProps = {
       state: editorState,
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
-      
+
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
-        code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
-          new CodeMirrorView({
-            node,
-            view,
-            getPos,
-            cmOptions: {
-              extensions: [
-                // will be changed, and later code from basic setup will be added to the codebase
-                basicSetup,
-                javascript(),
-              ],
-            },
-          }),
+        code_mirror: (node: Node, view: EditorView, getPos: GetPos) => new CodeMirrorView({
+          node,
+          view,
+          getPos,
+          cmOptions: {
+            extensions: [
+              // will be changed, and later code from basic setup will be added to the codebase
+              basicSetup,
+              javascript(),
+            ],
+          },
+        }),
       },
     };
-    this.editorView = new EditorView(this._editorElem, directEditorProps);
 
-    // Create the button bar and render it
-    const buttonBar = new ButtonBar(this._schema, this.editorView);
-    buttonBar.render(this._editorElem);
+    let editorView = new EditorView(this._editorElem, directEditorProps)
 
     // Synchronize ProseMirror selection changes with codemirror
-    this.editorView.dom.addEventListener("focus", () => {
+    editorView.dom.addEventListener("focus", () => {
       this.syncProseMirrorToCodeMirror();
     });
 
+    // Create the button bar and render it
+    const buttonBar = new ButtonBar(this._schema, editorView);
+    buttonBar.render(this._editorElem);
+
     // Apply global key bindings
-    applyGlobalKeyBindings(this.editorView);
+    applyGlobalKeyBindings(editorView);
+
+    return editorView;
   }
 
   /**
@@ -298,5 +301,19 @@ export class ProofFlow {
 
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
+  }
+
+  public reset() {
+    // Remove all children from the editor element
+    while (this._editorElem.firstChild != null) {
+      this._editorElem.removeChild(this._editorElem.firstChild);
+    }
+
+    // Remove all children from the content element
+    while (this._contentElem.firstChild != null) {
+      this._contentElem.removeChild(this._contentElem.firstChild);
+    }
+
+    this.editorView = this.createEditorView();
   }
 }

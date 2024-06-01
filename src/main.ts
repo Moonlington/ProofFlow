@@ -19,18 +19,19 @@ let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
 const buttonNewInstance = document.getElementById("newtextblock");
 // Add event listener to the button
 buttonNewInstance?.addEventListener("click", (e) => {
-  // Remove all children from the editor element
-  while (editorElement.firstChild != null) {
-    editorElement.removeChild(editorElement.firstChild);
-  }
+  // // Remove all children from the editor element
+  // while (editorElement.firstChild != null) {
+  //   editorElement.removeChild(editorElement.firstChild);
+  // }
 
-  // Remove all children from the content element
-  while (contentElement.firstChild != null) {
-    contentElement.removeChild(contentElement.firstChild);
-  }
+  // // Remove all children from the content element
+  // while (contentElement.firstChild != null) {
+  //   contentElement.removeChild(contentElement.firstChild);
+  // }
 
-  // Create a new instance of the ProofFlow class
-  proofFlow = new ProofFlow(editorElement, contentElement);
+  // // Create a new instance of the ProofFlow class
+  // proofFlow = new ProofFlow(editorElement, contentElement);
+  proofFlow.reset();
 });
 
 // Button to insert "hi" in the editor element
