@@ -39,7 +39,7 @@ import {
 export class ProofFlow {
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
   private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
-  
+
   private _schema: Schema = ProofFlowSchema; // The schema for the editor
   private editorStateConfig: EditorStateConfig = {
     schema: ProofFlowSchema,
@@ -74,22 +74,23 @@ export class ProofFlow {
 
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
-        code_mirror: (node: Node, view: EditorView, getPos: GetPos) => new CodeMirrorView({
-          node,
-          view,
-          getPos,
-          cmOptions: {
-            extensions: [
-              // will be changed, and later code from basic setup will be added to the codebase
-              basicSetup,
-              javascript(),
-            ],
-          },
-        }),
+        code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
+          new CodeMirrorView({
+            node,
+            view,
+            getPos,
+            cmOptions: {
+              extensions: [
+                // will be changed, and later code from basic setup will be added to the codebase
+                basicSetup,
+                javascript(),
+              ],
+            },
+          }),
       },
     };
 
-    let editorView = new EditorView(this._editorElem, directEditorProps)
+    let editorView = new EditorView(this._editorElem, directEditorProps);
 
     // Synchronize ProseMirror selection changes with codemirror
     editorView.dom.addEventListener("focus", () => {
