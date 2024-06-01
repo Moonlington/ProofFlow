@@ -67,15 +67,7 @@ function readSingleFile(e: Event) {
       // Get the result from the reader event
       const result = readerEvent.target.result.toString();
       proofFlow.setFileName(file.name);
-
-      // Process the file content
-      if (fileType == AcceptedFileTypes.Coq) {
-        proofFlow.openOriginalCoqFile(result);
-      } else if (fileType == AcceptedFileTypes.CoqMD) {
-        proofFlow.openMarkdownCoqFile(result);
-      } else if (fileType == AcceptedFileTypes.Lean) {
-        proofFlow.openLeanFile(result);
-      }
+      proofFlow.openFile(result, fileType);
     }
   };
 }

@@ -26,6 +26,7 @@ import { javascript } from "@codemirror/lang-javascript";
 
 import { applyGlobalKeyBindings } from "../commands/shortcuts";
 import { Wrapper, WrapperType } from "../parser/wrapper.ts";
+import { Area } from "../parser/area.ts";
 import {
   mathblockNodeType,
   codeblockNodeType,
@@ -34,6 +35,7 @@ import {
   collapsibleTitleNodeType,
   collapsibleContentType,
 } from "./nodetypes.ts";
+import { AcceptedFileTypes } from "../parser/accepted-file-types.ts";
 // CSS
 
 export class ProofFlow {
@@ -132,7 +134,32 @@ export class ProofFlow {
     }
   }
 
-  public openFile(wrappers: Wrapper[]): void {
+  /**
+   * Opens a file and creates text or code areas based on the parsed content.
+   *
+   * @param text - The content of the Coq file.
+   * @param fileType - The type of the file.
+   */
+  public openFile(text: string, fileType: AcceptedFileTypes) {
+    // Process the file content
+    let areaParsingFunction: (text: string) => Area[];
+    switch (fileType) {
+      case AcceptedFileTypes.Coq:
+        areaParsingFunction = parseToAreasV;
+        break;
+      case AcceptedFileTypes.CoqMD:
+        areaParsingFunction = parseToAreasMV;
+        break;
+      case AcceptedFileTypes.Lean:
+        areaParsingFunction = parseToAreasLean;
+        break;
+      default:
+        return;
+    }
+    this.renderWrappers(parseToProofFlow(text, areaParsingFunction));
+  }
+
+  public renderWrappers(wrappers: Wrapper[]): void {
     // console.log(wrappers);
     for (let wrapper of wrappers) {
       // Create text or code areas based on the parsed content
@@ -152,39 +179,6 @@ export class ProofFlow {
         }
       }
     }
-  }
-
-  /**
-   * Opens the original Coq file and creates text or code areas based on the parsed content.
-   *
-   * @param text - The content of the Coq file.
-   */
-  public openOriginalCoqFile(text: string): void {
-    // Parse the text to create the proof flow
-    let wrappers = parseToProofFlow(text, parseToAreasV);
-    this.openFile(wrappers);
-  }
-
-  /**
-   * Opens the markdown Coq file and creates text or code areas based on the parsed content.
-   *
-   * @param text - The content of the Coq file.
-   */
-  public openMarkdownCoqFile(text: string): void {
-    // Parse the text to create the proof flow
-    let wrappers = parseToProofFlow(text, parseToAreasMV);
-    this.openFile(wrappers);
-  }
-
-  /**
-   * Opens the markdown Lean file and creates text or code areas based on the parsed content.
-   *
-   * @param text - The content of the Lean file.
-   */
-  public openLeanFile(text: string): void {
-    // Parse the text to create the proof flow
-    let wrappers = parseToProofFlow(text, parseToAreasLean);
-    this.openFile(wrappers);
   }
 
   public getState(): EditorState {
