@@ -9,7 +9,7 @@ import {
   Selection,
 } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
-import { createPlugins } from "./plugins.ts";
+import { ProofFlowPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 import { AreaType } from "../parser/area.ts";
 import {
@@ -43,7 +43,7 @@ export class ProofFlow {
   private _schema: Schema = ProofFlowSchema; // The schema for the editor
   private editorStateConfig: EditorStateConfig = {
     schema: ProofFlowSchema,
-    plugins: createPlugins(ProofFlowSchema),
+    plugins: ProofFlowPlugins,
   };
 
   private editorView: EditorView; // The view of the editor
@@ -63,6 +63,7 @@ export class ProofFlow {
     this.editorView = this.createEditorView();
   }
 
+  // TODO: Documentation
   private createEditorView(): EditorView {
     // Create the editor state
     const editorState = EditorState.create(this.editorStateConfig);
@@ -304,6 +305,7 @@ export class ProofFlow {
     document.body.removeChild(a);
   }
 
+  // TODO: Documentation
   public reset() {
     // Remove all children from the editor element
     while (this._editorElem.firstChild != null) {
