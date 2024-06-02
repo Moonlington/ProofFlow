@@ -1,4 +1,4 @@
-import { NodeType, Node } from "prosemirror-model";
+import { NodeType, Node, Schema } from "prosemirror-model";
 import {
   EditorState,
   NodeSelection,
@@ -7,6 +7,10 @@ import {
   Transaction,
 } from "prosemirror-state";
 import { closeHistory } from "prosemirror-history";
+import {
+  defaultMarkdownParser,
+  defaultMarkdownSerializer,
+} from "prosemirror-markdown";
 
 /**
  * Represents the possible places where an insertion can occur.
@@ -15,6 +19,8 @@ export enum InsertionPlace {
   Above, // Insert above the current selection
   Underneath, // Insert underneath the current selection
 }
+
+export const highLevelCells: string[] = new Array("code_mirror", "math_display", "markdown", "markdown_rendered", "collapsible");
 
 /**
  * Represents a function that performs an insertion operation in the editor.
@@ -195,4 +201,38 @@ export function allowedToInsert(state: EditorState): boolean {
     if (node.type.name == "collapsible_title") return false;
   }
   return true;
+}
+
+export function isClickedNode(node: Node, nodePos: number, clickedPos: number) {
+   return nodePos <= clickedPos && clickedPos <= nodePos + node.nodeSize - 1;
+}
+
+export function markdownToRendered(node: Node, schema: Schema) {
+  const parsedContent = defaultMarkdownParser.parse(node.textContent);
+  let renderedNode: Node = node; // Default to the original node if parsing fails
+
+  if (parsedContent) {
+    const markdownRenderedNodeType =
+        schema.nodes["markdown_rendered"];
+    renderedNode = markdownRenderedNodeType.create(
+          null,
+          parsedContent.content,
+    );
+  }
+
+  return renderedNode;
+}
+
+export function renderedToMarkdown(node: Node, schema: Schema) {
+  const serializedContent = defaultMarkdownSerializer.serialize(node);
+
+  // Create a new markdown node with the serialized content (a.k.a the raw text)
+  // Make sure the text is not empty, since creating an empty text cell is not allowed
+  let text = serializedContent == "" ? " " : serializedContent;
+  const markdownNodeType = schema.nodes["markdown"];
+  let markdownNode: Node = markdownNodeType.create(null, [
+        schema.text(text),
+  ]);
+
+  return markdownNode;
 }
