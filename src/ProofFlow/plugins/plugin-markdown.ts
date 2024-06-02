@@ -10,6 +10,7 @@ export const markdownPlugin = new Plugin({
     
    props: {
     handleClickOn(view, pos, node, nodePos, event, direct) {
+        console.log(node.type.name);
         if (node.type.name === undefined || !direct) return; // If the node being clicked is not a valid node or the click is not a user action, return
 
         let trans = view.state.tr;
