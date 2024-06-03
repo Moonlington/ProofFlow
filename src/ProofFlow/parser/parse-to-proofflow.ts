@@ -1,4 +1,4 @@
-import { AcceptedFileTypes } from "./accepted-file-types";
+import { AcceptedFileType } from "./accepted-file-types";
 import { Area, AreaType } from "./area";
 import { Wrapper, WrapperType } from "./wrapper";
 
