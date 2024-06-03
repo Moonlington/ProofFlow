@@ -3,12 +3,16 @@ import { Node } from "prosemirror-model";
 import { collapsibleContentType, collapsibleNodeType } from "../nodetypes.ts";
 import { TextSelection } from "prosemirror-state";
 
-import { isClickedNode, renderedToMarkdown, markdownToRendered, highLevelCells} from "../commands/helpers.ts";
-import { ProofFlowSchema } from "../editor/proofflowschema.ts"
+import {
+  isClickedNode,
+  renderedToMarkdown,
+  markdownToRendered,
+  highLevelCells,
+} from "../commands/helpers.ts";
+import { ProofFlowSchema } from "../editor/proofflowschema.ts";
 
 export const markdownPlugin = new Plugin({
-    
-   props: {
+  props: {
     handleClickOn(view, pos, node, nodePos, event, direct) {
         if (node.type.name === undefined || !direct) return; // If the node being clicked is not a valid node or the click is not a user action, return
 
@@ -92,7 +96,6 @@ export const markdownPlugin = new Plugin({
           if (bIsClickedNode) {
             offsetToClicked += cursorOffset - clickedPos;
             correctPos = offsetToClicked;
-            console.log("Clicked pos: " + clickedPos + " offset to clicked: " + offsetToClicked + " correct pos: " + correctPos);
           }
 
           offsetToClicked += newNode.nodeSize;

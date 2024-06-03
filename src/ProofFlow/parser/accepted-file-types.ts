@@ -1,7 +1,7 @@
 /**
  * The file types that ProofFlow recognizes.
  */
-export enum AcceptedFileTypes {
+export enum AcceptedFileType {
   Unknown = "",
   Coq = "v",
   CoqMD = "mv",
@@ -13,15 +13,13 @@ export enum AcceptedFileTypes {
  * @param file - The file to check.
  * @returns The file type of the given file.
  */
-export function isCorrectFileType(file: File): AcceptedFileTypes {
+export function isCorrectFileType(file: File): AcceptedFileType {
   let fileExtension = file.name.split(".").pop();
-  if (fileExtension === undefined) return AcceptedFileTypes.Unknown;
+  if (fileExtension === undefined) return AcceptedFileType.Unknown;
   if (
-    !Object.values(AcceptedFileTypes).includes(
-      fileExtension as AcceptedFileTypes,
-    )
+    !Object.values(AcceptedFileType).includes(fileExtension as AcceptedFileType)
   ) {
-    return AcceptedFileTypes.Unknown;
+    return AcceptedFileType.Unknown;
   }
-  return fileExtension as AcceptedFileTypes;
+  return fileExtension as AcceptedFileType;
 }

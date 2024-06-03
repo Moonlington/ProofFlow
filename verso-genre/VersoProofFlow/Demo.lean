@@ -11,7 +11,7 @@ set_option pp.rawOnError true
 
 
 
-```code
+```lean
 theorem five_eq_5 : five = 5 := by
   -- !! begin solution
   skip; skip
