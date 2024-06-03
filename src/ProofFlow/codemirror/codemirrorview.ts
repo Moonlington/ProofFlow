@@ -246,15 +246,15 @@ class CodeMirrorView implements NodeView {
     const inStudentMode = userMode === UserMode.Student;
 
     const containingNode = getContainingNode(selection);
-    const inInput = containingNode?.type.name === 'input_content'
+    const inInput = containingNode?.type.name === "input_content";
 
     if (inStudentMode && inInput) {
       const isFirstChild = containingNode?.firstChild === node;
-      if ((dir === -1) && isFirstChild) {
+      if (dir === -1 && isFirstChild) {
         return true;
       }
       const isLastChild = containingNode?.lastChild === node;
-      if ((dir === 1) && isLastChild) {
+      if (dir === 1 && isLastChild) {
         return true;
       }
     }

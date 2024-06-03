@@ -1,7 +1,12 @@
 import { deleteSelection, newlineInCode } from "prosemirror-commands";
 import { keymap } from "prosemirror-keymap";
 import { Schema } from "prosemirror-model";
-import { EditorState, Plugin, TextSelection, Transaction } from "prosemirror-state";
+import {
+  EditorState,
+  Plugin,
+  TextSelection,
+  Transaction,
+} from "prosemirror-state";
 import { mathPlugin } from "@benrbray/prosemirror-math";
 import { history } from "prosemirror-history";
 import { inputRules } from "prosemirror-inputrules";
@@ -62,14 +67,14 @@ export function createPlugins(schema: Schema): Plugin[] {
       "Mod-Q": cmdInsertCode(schema, InsertionPlace.Above),
       "Mod-l": cmdInsertMath(schema, InsertionPlace.Underneath),
       "Mod-L": cmdInsertMath(schema, InsertionPlace.Above),
-      ArrowLeft: arrowKeyHandler('left'),
-      ArrowUp: arrowKeyHandler('up'),
-      ArrowRight: arrowKeyHandler('right'),
-      ArrowDown: arrowKeyHandler('down'),
-      "Mod-ArrowLeft": arrowKeyHandler('left'),
-      "Mod-ArrowUp": arrowKeyHandler('up'),
-      "Mod-ArrowRight": arrowKeyHandler('right'),
-      "Mod-ArrowDown": arrowKeyHandler('down'),
+      ArrowLeft: arrowKeyHandler("left"),
+      ArrowUp: arrowKeyHandler("up"),
+      ArrowRight: arrowKeyHandler("right"),
+      ArrowDown: arrowKeyHandler("down"),
+      "Mod-ArrowLeft": arrowKeyHandler("left"),
+      "Mod-ArrowUp": arrowKeyHandler("up"),
+      "Mod-ArrowRight": arrowKeyHandler("right"),
+      "Mod-ArrowDown": arrowKeyHandler("down"),
     }),
   );
 
@@ -83,34 +88,34 @@ export function createPlugins(schema: Schema): Plugin[] {
 }
 
 // Arrow key handler with type definitions
-const arrowKeyHandler = (direction:  'up' |'down' | 'left' | 'right') => {
+const arrowKeyHandler = (direction: "up" | "down" | "left" | "right") => {
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView
+    view?: EditorView,
   ): boolean => {
     const { selection } = state;
     const { $from } = selection;
     const userMode = proofFlow.userMode;
     const node = $from.node($from.depth);
 
-    if (node.type.name !== 'markdown') {
-      return true; 
+    if (node.type.name !== "markdown") {
+      return true;
     }
 
     const inStudentMode = userMode === UserMode.Student;
 
     const containingNode = getContainingNode(selection);
-    const inInput = containingNode?.type.name === 'input_content'
+    const inInput = containingNode?.type.name === "input_content";
 
     if (inStudentMode && inInput) {
       const block = view!.endOfTextblock(direction);
-      const isFirstChild = containingNode?.firstChild === node;  
-      if ((direction === 'up' || direction === 'left') && isFirstChild) {
+      const isFirstChild = containingNode?.firstChild === node;
+      if ((direction === "up" || direction === "left") && isFirstChild) {
         return block;
       }
       const isLastChild = containingNode?.lastChild === node;
-      if ((direction === 'down' || direction === 'right') && isLastChild) {
+      if ((direction === "down" || direction === "right") && isLastChild) {
         return block;
       }
     }
