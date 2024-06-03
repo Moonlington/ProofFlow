@@ -1,49 +1,95 @@
-import Verso.Doc
-import Verso.Doc.Concrete
-import Verso.Doc.TeX
-import Verso.Doc.Html
-import Verso.Output.TeX
-import Verso.Output.Html
-import Verso.Doc.Lsp
-import Verso.Doc.Elab
+import Lean.Elab.Command
+import Lean.Elab.InfoTree
 
-import Verso.Genre.Manual.Basic
-import Verso.Genre.Manual.Slug
-import Verso.Genre.Manual.TeX
-import Verso.Genre.Manual.Html
-import Verso.Genre.Manual.Html.Style
-import Verso.Genre.Manual.Docstring
+import Verso
+import Verso.Doc.ArgParse
+import Verso.Code
 
-open Lean (Name NameMap Json ToJson FromJson)
+import SubVerso.Examples.Slice
+import SubVerso.Highlighting
 
-open Verso.Doc Elab
+open Lean Elab
+open Verso ArgParse Doc Elab Html Code
+open SubVerso.Examples.Slice
+open SubVerso.Highlighting Highlighted
+
 structure Block where
   name : Name
   id : String
 
-def VersoProofFlow.Block.code : Block where
-  name := `VersoProofFlow.Block.code
-  id := "code"
+def VersoProofFlow.Block.lean : Block where
+  name := `VersoProofFlow.Block.lean
+  id := "lean"
 
-@[directive_expander code]
-def code : DirectiveExpander
-  | #[], stxs => do
-    let args ← stxs.mapM elabBlock
-    let val ← ``(Block.other VersoProofFlow.Block.code #[ $[ $args ],* ])
-    pure #[val]
-  | _, _ => Lean.Elab.throwUnsupportedSyntax
+def parserInputString [Monad m] [MonadFileMap m] (str : TSyntax `str) : m String := do
+  let preString := (← getFileMap).source.extract 0 (str.raw.getPos?.getD 0)
+  let mut code := ""
+  let mut iter := preString.iter
+  while !iter.atEnd do
+    if iter.curr == '\n' then code := code.push '\n'
+    else
+      for _ in [0:iter.curr.utf8Size.toNat] do
+        code := code.push ' '
+    iter := iter.next
+  code := code ++ str.getString
+  return code
 
-def VersoProofFlow.Block.text : Block where
-  name := `VersoProofFlow.Block.text
-  id := "text"
+@[code_block_expander lean]
+def lean : CodeBlockExpander
+  | _, str => do
+    let altStr ← parserInputString str
 
-@[directive_expander text]
-def text : DirectiveExpander
-  | #[], stxs => do
-    let args ← stxs.mapM elabBlock
-    let val ← ``(Block.other VersoProofFlow.Block.text #[ $[ $args ],* ])
-    pure #[val]
-  | _, _ => Lean.Elab.throwUnsupportedSyntax
+    let ictx := Parser.mkInputContext altStr (← getFileName)
+    let cctx : Command.Context := { fileName := ← getFileName, fileMap := FileMap.ofString altStr, tacticCache? := none, snap? := none}
+    let mut cmdState : Command.State := {env := ← getEnv, maxRecDepth := ← MonadRecDepth.getMaxRecDepth, scopes := [{header := ""}, {header := ""}]}
+    let mut pstate := {pos := 0, recovering := false}
+    let mut exercises := #[]
+    let mut solutions := #[]
+
+    repeat
+      let scope := cmdState.scopes.head!
+      let pmctx := { env := cmdState.env, options := scope.opts, currNamespace := scope.currNamespace, openDecls := scope.openDecls }
+      let (cmd, ps', messages) := Parser.parseCommand ictx pmctx pstate cmdState.messages
+      pstate := ps'
+      cmdState := {cmdState with messages := messages}
+
+      -- dbg_trace "Unsliced is {cmd}"
+      let slices : Slices ← DocElabM.withFileMap (FileMap.ofString altStr) (sliceSyntax cmd)
+      let sol := slices.sliced.findD "solution" slices.residual
+      solutions := solutions.push sol
+      let ex := slices.sliced.findD "exercise" slices.residual
+      exercises := exercises.push ex
+
+      cmdState ← withInfoTreeContext (mkInfoTree := pure ∘ InfoTree.node (.ofCommandInfo {elaborator := `DemoTextbook.Exts.lean, stx := cmd})) do
+        let mut cmdState := cmdState
+        -- dbg_trace "Elaborating {ex}"
+        match (← liftM <| EIO.toIO' <| (Command.elabCommand ex cctx).run cmdState) with
+        | Except.error e => logError e.toMessageData
+        | Except.ok ((), s) =>
+          cmdState := {s with env := cmdState.env}
+
+        -- dbg_trace "Elaborating {sol}"
+        match (← liftM <| EIO.toIO' <| (Command.elabCommand sol cctx).run cmdState) with
+        | Except.error e => logError e.toMessageData
+        | Except.ok ((), s) =>
+          cmdState := s
+
+        pure cmdState
+
+      if Parser.isTerminalCommand cmd then break
+
+    setEnv cmdState.env
+    for t in cmdState.infoState.trees do
+      -- dbg_trace (← t.format)
+      pushInfoTree t
+
+    for msg in cmdState.messages.msgs do
+      logMessage msg
+
+    let mut hls := Highlighted.empty
+    for cmd in exercises do
+      hls := hls ++ (← highlight cmd cmdState.messages.msgs.toArray cmdState.infoState.trees)
+    pure #[]
 
 def VersoProofFlow.Block.math : Block where
   name := `VersoProofFlow.Block.math

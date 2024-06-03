@@ -13,7 +13,7 @@ import {
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { GetPos } from "../codemirror/types.ts";
-import { CodeMirrorView } from "../codemirror";
+import { CodeMirrorView } from "../codemirror/index.ts";
 import {
   collapsibleContentType,
   collapsibleNodeType,
