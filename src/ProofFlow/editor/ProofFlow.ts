@@ -36,6 +36,7 @@ import {
   collapsibleContentType,
 } from "./nodetypes.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
+import { Minimap } from "../minimap.ts";
 // CSS
 
 export class ProofFlow {
@@ -63,7 +64,8 @@ export class ProofFlow {
   constructor(editorElem: HTMLElement, contentElem: HTMLElement) {
     this._editorElem = editorElem; // Set the editor element
     this._contentElem = contentElem; // Set the content element
-    // Create the editor view
+    // Create the editor 
+    this.minimap = new Minimap();
     this.editorView = this.createEditorView();
   }
 
@@ -106,9 +108,8 @@ export class ProofFlow {
     const buttonBar = new ButtonBar(this._schema, editorView);
     buttonBar.render(this._editorElem);
 
-    this.minimap = new Minimap();
     // Apply global key bindings
-    applyGlobalKeyBindings(editorView);
+    applyGlobalKeyBindings(editorView, this.minimap);
 
     return editorView;
   }

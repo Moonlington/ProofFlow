@@ -1,9 +1,3 @@
-import { Plugin } from "prosemirror-state";
-
-export let minimapPlugin: Plugin = new Plugin({
-
-})
-
 export class Minimap {
     private _minimapDiv: HTMLDivElement;
     private _minimapSizeDiv: HTMLDivElement;
