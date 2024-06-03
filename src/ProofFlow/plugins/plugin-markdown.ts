@@ -92,7 +92,6 @@ export const markdownPlugin = new Plugin({
           if (bIsClickedNode) {
             offsetToClicked += cursorOffset - clickedPos;
             correctPos = offsetToClicked;
-            console.log("Clicked pos: " + clickedPos + " offset to clicked: " + offsetToClicked + " correct pos: " + correctPos);
           }
 
           offsetToClicked += newNode.nodeSize;
