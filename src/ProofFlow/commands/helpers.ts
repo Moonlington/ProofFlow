@@ -228,11 +228,12 @@ export function renderedToMarkdown(node: Node, schema: Schema) {
 
   // Create a new markdown node with the serialized content (a.k.a the raw text)
   // Make sure the text is not empty, since creating an empty text cell is not allowed
-  let text = serializedContent == "" ? " " : serializedContent;
+
+  let text = serializedContent == "" ? null : schema.text(serializedContent);
   const markdownNodeType = schema.nodes["markdown"];
-  let markdownNode: Node = markdownNodeType.create(null, [
-        schema.text(text),
-  ]);
+  let markdownNode: Node = markdownNodeType.create(null, 
+        text,
+  );
 
   return markdownNode;
 }
