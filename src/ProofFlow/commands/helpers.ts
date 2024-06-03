@@ -20,7 +20,13 @@ export enum InsertionPlace {
   Underneath, // Insert underneath the current selection
 }
 
-export const highLevelCells: string[] = new Array("code_mirror", "math_display", "markdown", "markdown_rendered", "collapsible");
+export const highLevelCells: string[] = new Array(
+  "code_mirror",
+  "math_display",
+  "markdown",
+  "markdown_rendered",
+  "collapsible",
+);
 
 /**
  * Represents a function that performs an insertion operation in the editor.
@@ -204,7 +210,7 @@ export function allowedToInsert(state: EditorState): boolean {
 }
 
 export function isClickedNode(node: Node, nodePos: number, clickedPos: number) {
-   return nodePos <= clickedPos && clickedPos <= nodePos + node.nodeSize - 1;
+  return nodePos <= clickedPos && clickedPos <= nodePos + node.nodeSize - 1;
 }
 
 export function markdownToRendered(node: Node, schema: Schema) {
@@ -212,12 +218,8 @@ export function markdownToRendered(node: Node, schema: Schema) {
   let renderedNode: Node = node; // Default to the original node if parsing fails
 
   if (parsedContent) {
-    const markdownRenderedNodeType =
-        schema.nodes["markdown_rendered"];
-    renderedNode = markdownRenderedNodeType.create(
-          null,
-          parsedContent.content,
-    );
+    const markdownRenderedNodeType = schema.nodes["markdown_rendered"];
+    renderedNode = markdownRenderedNodeType.create(null, parsedContent.content);
   }
 
   return renderedNode;
