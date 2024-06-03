@@ -17,9 +17,9 @@ structure Block where
   name : Name
   id : String
 
-def VersoProofFlow.Block.code : Block where
-  name := `VersoProofFlow.Block.code
-  id := "code"
+def VersoProofFlow.Block.lean : Block where
+  name := `VersoProofFlow.Block.lean
+  id := "lean"
 
 def parserInputString [Monad m] [MonadFileMap m] (str : TSyntax `str) : m String := do
   let preString := (← getFileMap).source.extract 0 (str.raw.getPos?.getD 0)
@@ -34,8 +34,8 @@ def parserInputString [Monad m] [MonadFileMap m] (str : TSyntax `str) : m String
   code := code ++ str.getString
   return code
 
-@[code_block_expander code]
-def code : CodeBlockExpander
+@[code_block_expander lean]
+def lean : CodeBlockExpander
   | _, str => do
     let altStr ← parserInputString str
 
