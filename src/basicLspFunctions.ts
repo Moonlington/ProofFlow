@@ -90,6 +90,21 @@ async function didOpen(uri: string, languageId: string, text: string, version: s
   }
 }
 
+async function didChange(uri: string, text: string, version: string): Promise<void> {
+  try {
+    const response = await axios.get('http://localhost:3000/didChange', {
+      params: {
+        uri: uri,
+        text: text,
+        version: version
+      }
+    });
+    console.log('DidChange Response:', response.data);
+  } catch (error) {
+    console.error('Error changing document:', error);
+  }
+}
+
 async function didClose(uri: string): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/didClose', {
@@ -213,6 +228,7 @@ export {
   shutdown,
   exit,
   didOpen,
+  didChange,
   didClose,
   documentSymbol,
   references,
