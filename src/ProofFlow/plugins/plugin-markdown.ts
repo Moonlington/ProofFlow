@@ -10,7 +10,6 @@ export const markdownPlugin = new Plugin({
     
    props: {
     handleClickOn(view, pos, node, nodePos, event, direct) {
-        console.log(node.type.name);
         if (node.type.name === undefined || !direct) return; // If the node being clicked is not a valid node or the click is not a user action, return
 
         let trans = view.state.tr;
@@ -93,7 +92,6 @@ export const markdownPlugin = new Plugin({
           if (bIsClickedNode) {
             offsetToClicked += cursorOffset - clickedPos;
             correctPos = offsetToClicked;
-            console.log("Clicked pos: " + clickedPos + " offset to clicked: " + offsetToClicked + " correct pos: " + correctPos);
           }
 
           offsetToClicked += newNode.nodeSize;
