@@ -53,7 +53,7 @@ export class ProofFlow {
 
   private fileName: string = "file.txt";
 
-  private minimap: Minimap;
+  private minimap: Minimap | null = null;
 
   /**
    * Represents the ProofFlow class.
@@ -65,7 +65,6 @@ export class ProofFlow {
     this._editorElem = editorElem; // Set the editor element
     this._contentElem = contentElem; // Set the content element
     // Create the editor 
-    this.minimap = new Minimap();
     this.editorView = this.createEditorView();
   }
 
@@ -104,6 +103,7 @@ export class ProofFlow {
       this.syncProseMirrorToCodeMirror();
     });
 
+    this.minimap = new Minimap();
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, editorView);
     buttonBar.render(this._editorElem);
@@ -305,6 +305,8 @@ export class ProofFlow {
 
   // TODO: Documentation
   public reset() {
+    this.minimap?.destroy();
+
     // Remove all children from the editor element
     while (this._editorElem.firstChild != null) {
       this._editorElem.removeChild(this._editorElem.firstChild);

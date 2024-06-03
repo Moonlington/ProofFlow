@@ -32,6 +32,14 @@ export class Minimap {
         this.start();
     }
 
+    public destroy() {
+        this.stop();
+        const elements = document.body.getElementsByClassName(this._minimapDiv.className);
+        for (let element of elements) {
+            document.body.removeChild(element);
+        }
+    }
+
     public switch() {
         if (this.on) this.stop();
         else this.start();
