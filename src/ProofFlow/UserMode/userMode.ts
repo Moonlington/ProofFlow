@@ -23,13 +23,15 @@ export function switchUserMode(UserModebutton: HTMLElement) {
   }
 }
 
-
 export function lockEditing(lock: boolean) {
   const allAreas = document.getElementById("ProofFlowEditor")?.children;
 
   if (allAreas) {
     Array.from(allAreas).forEach((area) => {
-      if (area.classList.contains("markdown") || area.classList.contains("cm-editor")) {
+      if (
+        area.classList.contains("markdown") ||
+        area.classList.contains("cm-editor")
+      ) {
         lockIt(area, lock);
         if (area.classList.contains("cm-editor")) {
           area.classList.toggle("unlocked", lock);
@@ -37,8 +39,6 @@ export function lockEditing(lock: boolean) {
       }
     });
   }
-
-
 }
 
 function lockIt(Area: Element, lock: boolean) {
