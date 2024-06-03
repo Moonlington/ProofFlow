@@ -21,11 +21,11 @@ socket.addEventListener('message', (event) => {
   // Add other message types as needed
 });
 
-async function startServer(): Promise<void> {
+async function startServer(server: string): Promise<void> {
   try {
     const response = await axios.get('http://localhost:3000/start_server', {
       params: {
-        server: 'coq'
+        server: server
       }
     });
     console.log('Server Response:', response.data);
