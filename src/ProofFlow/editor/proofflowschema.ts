@@ -59,9 +59,7 @@ export const ProofFlowSchema: Schema = new Schema({
     collapsible_title: {
       block: true,
       content: "text*",
-      parseDOM: [
-        { tag: "collapsible_title unlocked", preserveWhitespace: "full" },
-      ],
+      parseDOM: [{ tag: "collapsible_title unlocked", preserveWhitespace: "full" }],
       atom: false,
       code: false,
       toDOM(node) {
@@ -107,7 +105,7 @@ export const ProofFlowSchema: Schema = new Schema({
       leaf: false,
       draggable: false,
       toDOM(node) {
-        return ["markdown", { class: "markdown" }, 0];
+        return ["markdown", {class: "markdown"}, 0];
       },
     },
 
@@ -122,7 +120,7 @@ export const ProofFlowSchema: Schema = new Schema({
       atom: true,
       //draggable: false,
       toDOM(node) {
-        return ["markdown-rendered", { class: "markdown unlocked" }, 0];
+        return ["markdown-rendered", {class: "markdown unlocked"}, 0];
       },
     },
 

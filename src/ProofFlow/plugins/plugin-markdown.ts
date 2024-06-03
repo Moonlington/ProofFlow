@@ -31,9 +31,7 @@ export const markdownPlugin = new Plugin({
       let newNodes = Array<Node>();
       let container = getContainingNode(view.state.selection);
 
-      let locked: boolean =
-        proofFlow.userMode === UserMode.Student &&
-        container?.type.name !== "input_content";
+      let locked: boolean = (proofFlow.userMode === UserMode.Student && container?.type.name !== "input_content")
 
       // Go through all the descendants of the document node
       view.state.doc.descendants((node, pos) => {
@@ -44,11 +42,7 @@ export const markdownPlugin = new Plugin({
         let newNode: Node = node;
         let bIsClickedNode: boolean = isClickedNode(node, pos, clickedPos);
         // Case: This is the clicked on rendered markdown node, hence we need to replace it with a markdown node
-        if (
-          bIsClickedNode &&
-          node.type.name === "markdown_rendered" &&
-          !locked
-        ) {
+        if (bIsClickedNode && node.type.name === "markdown_rendered" && !locked) {
           newNode = renderedToMarkdown(node, ProofFlowSchema);
         }
 
