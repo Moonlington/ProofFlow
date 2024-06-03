@@ -90,6 +90,9 @@ export class ProofFlow {
             },
           }),
       },
+      attributes: {
+        id: "ProofFlowEditor"
+      }
     };
     this.editorView = new EditorView(this._editorElem, directEditorProps);
 

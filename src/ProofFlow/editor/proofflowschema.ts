@@ -24,7 +24,7 @@ export const ProofFlowSchema: Schema = new Schema({
     },
 
     input: {
-      content: `${containercontent}+`,
+      content: `input_content`,
       parseDOM: [{ tag: "input" }],
       toDOM(node: Node) {
         return ["div", { class: "input" }, 0];
@@ -44,7 +44,7 @@ export const ProofFlowSchema: Schema = new Schema({
         },
       ],
       toDOM(node: Node) {
-        return ["div", { class: "input_content", visible: true }, 0];
+        return ["div", { class: "input_content unlocked", visible: true }, 0];
       },
     },
 
@@ -59,7 +59,7 @@ export const ProofFlowSchema: Schema = new Schema({
     collapsible_title: {
       block: true,
       content: "text*",
-      parseDOM: [{ tag: "collapsible_title", preserveWhitespace: "full" }],
+      parseDOM: [{ tag: "collapsible_title unlocked", preserveWhitespace: "full" }],
       atom: false,
       code: false,
       toDOM(node) {
@@ -105,7 +105,7 @@ export const ProofFlowSchema: Schema = new Schema({
       leaf: false,
       draggable: false,
       toDOM(node) {
-        return ["markdown", 0];
+        return ["markdown", {class: "markdown"}, 0];
       },
     },
 
@@ -120,7 +120,7 @@ export const ProofFlowSchema: Schema = new Schema({
       atom: true,
       //draggable: false,
       toDOM(node) {
-        return ["markdown-rendered", 0];
+        return ["markdown-rendered", {class: "markdown unlocked"}, 0];
       },
     },
 

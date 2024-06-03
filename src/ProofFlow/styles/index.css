@@ -122,3 +122,19 @@ div[visible="false"] {
 #input-button {
   visibility: hidden;
 }
+
+.locked {
+  pointer-events: none;
+
+  user-select: text;
+}
+
+.unlocked, .unlocked > *{
+  pointer-events: auto;
+  cursor: auto;
+}
+
+.test123 {
+  background-color: black;
+  color: white;
+}
