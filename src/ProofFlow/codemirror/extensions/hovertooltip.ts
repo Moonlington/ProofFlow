@@ -13,6 +13,7 @@ export const wordHover = hoverTooltip((view, pos, side) => {
       above: true,
       create(view) {
         let dom = document.createElement("div")
+          // TODO: Add information from the LSP client
         dom.textContent = text.slice(start - from, end - from)
         return {dom}
       }
