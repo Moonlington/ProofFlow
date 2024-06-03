@@ -17,7 +17,7 @@ export class Minimap {
     private timeoutIdHTML = 0;
     private timeoutIdScroll = 0;
     private timeoutIdResize = 0;
-    private debounceDelay = 300; // Adjust delay as needed
+    private debounceDelay = 1000; // Adjust delay as needed
     private on = false;
 
     constructor() {
@@ -54,11 +54,11 @@ export class Minimap {
         this.observer.observe(editor!, this._config);
         editor!.addEventListener('scroll', () => {
             if (this.timeoutIdScroll != 0) return;
-            this.timeoutIdScroll = setTimeout(this.trackScroll.bind(this), this.debounceDelay / 6);
+            this.timeoutIdScroll = setTimeout(this.trackScroll.bind(this), this.debounceDelay / 24);
         })
         editor!.addEventListener('resize', () => {
             if (this.timeoutIdResize != 0) return;
-            this.timeoutIdResize = setTimeout(this.getDimensions.bind(this), this.debounceDelay / 6);
+            this.timeoutIdResize = setTimeout(this.getDimensions.bind(this), this.debounceDelay / 24);
         })
         this.on = true;
     }
@@ -77,7 +77,6 @@ export class Minimap {
 
     private callback = (mutationList: MutationRecord[], observer: MutationObserver) => {
         if (this.timeoutIdHTML != 0) return;
-        // console.log("Timeout set");
         this.timeoutIdHTML = setTimeout(this.updateHTML.bind(this), this.debounceDelay);
     };
 
@@ -114,7 +113,7 @@ export class Minimap {
         let bodyRatio = bodyHeight / bodyWidth;
         let winRatio = window.innerHeight / window.innerWidth;
     
-        this._minimapDiv.style.width = '15%';
+        this._minimapDiv.style.width = '7.5%';
         this._minimapDiv.style.height = '90%';
         
 
