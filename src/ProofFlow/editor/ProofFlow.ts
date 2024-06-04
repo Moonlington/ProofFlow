@@ -183,7 +183,7 @@ export class ProofFlow {
         this.createCollapsible(wrapper);
       } else if (wrapper.wrapperType == WrapperType.Input) {
         this.createInput(wrapper);
-      }else {
+      } else {
         for (let area of wrapper.areas) {
           if (area.areaType == AreaType.Markdown) {
             this.createTextArea(area.text);
