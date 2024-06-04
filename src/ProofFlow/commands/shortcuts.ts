@@ -44,5 +44,12 @@ export function applyGlobalKeyBindings(
       event.preventDefault();
       minimap.switch();
     }
+    // Add comments here to describe the purpose of each key binding
+    // "Ctrl + Z" or "Cmd + Z" for undo
+    // "Ctrl + Y" or "Cmd + Y" for redo
+    // "Ctrl + P" or "Cmd + P" for selecting parent node
+    // "Ctrl + B" or "Cmd + B" for collapsible insert command
+    // "Ctrl + I" or "Cmd + I" for input insert command (only for teacher mode)
+    // "Ctrl + H" or "Cmd + H" for toggling the minimap
   });
 }

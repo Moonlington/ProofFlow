@@ -133,8 +133,3 @@ div[visible="false"] {
   pointer-events: auto;
   cursor: auto;
 }
-
-.test123 {
-  background-color: black;
-  color: white;
-}

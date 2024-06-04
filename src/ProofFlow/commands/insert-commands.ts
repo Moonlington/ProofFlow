@@ -95,36 +95,48 @@ export function getCodeInsertCommand(
   };
 }
 
+/**
+ * Returns a command function that inserts a collapsible node at the current selection.
+ * @returns A command function that takes EditorState, dispatch, and view as parameters and returns a boolean.
+ */
 export function getCollapsibleInsertCommand(): Command {
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
     view?: EditorView,
   ): boolean => {
+    // Check if insertion is allowed
     if (!allowedToInsert(state)) return false;
     let selection = state.selection;
     let parent = getContainingNode(selection);
+    // Check if parent node is valid
     if (parent == undefined || parent.type.name != "doc") return false;
     let oldNode = null;
     let selectionType = getSelectionType(selection);
+    // Get the old node based on the selection type
     if (selectionType.isTextSelection) {
       oldNode = selection.$from.node();
     } else if (selectionType.isNodeSelection) {
       oldNode = (selection as NodeSelection).node;
     }
+    // Check if old node exists
     if (oldNode == null) return false;
 
+    // Create the title node for the collapsible node
     let textNode: Node = collapsibleTitleNodeType.create(null, [
       ProofFlowSchema.text("Collapsible: "),
     ]);
+    // Create the content node for the collapsible node
     let contentNode: Node = collapsibleContentType.create({ visible: true }, [
       oldNode,
     ]);
+    // Create the collapsible node
     let collapsibleNode: Node = collapsibleNodeType.create({}, [
       textNode,
       contentNode,
     ]);
     let trans: Transaction = state.tr;
+    // Replace the selection with the collapsible node
     if (selectionType.isTextSelection) {
       let resolved = selection.$from;
       console.log(resolved.start(), resolved.end());
@@ -132,35 +144,52 @@ export function getCollapsibleInsertCommand(): Command {
     } else if (selectionType.isNodeSelection) {
       trans.replaceSelectionWith(collapsibleNode);
     }
+    // Dispatch the transaction if provided
     if (dispatch && trans) dispatch(trans);
     return true;
   };
 }
 
+/**
+ * Returns a command function that inserts an input command at the current selection.
+ * @returns A command function that inserts an input command.
+ */
 export function getInputInsertCommand(): Command {
+  // Check if insertion is allowed
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
     view?: EditorView,
   ): boolean => {
     if (!allowedToInsert(state)) return false;
+
     let selection = state.selection;
     let parent = getContainingNode(selection);
+
+    // Check if parent node is valid
     if (parent == undefined || parent.type.name != "doc") return false;
+
     let oldNode = null;
     let selectionType = getSelectionType(selection);
+
+    // Get the old node based on the selection type
     if (selectionType.isTextSelection) {
       oldNode = selection.$from.node();
     } else if (selectionType.isNodeSelection) {
       oldNode = (selection as NodeSelection).node;
     }
+
+    // Check if old node exists
     if (oldNode == null) return false;
 
+    // Create the content node and the collapsible node
     let contentNode: Node = inputContentType.create({ visible: true }, [
       oldNode,
     ]);
     let collapsibleNode: Node = inputNodeType.create({}, [contentNode]);
     let trans: Transaction = state.tr;
+
+    // Replace the selection with the collapsible node
     if (selectionType.isTextSelection) {
       let resolved = selection.$from;
       console.log(resolved.start(), resolved.end());
@@ -168,6 +197,8 @@ export function getInputInsertCommand(): Command {
     } else if (selectionType.isNodeSelection) {
       trans.replaceSelectionWith(collapsibleNode);
     }
+
+    // Dispatch the transaction if provided
     if (dispatch && trans) dispatch(trans);
     return true;
   };

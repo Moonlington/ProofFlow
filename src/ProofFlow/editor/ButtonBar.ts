@@ -134,20 +134,28 @@ export class ButtonBar {
     name: string,
     bgColor: string,
   ) {
+    // Create a div element to hold the button group
     const buttonGroup = document.createElement("div");
     buttonGroup.className = "button-group";
 
+    // Iterate over the insertion places ("Above" and "Below")
     ["Above", "Below"].forEach((place) => {
+      // Create the text for the button
       const text = name + " " + place;
+
+      // Create the button element
       const button = this.createButton(
         cmd,
         text,
         getInsertionPlace(place),
         bgColor,
       );
+
+      // Append the button to the button group
       buttonGroup.appendChild(button);
     });
 
+    // Append the button group to the column element
     column.appendChild(buttonGroup);
   }
 

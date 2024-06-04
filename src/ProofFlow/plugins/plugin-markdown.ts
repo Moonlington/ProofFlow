@@ -32,6 +32,7 @@ export const markdownPlugin = new Plugin({
       let newNodes = Array<Node>();
       let container = getContainingNode(view.state.selection);
 
+      // Check if the node is locked
       let locked: boolean =
         proofFlow.getUserMode() === UserMode.Student &&
         container?.type.name !== "input_content";
@@ -44,7 +45,9 @@ export const markdownPlugin = new Plugin({
         // hence this node will not be re-assigned and we just re-use the original node
         let newNode: Node = node;
         let bIsClickedNode: boolean = isClickedNode(node, pos, clickedPos);
+
         // Case: This is the clicked on rendered markdown node, hence we need to replace it with a markdown node
+        // But not if the node is locked
         if (
           bIsClickedNode &&
           node.type.name === "markdown_rendered" &&
@@ -60,6 +63,7 @@ export const markdownPlugin = new Plugin({
 
         // Case: We are in a collapsible content node and hence need to add the new node
         // to the "collapsible" parent node and then replace the old collapsible content node
+        // but not if the node is locked
         else if (node.type.name === "collapsible" && !locked) {
           let collapsibleParentNode: Node = node; // Get the collapsible parent node
           let collapsibleTitleNode: Node = collapsibleParentNode.firstChild!; // Get the collapsible title node
@@ -178,6 +182,7 @@ export const markdownPlugin = new Plugin({
       trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos), -1));
       view.dispatch(trans);
 
+      // If we switch while inside of student Mode, we need to lock the editing of the new nodes
       if (locked) {
         lockEditing(true);
       }

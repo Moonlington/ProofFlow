@@ -169,12 +169,14 @@ export class ProofFlow {
     this.renderWrappers(parseToProofFlow(text, areaParsingFunction));
   }
 
+  /**
+   * Renders the wrappers by creating text or code areas based on the parsed content.
+   *
+   * @param wrappers - An array of Wrapper objects.
+   */
   public renderWrappers(wrappers: Wrapper[]): void {
-    // console.log(wrappers);
     for (let wrapper of wrappers) {
       // Create text or code areas based on the parsed content
-      // console.log(wrapper);
-      // console.log(wrapper.wrapperType);
       if (wrapper.wrapperType == WrapperType.Collapsible) {
         this.createCollapsible(wrapper);
       } else {
@@ -191,30 +193,45 @@ export class ProofFlow {
     }
   }
 
+  /**
+   * Retrieves the current state of the editor.
+   * @returns The current EditorState.
+   */
   public getState(): EditorState {
     return this.editorView.state;
   }
 
+  /**
+   * Inserts a node at the end of the document.
+   *
+   * @param node - The node to be inserted.
+   */
   private insertAtEnd(node: Node) {
     // Create a new transaction and get the counter
     let trans: Transaction = this.getState().tr;
     let counter = this.getState().doc.content.size;
 
+    // Insert the node at the end of the document and update the editor state
     trans = trans.setSelection(Selection.atEnd(this.getState().doc));
     trans = trans.insert(counter, node);
     this.editorView.state = this.editorView.state.apply(trans);
     this.editorView.updateState(this.editorView.state);
   }
 
+  /**
+   * Creates a collapsible element based on the provided wrapper.
+   *
+   * @param wrapper - The wrapper containing information for the collapsible element.
+   */
   public createCollapsible(wrapper: Wrapper) {
+    // Create the title node
     const title = wrapper.info;
-
     let textNode: Node = collapsibleTitleNodeType.create(null, [
       ProofFlowSchema.text(title),
     ]);
 
+    // Create the content nodes
     let contentNodes: Node[] = [];
-
     wrapper.areas.forEach((area) => {
       if (area.areaType == AreaType.Code) {
         const node = this.createCodeNode(area.text);
@@ -227,17 +244,29 @@ export class ProofFlow {
         contentNodes.push(node);
       }
     });
+
+    // Create the content node
     let contentNode: Node = collapsibleContentType.create(
       { visible: true },
       contentNodes,
     );
+
+    // Create the collapsible node
     let collapsibleNode: Node = collapsibleNodeType.create({}, [
       textNode,
       contentNode,
     ]);
+
+    // Insert the collapsible node at the end of the editor
     this.insertAtEnd(collapsibleNode);
   }
 
+  /**
+   * Creates a text node with the specified text.
+   *
+   * @param text - The text content of the node.
+   * @returns The created text node.
+   */
   private createTextNode(text: string): Node {
     let textNode: Node = markdownblockNodeType.create(null, [
       ProofFlowSchema.text(text),
@@ -245,6 +274,12 @@ export class ProofFlow {
     return textNode;
   }
 
+  /**
+   * Creates a code node with the specified text.
+   *
+   * @param text - The text to be included in the code node.
+   * @returns The created code node.
+   */
   private createCodeNode(text: string): Node {
     let textNode: Node = codeblockNodeType.create(null, [
       ProofFlowSchema.text(text),
@@ -252,6 +287,12 @@ export class ProofFlow {
     return textNode;
   }
 
+  /**
+   * Creates a math node with the specified text.
+   *
+   * @param text - The text to be included in the math node.
+   * @returns The created math node.
+   */
   private createMathNode(text: string): Node {
     let textNode: Node = mathblockNodeType.create(null, [
       ProofFlowSchema.text(text),
@@ -289,10 +330,18 @@ export class ProofFlow {
     this.insertAtEnd(mathNode);
   }
 
+  /**
+   * Sets the file name for the ProofFlow instance.
+   *
+   * @param fileName - The name of the file.
+   */
   public setFileName(fileName: string) {
     this.fileName = fileName;
   }
 
+  /**
+   * Saves the file by creating a download link for the content and triggering a click event on it.
+   */
   public saveFile() {
     const content = this.editorView.state.doc;
     const result = getContent(content);
@@ -309,7 +358,10 @@ export class ProofFlow {
     document.body.removeChild(a);
   }
 
-  // TODO: Documentation
+  /**
+   * Resets the editor by destroying the minimap, removing all children from the editor and content elements,
+   * and creating a new editor view.
+   */
   public reset() {
     this.minimap?.destroy();
 
@@ -323,17 +375,31 @@ export class ProofFlow {
       this._contentElem.removeChild(this._contentElem.firstChild);
     }
 
+    // Create a new editor view
     this.editorView = this.createEditorView();
   }
 
+  /**
+   * Retrieves the editor view associated with the ProofFlow instance.
+   * @returns The editor view.
+   */
   public getEditorView(): EditorView {
     return this.editorView;
   }
 
+  /**
+   * Gets the current user mode.
+   * @returns The user mode.
+   */
   public getUserMode(): UserMode {
     return this.userMode;
   }
 
+  /**
+   * Switches the user mode between Teacher and Student.
+   *
+   * @param UserModebutton - The HTML element representing the user mode button.
+   */
   public switchUserMode(UserModebutton: HTMLElement) {
     let newUserMode: UserMode;
     newUserMode =
