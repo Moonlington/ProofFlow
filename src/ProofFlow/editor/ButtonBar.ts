@@ -62,8 +62,9 @@ export class ButtonBar {
         this.addButton(column, "Delete", () => {
           const selection = this._editorView.state.selection;
           const container = getContainingNode(selection);
+          console.log(container);
           if (
-            proofFlow.userMode === UserMode.Student &&
+            proofFlow.getUserMode() === UserMode.Student &&
             container?.type.name !== "input_content"
           )
             return;

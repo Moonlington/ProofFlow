@@ -15,6 +15,7 @@ import type { ComputeChange, CodeMirrorViewOptions } from "./types.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 import { getContainingNode } from "../commands/helpers.ts";
+import { wordHover } from "./extensions/hovertooltip.ts";
 
 const computeChange = (
   oldVal: string,
@@ -134,6 +135,7 @@ class CodeMirrorView implements NodeView {
         ]),
         cmExtensions,
         tabKeymap,
+        wordHover,
       ],
     });
 
@@ -236,11 +238,11 @@ class CodeMirrorView implements NodeView {
    * @returns True if the input leaving should be blocked, false otherwise.
    */
   disallowInputLeaving(dir: -1 | 1): boolean {
-    const view = proofFlow.editorView;
+    const view = proofFlow.getEditorView();
     const { state } = view;
     const { selection } = state;
     const { $from } = selection;
-    const userMode = proofFlow.userMode;
+    const userMode = proofFlow.getUserMode();
     const node = $from.node($from.depth);
 
     const inStudentMode = userMode === UserMode.Student;

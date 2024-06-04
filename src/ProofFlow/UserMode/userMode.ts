@@ -6,45 +6,50 @@ export enum UserMode {
   Teacher, // Area is locked and cannot be altered or deleted
 }
 
-export function switchUserMode(UserModebutton: HTMLElement) {
-  const teacherMode = proofFlow.userMode;
+export function handleUserModeSwitch() {
+  const userMode = proofFlow.getUserMode();
   const inputButton = document.getElementById("input-button");
   if (!inputButton) throw new Error("input-button not found");
-  if (teacherMode === UserMode.Teacher) {
-    proofFlow.userMode = UserMode.Student;
-    UserModebutton.textContent = "Student Mode";
+  if (userMode === UserMode.Student) {
     inputButton.style.visibility = "hidden";
     lockEditing(true);
   } else {
-    proofFlow.userMode = UserMode.Teacher;
-    UserModebutton.textContent = "Teacher Mode";
     inputButton.style.visibility = "visible";
     lockEditing(false);
   }
 }
 
 export function lockEditing(lock: boolean) {
+  const editorArea = document.getElementById("ProofFlowEditor");
+
+  editorArea?.classList.toggle("locked", lock);
+
   const allAreas = document.getElementById("ProofFlowEditor")?.children;
 
   if (allAreas) {
     Array.from(allAreas).forEach((area) => {
-      if (
-        area.classList.contains("markdown") ||
-        area.classList.contains("cm-editor")
-      ) {
-        lockIt(area, lock);
-        if (area.classList.contains("cm-editor")) {
-          area.classList.toggle("unlocked", lock);
-        }
+      if (area.classList.contains("markdown")) {
+        lockMarkdown(area, lock);
+      } else if (area.classList.contains("cm-editor")) {
+        console.log("here");
+        area.classList.toggle("unlocked", lock);
+        lockCode(area, lock);
       }
     });
   }
 }
 
-function lockIt(Area: Element, lock: boolean) {
-  const allMarkdownElements = Area.querySelectorAll("*");
+function lockMarkdown(area: Element, lock: boolean) {
+  area.setAttribute("contenteditable", lock ? "false" : "true");
+  const allMarkdownElements = area.querySelectorAll("*");
 
   allMarkdownElements.forEach((element) => {
     element.setAttribute("contenteditable", lock ? "false" : "true");
   });
+}
+
+function lockCode(area: Element, lock: boolean) {
+  const content = area.querySelector(".cm-content");
+  console.log(content);
+  content?.setAttribute("contenteditable", lock ? "false" : "true");
 }

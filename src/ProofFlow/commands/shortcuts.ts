@@ -7,12 +7,16 @@ import {
 } from "./insert-commands";
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
+import { Minimap } from "../minimap";
 
 /**
  * Applies global key bindings to the editor view.
  * @param editorView - The editor view to apply key bindings to.
  */
-export function applyGlobalKeyBindings(editorView: EditorView): void {
+export function applyGlobalKeyBindings(
+  editorView: EditorView,
+  minimap: Minimap,
+): void {
   document.addEventListener("keydown", (event: KeyboardEvent) => {
     if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
@@ -31,11 +35,14 @@ export function applyGlobalKeyBindings(editorView: EditorView): void {
     } else if (
       event.key === "i" &&
       (event.ctrlKey || event.metaKey) &&
-      proofFlow.userMode === UserMode.Teacher
+      proofFlow.getUserMode() === UserMode.Teacher
     ) {
       event.preventDefault();
       let command = getInputInsertCommand();
       command(editorView.state, editorView.dispatch);
+    } else if (event.key === "h" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      minimap.switch();
     }
   });
 }

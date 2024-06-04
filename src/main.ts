@@ -1,13 +1,13 @@
 import { ProofFlow } from "./ProofFlow/editor/ProofFlow.ts";
 import {
-  AcceptedFileTypes,
+  AcceptedFileType,
   isCorrectFileType,
 } from "./ProofFlow/parser/accepted-file-types";
 import "./ProofFlow/styles/ProofFlow.css";
 import "./ProofFlow/styles/index.css";
+import "./ProofFlow/styles/minimap.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
-import { switchUserMode } from "./ProofFlow/UserMode/userMode";
 
 // Get the editor and content elements
 const editorElement: HTMLElement = document.querySelector("#editor")!;
@@ -22,18 +22,7 @@ export { proofFlow };
 const buttonNewInstance = document.getElementById("newtextblock");
 // Add event listener to the button
 buttonNewInstance?.addEventListener("click", (e) => {
-  // Remove all children from the editor element
-  while (editorElement.firstChild != null) {
-    editorElement.removeChild(editorElement.firstChild);
-  }
-
-  // Remove all children from the content element
-  while (contentElement.firstChild != null) {
-    contentElement.removeChild(contentElement.firstChild);
-  }
-
-  // Create a new instance of the ProofFlow class
-  proofFlow = new ProofFlow(editorElement, contentElement);
+  proofFlow.reset();
 });
 
 let buttonSaveFile = document.getElementById("save-file");
@@ -43,7 +32,7 @@ buttonSaveFile?.addEventListener("click", (e) => {
 
 let userModeButton = document.getElementById("user-mode-button");
 userModeButton?.addEventListener("click", (e) => {
-  switchUserMode(userModeButton);
+  proofFlow.switchUserMode(userModeButton);
 });
 
 // Input to read file
@@ -64,7 +53,7 @@ function readSingleFile(e: Event) {
   // Get the first file from the list and check if it's a correct file type
   const file = fileList[0];
   const fileType = isCorrectFileType(file);
-  if (fileType === AcceptedFileTypes.Unknown) {
+  if (fileType === AcceptedFileType.Unknown) {
     console.log("Sorry, this file type is currently not supported");
     return;
   }
@@ -79,15 +68,7 @@ function readSingleFile(e: Event) {
       // Get the result from the reader event
       const result = readerEvent.target.result.toString();
       proofFlow.setFileName(file.name);
-
-      // Process the file content
-      if (fileType == AcceptedFileTypes.Coq) {
-        proofFlow.openOriginalCoqFile(result);
-      } else if (fileType == AcceptedFileTypes.CoqMD) {
-        proofFlow.openMarkdownCoqFile(result);
-      } else if (fileType == AcceptedFileTypes.Lean) {
-        proofFlow.openLeanFile(result);
-      }
+      proofFlow.openFile(result, fileType);
     }
   };
 }

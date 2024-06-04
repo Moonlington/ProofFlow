@@ -9,7 +9,7 @@ import {
   Selection,
 } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
-import { createPlugins } from "./plugins.ts";
+import { ProofFlowPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 import { AreaType } from "../parser/area.ts";
 import {
@@ -26,6 +26,7 @@ import { javascript } from "@codemirror/lang-javascript";
 
 import { applyGlobalKeyBindings } from "../commands/shortcuts";
 import { Wrapper, WrapperType } from "../parser/wrapper.ts";
+import { Area } from "../parser/area.ts";
 import {
   mathblockNodeType,
   codeblockNodeType,
@@ -34,40 +35,46 @@ import {
   collapsibleTitleNodeType,
   collapsibleContentType,
 } from "./nodetypes.ts";
-import { UserMode } from "../UserMode/userMode.ts";
+import { UserMode, handleUserModeSwitch } from "../UserMode/userMode.ts";
+import { AcceptedFileType } from "../parser/accepted-file-types.ts";
+import { Minimap } from "../minimap.ts";
 // CSS
 
 export class ProofFlow {
-  private _schema: Schema; // The schema for the editor
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
   private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
 
-  public editorView: EditorView; // The view of the editor
+  private _schema: Schema = ProofFlowSchema; // The schema for the editor
+  private editorStateConfig: EditorStateConfig = {
+    schema: ProofFlowSchema,
+    plugins: ProofFlowPlugins,
+  };
 
-  public userMode: UserMode = UserMode.Student; // The teacher mode of the editor
+  private editorView: EditorView; // The view of the editor
+
+  private userMode: UserMode = UserMode.Student; // The teacher mode of the editor
 
   private fileName: string = "file.txt";
+
+  private minimap: Minimap | null = null;
 
   /**
    * Represents the ProofFlow class.
    * @constructor
    * @param {HTMLElement} editorElem - The HTML element that serves as the editor container.
-   * @param {HTMLElement} contentElement - The HTML element that contains the initial content for the editor.
+   * @param {HTMLElement} contentElem - The HTML element that contains the initial content for the editor.
    */
-  constructor(editorElem: HTMLElement, contentElement: HTMLElement) {
-    this._schema = ProofFlowSchema; // Set the schema for the editor
+  constructor(editorElem: HTMLElement, contentElem: HTMLElement) {
     this._editorElem = editorElem; // Set the editor element
-    this._contentElem = contentElement; // Set the content element
+    this._contentElem = contentElem; // Set the content element
+    // Create the editor
+    this.editorView = this.createEditorView();
+  }
 
+  // TODO: Documentation
+  private createEditorView(): EditorView {
     // Create the editor state
-    let editorStateConfig: EditorStateConfig = {
-      schema: ProofFlowSchema,
-      doc: DOMParser.fromSchema(ProofFlowSchema).parse(this._contentElem),
-      plugins: createPlugins(ProofFlowSchema),
-    };
-    const editorState = EditorState.create(editorStateConfig);
-
-    // Create the editor view
+    const editorState = EditorState.create(this.editorStateConfig);
     let directEditorProps: DirectEditorProps = {
       state: editorState,
       clipboardTextSerializer: (slice) => {
@@ -94,19 +101,23 @@ export class ProofFlow {
         id: "ProofFlowEditor",
       },
     };
-    this.editorView = new EditorView(this._editorElem, directEditorProps);
 
-    // Create the button bar and render it
-    const buttonBar = new ButtonBar(this._schema, this.editorView);
-    buttonBar.render(this._editorElem);
+    let editorView = new EditorView(this._editorElem, directEditorProps);
 
     // Synchronize ProseMirror selection changes with codemirror
-    this.editorView.dom.addEventListener("focus", () => {
+    editorView.dom.addEventListener("focus", () => {
       this.syncProseMirrorToCodeMirror();
     });
 
+    this.minimap = new Minimap();
+    // Create the button bar and render it
+    const buttonBar = new ButtonBar(this._schema, editorView);
+    buttonBar.render(this._editorElem);
+
     // Apply global key bindings
-    applyGlobalKeyBindings(this.editorView);
+    applyGlobalKeyBindings(editorView, this.minimap);
+
+    return editorView;
   }
 
   /**
@@ -133,7 +144,32 @@ export class ProofFlow {
     }
   }
 
-  public openFile(wrappers: Wrapper[]): void {
+  /**
+   * Opens a file and creates text or code areas based on the parsed content.
+   *
+   * @param text - The content of the Coq file.
+   * @param fileType - The type of the file.
+   */
+  public openFile(text: string, fileType: AcceptedFileType) {
+    // Process the file content
+    let areaParsingFunction: (text: string) => Area[];
+    switch (fileType) {
+      case AcceptedFileType.Coq:
+        areaParsingFunction = parseToAreasV;
+        break;
+      case AcceptedFileType.CoqMD:
+        areaParsingFunction = parseToAreasMV;
+        break;
+      case AcceptedFileType.Lean:
+        areaParsingFunction = parseToAreasLean;
+        break;
+      default:
+        return;
+    }
+    this.renderWrappers(parseToProofFlow(text, areaParsingFunction));
+  }
+
+  public renderWrappers(wrappers: Wrapper[]): void {
     // console.log(wrappers);
     for (let wrapper of wrappers) {
       // Create text or code areas based on the parsed content
@@ -153,39 +189,6 @@ export class ProofFlow {
         }
       }
     }
-  }
-
-  /**
-   * Opens the original Coq file and creates text or code areas based on the parsed content.
-   *
-   * @param text - The content of the Coq file.
-   */
-  public openOriginalCoqFile(text: string): void {
-    // Parse the text to create the proof flow
-    let wrappers = parseToProofFlow(text, parseToAreasV);
-    this.openFile(wrappers);
-  }
-
-  /**
-   * Opens the markdown Coq file and creates text or code areas based on the parsed content.
-   *
-   * @param text - The content of the Coq file.
-   */
-  public openMarkdownCoqFile(text: string): void {
-    // Parse the text to create the proof flow
-    let wrappers = parseToProofFlow(text, parseToAreasMV);
-    this.openFile(wrappers);
-  }
-
-  /**
-   * Opens the markdown Lean file and creates text or code areas based on the parsed content.
-   *
-   * @param text - The content of the Lean file.
-   */
-  public openLeanFile(text: string): void {
-    // Parse the text to create the proof flow
-    let wrappers = parseToProofFlow(text, parseToAreasLean);
-    this.openFile(wrappers);
   }
 
   public getState(): EditorState {
@@ -304,5 +307,40 @@ export class ProofFlow {
 
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
+  }
+
+  // TODO: Documentation
+  public reset() {
+    this.minimap?.destroy();
+
+    // Remove all children from the editor element
+    while (this._editorElem.firstChild != null) {
+      this._editorElem.removeChild(this._editorElem.firstChild);
+    }
+
+    // Remove all children from the content element
+    while (this._contentElem.firstChild != null) {
+      this._contentElem.removeChild(this._contentElem.firstChild);
+    }
+
+    this.editorView = this.createEditorView();
+  }
+
+  public getEditorView(): EditorView {
+    return this.editorView;
+  }
+
+  public getUserMode(): UserMode {
+    return this.userMode;
+  }
+
+  public switchUserMode(UserModebutton: HTMLElement) {
+    let newUserMode: UserMode;
+    newUserMode =
+      this.userMode === UserMode.Teacher ? UserMode.Student : UserMode.Teacher;
+    UserModebutton.textContent =
+      newUserMode === UserMode.Student ? "Student Mode" : "Teacher Mode";
+    this.userMode = newUserMode;
+    handleUserModeSwitch();
   }
 }

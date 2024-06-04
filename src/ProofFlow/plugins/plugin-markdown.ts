@@ -7,6 +7,7 @@ import {
   inputNodeType,
 } from "../editor/nodetypes";
 import { TextSelection } from "prosemirror-state";
+
 import {
   isClickedNode,
   renderedToMarkdown,
@@ -22,7 +23,7 @@ export const markdownPlugin = new Plugin({
   props: {
     handleClickOn(view, pos, node, nodePos, event, direct) {
       if (node.type.name === undefined || !direct) return; // If the node being clicked is not a valid node or the click is not a user action, return
-      console.log("node: " + node.type.name);
+
       let trans = view.state.tr;
       let cursorOffset = pos;
       let clickedPos = nodePos;
@@ -32,7 +33,7 @@ export const markdownPlugin = new Plugin({
       let container = getContainingNode(view.state.selection);
 
       let locked: boolean =
-        proofFlow.userMode === UserMode.Student &&
+        proofFlow.getUserMode() === UserMode.Student &&
         container?.type.name !== "input_content";
 
       // Go through all the descendants of the document node
@@ -167,16 +168,6 @@ export const markdownPlugin = new Plugin({
         if (bIsClickedNode) {
           offsetToClicked += cursorOffset - clickedPos;
           correctPos = offsetToClicked;
-          // console.log(
-          //   "Clicked pos: " +
-          //     clickedPos +
-          //     " offset to clicked: " +
-          //     offsetToClicked +
-          //     " correct pos: " +
-          //     correctPos +
-          //     " node type: " +
-          //     newNode.type.name,
-          // );
         }
 
         offsetToClicked += newNode.nodeSize;
