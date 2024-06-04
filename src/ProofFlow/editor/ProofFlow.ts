@@ -34,6 +34,8 @@ import {
   markdownblockNodeType,
   collapsibleTitleNodeType,
   collapsibleContentType,
+  inputNodeType,
+  inputContentType,
 } from "./nodetypes.ts";
 import { UserMode, handleUserModeSwitch } from "../UserMode/userMode.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
@@ -179,7 +181,9 @@ export class ProofFlow {
       // Create text or code areas based on the parsed content
       if (wrapper.wrapperType == WrapperType.Collapsible) {
         this.createCollapsible(wrapper);
-      } else {
+      } else if (wrapper.wrapperType == WrapperType.Input) {
+        this.createInput(wrapper);
+      }else {
         for (let area of wrapper.areas) {
           if (area.areaType == AreaType.Markdown) {
             this.createTextArea(area.text);
@@ -216,6 +220,30 @@ export class ProofFlow {
     trans = trans.insert(counter, node);
     this.editorView.state = this.editorView.state.apply(trans);
     this.editorView.updateState(this.editorView.state);
+  }
+
+  /**
+   * Creates a input element based on the provided wrapper.
+   *
+   * @param wrapper - The wrapper containing information for the input element.
+   */
+  public createInput(wrapper: Wrapper) {
+    let contentNodes: Node[] = [];
+    wrapper.areas.forEach((area) => {
+      if (area.areaType == AreaType.Code) {
+        const node = this.createCodeNode(area.text);
+        contentNodes.push(node);
+      } else if (area.areaType == AreaType.Math) {
+        const node = this.createMathNode(area.text);
+        contentNodes.push(node);
+      } else if (area.areaType == AreaType.Markdown) {
+        const node = this.createTextNode(area.text);
+        contentNodes.push(node);
+      }
+    });
+    let inputNode: Node = inputContentType.create(null, contentNodes);
+    console.log(inputNode);
+    this.insertAtEnd(inputNode);
   }
 
   /**
