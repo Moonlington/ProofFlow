@@ -121,6 +121,7 @@ export function getCollapsibleInsertCommand(): Command {
     }
     // Check if old node exists
     if (oldNode == null) return false;
+    if (oldNode.type.name == "input" || oldNode.type.name == "collapsible") return false;
 
     // Create the title node for the collapsible node
     let textNode: Node = collapsibleTitleNodeType.create(null, [
