@@ -37,6 +37,8 @@ import {
 } from "./nodetypes.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
+import { LSPType } from "../LSPType.ts";
+import { didOpen, initializeServer, shutdown, startServer } from "../../basicLspFunctions.ts";
 // CSS
 
 export class ProofFlow {
@@ -53,7 +55,11 @@ export class ProofFlow {
 
   private fileName: string = "file.txt";
 
+  private filePath: string = "file.text";
+
   private minimap: Minimap | null = null;
+
+  private lspType: LSPType = LSPType.None; 
 
   /**
    * Represents the ProofFlow class.
@@ -66,6 +72,12 @@ export class ProofFlow {
     this._contentElem = contentElem; // Set the content element
     // Create the editor 
     this.editorView = this.createEditorView();
+
+    window.addEventListener("beforeunload", (e) => {
+      if (this.lspType != LSPType.None) {
+        shutdown();
+      }
+    });
   }
 
   // TODO: Documentation
@@ -145,6 +157,8 @@ export class ProofFlow {
    * @param fileType - The type of the file.
    */
   public openFile(text: string, fileType: AcceptedFileType) {
+    this.initializeServerProofFlow(fileType);
+
     // Process the file content
     let areaParsingFunction: (text: string) => Area[];
     switch (fileType) {
@@ -161,6 +175,10 @@ export class ProofFlow {
         return;
     }
     this.renderWrappers(parseToProofFlow(text, areaParsingFunction));
+
+    // console.log(this.fileName);
+    initializeServer(this.fileName);
+    didOpen(this.fileName, 'coq', text, '1');
   }
 
   public renderWrappers(wrappers: Wrapper[]): void {
@@ -305,6 +323,12 @@ export class ProofFlow {
 
   // TODO: Documentation
   public reset() {
+    console.log(this.lspType);
+    if (this.lspType != LSPType.None) {
+      shutdown();
+      this.lspType = LSPType.None;
+    }
+
     this.minimap?.destroy();
 
     // Remove all children from the editor element
@@ -318,5 +342,18 @@ export class ProofFlow {
     }
 
     this.editorView = this.createEditorView();
+  }
+
+  private initializeServerProofFlow(acceptedFileType: AcceptedFileType) {
+    console.log(acceptedFileType);
+    if (acceptedFileType == AcceptedFileType.Unknown) return;
+    // console.log("Initializing!!!")
+    if (acceptedFileType == AcceptedFileType.Coq || acceptedFileType == AcceptedFileType.CoqMD) {
+      startServer("coq");
+      this.lspType = LSPType.Coq;
+    } else if (acceptedFileType == AcceptedFileType.Lean) {
+      startServer("lean");
+      this.lspType = LSPType.LEAN;
+    }
   }
 }

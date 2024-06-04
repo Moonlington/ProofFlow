@@ -17,15 +17,6 @@ const contentElement: HTMLElement = document.querySelector("#content")!;
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
 
-
-startServer().then(() => {
-  initializeServer('C:\\Users\\20212170\\OneDrive - TU Eindhoven\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v').then(() => {
-    initialized().then(() => {
-      didOpen('C:\\Users\\20212170\\OneDrive - TU Eindhoven\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v', 'coq', 'example', '1');
-    });
-  });
-});
-
 // Button to create a new instance of the editor and content elements
 const buttonNewInstance = document.getElementById("newtextblock");
 // Add event listener to the button
@@ -77,6 +68,7 @@ function readSingleFile(e: Event) {
     if (readerEvent?.target?.result) {
       // Get the result from the reader event
       const result = readerEvent.target.result.toString();
+      proofFlow.reset();
       proofFlow.setFileName(file.name);
       proofFlow.openFile(result, fileType);
     }
