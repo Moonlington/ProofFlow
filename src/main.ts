@@ -1,3 +1,4 @@
+import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
 import { ProofFlow } from "./ProofFlow/editor/ProofFlow.ts";
 import {
   AcceptedFileType,
@@ -17,6 +18,9 @@ const contentElement: HTMLElement = document.querySelector("#content")!;
 let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
 
 export { proofFlow };
+
+// Do this to get proper user rights.
+handleUserModeSwitch();
 
 // Button to create a new instance of the editor and content elements
 const buttonNewInstance = document.getElementById("newtextblock");

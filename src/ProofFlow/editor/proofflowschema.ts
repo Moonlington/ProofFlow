@@ -65,7 +65,7 @@ export const ProofFlowSchema: Schema = new Schema({
       atom: false,
       code: false,
       toDOM(node) {
-        return ["collapsible_title", 0];
+        return ["collapsible_title", { class: "unlocked" }, 0];
       },
     },
 

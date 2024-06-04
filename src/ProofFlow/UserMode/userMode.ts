@@ -31,9 +31,10 @@ export function lockEditing(lock: boolean) {
       if (area.classList.contains("markdown")) {
         lockMarkdown(area, lock);
       } else if (area.classList.contains("cm-editor")) {
-        console.log("here");
         area.classList.toggle("unlocked", lock);
         lockCode(area, lock);
+      } else if (area.classList.contains("collapsible")) {
+        lockCollapsible(area, lock);
       }
     });
   }
@@ -50,6 +51,10 @@ function lockMarkdown(area: Element, lock: boolean) {
 
 function lockCode(area: Element, lock: boolean) {
   const content = area.querySelector(".cm-content");
-  console.log(content);
   content?.setAttribute("contenteditable", lock ? "false" : "true");
+}
+
+function lockCollapsible(area: Element, lock: boolean) {
+  const title = area.querySelector("collapsible_title");
+  title?.setAttribute("contenteditable", lock ? "false" : "true");
 }
