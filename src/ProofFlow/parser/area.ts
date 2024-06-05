@@ -12,7 +12,7 @@ export class Area {
   text = ""; // The text content of the area
   input: boolean = false; // Whether the area is in an input area
 
-  constructor (areaType: AreaType) {
+  constructor(areaType: AreaType) {
     this.areaType = areaType;
   }
 }

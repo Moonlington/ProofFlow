@@ -234,9 +234,16 @@ export function parseToAreasLean(text: string): Wrapper[] {
  * @returns An array of areas representing the parsed text.
  */
 export function parseToAreasJSON(json: string): Wrapper[] {
-  let areas = convertJSONToAreas([{"content": "", "input": false, "subAreas": [{"content": "text", "input": false, "subAreas": [], "type": "Text"}], "type": "Collapsible"}]);
+  let areas = convertJSONToAreas([
+    {
+      content: "",
+      input: false,
+      subAreas: [{ content: "text", input: false, subAreas: [], type: "Text" }],
+      type: "Collapsible",
+    },
+  ]);
   return convertAreasToRenderable(areas);
-} 
+}
 
 /**
  * Enum representing the different kinds of areas present in the prosemirror format.
@@ -269,7 +276,7 @@ class LeanArea implements ParseArea {
   subAreas: LeanArea[] = [];
   input: boolean = false;
 
-  constructor (type: ParseAreaType) {
+  constructor(type: ParseAreaType) {
     this.type = type;
   }
 
@@ -279,7 +286,7 @@ class LeanArea implements ParseArea {
 }
 
 /**
- * A class describing areas as contained in the json lists passed by (TODO: add location). 
+ * A class describing areas as contained in the json lists passed by (TODO: add location).
  */
 class JSONArea implements ParseArea {
   type: ParseAreaType = ParseAreaType.Text;
@@ -289,26 +296,26 @@ class JSONArea implements ParseArea {
 }
 
 type AreaObject = {
-  content:string,
-  input: boolean,
-  subAreas: AreaObject[],
-  type: string
-} 
+  content: string;
+  input: boolean;
+  subAreas: AreaObject[];
+  type: string;
+};
 
 /**
- * Converts a list of json objects as passed by (TODO: add location) to a list of JSONAreas. 
+ * Converts a list of json objects as passed by (TODO: add location) to a list of JSONAreas.
  * @param jsonList a list of json objects.
  * @returns a list of JSONAreas.
  */
 function convertJSONToAreas(jsonList: AreaObject[]): JSONArea[] {
-  let result : JSONArea[] = new Array;
-  for(let area of jsonList) {
-    let jsonArea : JSONArea = new JSONArea;
+  let result: JSONArea[] = new Array();
+  for (let area of jsonList) {
+    let jsonArea: JSONArea = new JSONArea();
     jsonArea.type = area.type as ParseAreaType;
     jsonArea.content = area.content;
     jsonArea.input = area.input;
     jsonArea.subAreas = convertJSONToAreas(area.subAreas);
-    result.push(jsonArea)
+    result.push(jsonArea);
   }
   console.log(result);
   return result;
@@ -320,15 +327,15 @@ function convertJSONToAreas(jsonList: AreaObject[]): JSONArea[] {
  * @returns An array of Wrapper objects.
  */
 function convertAreasToRenderable(AreaArray: ParseArea[]): Wrapper[] {
-  let wrappers : Wrapper[] = new Array;
-  for(let i = 0; i < AreaArray.length; i++) {
+  let wrappers: Wrapper[] = new Array();
+  for (let i = 0; i < AreaArray.length; i++) {
     let wrapper = new Wrapper();
     switch (AreaArray[i].type) {
-      case (ParseAreaType.Collapsible):
+      case ParseAreaType.Collapsible:
         wrapper.wrapperType = WrapperType.Collapsible;
         wrapper.info = " ";
-        break
-      case (ParseAreaType.Input):
+        break;
+      case ParseAreaType.Input:
         wrapper.wrapperType = WrapperType.Input;
         break;
       default:
@@ -338,13 +345,13 @@ function convertAreasToRenderable(AreaArray: ParseArea[]): Wrapper[] {
     for (let j = 0; j < AreaArray[i].subAreas.length; j++) {
       let area: Area = new Area(AreaType.None);
       switch (AreaArray[i].subAreas[j].type) {
-        case (ParseAreaType.Text):
+        case ParseAreaType.Text:
           area.areaType = AreaType.Markdown;
           break;
-        case (ParseAreaType.Math):
+        case ParseAreaType.Math:
           area.areaType = AreaType.Math;
           break;
-        case (ParseAreaType.Code):
+        case ParseAreaType.Code:
           area.areaType = AreaType.Code;
           break;
       }
@@ -377,7 +384,7 @@ class LeanParser implements Parser {
   inText: boolean = true;
   textStart: number = 0;
 
-  constructor (document: String) {
+  constructor(document: String) {
     this.document = document;
   }
 
@@ -387,7 +394,7 @@ class LeanParser implements Parser {
    * @param areaType The type that should be assigned to the new area
    * @returns A LeanArea with the type and contents provided.
    */
-  createArea(content: string, areaType: ParseAreaType): LeanArea{
+  createArea(content: string, areaType: ParseAreaType): LeanArea {
     let area = new LeanArea(areaType);
     area.content = content;
     return area;
@@ -401,14 +408,17 @@ class LeanParser implements Parser {
   parseSubAreas(start: number): number {
     let i: number = start;
     while (i < this.document.length) {
-      if ( i == this.document.length - 1 && this.inText) {
+      if (i == this.document.length - 1 && this.inText) {
         if (i > this.textStart) {
-          let content = this.document.substring(this.textStart, this.document.length);
-            if (content.length == 0) {
-              content = " ";
-            }
-            const subarea = this.createArea(content, ParseAreaType.Text);
-            this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
+          let content = this.document.substring(
+            this.textStart,
+            this.document.length,
+          );
+          if (content.length == 0) {
+            content = " ";
+          }
+          const subarea = this.createArea(content, ParseAreaType.Text);
+          this.parsedDocument[this.parsedDocument.length - 1].addAreas(subarea);
         }
         this.inText = false;
       } else if (this.document.startsWith(":::", i) && this.inText) {
@@ -418,16 +428,18 @@ class LeanParser implements Parser {
             content = " ";
           }
           const subarea = this.createArea(content, ParseAreaType.Text);
-          this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
+          this.parsedDocument[this.parsedDocument.length - 1].addAreas(subarea);
         }
         this.inText = false;
       } else if (this.document.startsWith(":::math", i)) {
         let pos = i + ":::math\n".length;
-        for(let j = pos; j < this.document.length; j++) {
-          if(this.document.startsWith(":::", j)) {
+        for (let j = pos; j < this.document.length; j++) {
+          if (this.document.startsWith(":::", j)) {
             const content = this.document.substring(pos, j - 1);
             const subarea = this.createArea(content, ParseAreaType.Math);
-            this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
+            this.parsedDocument[this.parsedDocument.length - 1].addAreas(
+              subarea,
+            );
             this.inText = true;
             this.textStart = j + ":::\n".length;
             i = j + ":::\n".length;
@@ -436,11 +448,11 @@ class LeanParser implements Parser {
         }
       } else if (this.document.startsWith(":::code", i)) {
         let pos = i + ":::code\n".length;
-        for(let j = pos; j < this.document.length; j++) {
-          if(!this.document.startsWith(":::", j)) continue;
+        for (let j = pos; j < this.document.length; j++) {
+          if (!this.document.startsWith(":::", j)) continue;
           const content = this.document.substring(pos, j - 1);
           const subarea = this.createArea(content, ParseAreaType.Code);
-          this.parsedDocument[this.parsedDocument.length -1].addAreas(subarea);
+          this.parsedDocument[this.parsedDocument.length - 1].addAreas(subarea);
           this.inText = true;
           this.textStart = j + ":::\n".length;
           i = j + ":::\n".length;
@@ -450,7 +462,10 @@ class LeanParser implements Parser {
         i += ":::\n".length;
         this.inTrueWrapper = false;
         return i;
-      } else if (this.document.startsWith(":::collapsible", i) ||this.document.startsWith(":::input", i)) {
+      } else if (
+        this.document.startsWith(":::collapsible", i) ||
+        this.document.startsWith(":::input", i)
+      ) {
         return i;
       } else {
         i++;
@@ -458,13 +473,13 @@ class LeanParser implements Parser {
     }
     return i;
   }
-  
+
   /**
    * Starts the parsing of the document provided in the construction of the class. It generates top-level areas (Empty, Collapsible, Input) which will contain all subareas (Text, Code, Math).
    * @returns An array of LeanAreas containing the contents of the document.
    */
   parse(): LeanArea[] {
-    let i = 0
+    let i = 0;
     while (i < this.document.length) {
       if (this.document.startsWith(":::collapsible", i)) {
         this.inTrueWrapper = true;

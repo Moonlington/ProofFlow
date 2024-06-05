@@ -233,9 +233,7 @@ export function renderedToMarkdown(node: Node, schema: Schema) {
 
   let text = serializedContent == "" ? null : schema.text(serializedContent);
   const markdownNodeType = schema.nodes["markdown"];
-  let markdownNode: Node = markdownNodeType.create(null, 
-        text,
-  );
+  let markdownNode: Node = markdownNodeType.create(null, text);
 
   return markdownNode;
 }
