@@ -8,14 +8,14 @@ import "./ProofFlow/styles/index.css";
 import "./ProofFlow/styles/minimap.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
-import { startServer,  initializeServer, initialized, didOpen} from "./basicLspFunctions";
+import { startServer,  initializeServer, initialized, didOpen} from "./ProofFlow/basicLspFunctions.ts";
 
 // Get the editor and content elements
 const editorElement: HTMLElement = document.querySelector("#editor")!;
 const contentElement: HTMLElement = document.querySelector("#content")!;
 
 // Create a new instance of the ProofFlow class
-let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
+let proofFlow: ProofFlow = ProofFlow.createInstance(editorElement, contentElement);
 
 // Button to create a new instance of the editor and content elements
 const buttonNewInstance = document.getElementById("newtextblock");

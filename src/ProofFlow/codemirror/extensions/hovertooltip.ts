@@ -1,5 +1,5 @@
 import { hoverTooltip } from "@codemirror/view";
-import { hover } from "../../../basicLspFunctions";
+import { hover } from "../../basicLspFunctions";
 
 export const wordHover = hoverTooltip((view, pos, side) => {
     let {from, to, text} = view.state.doc.lineAt(pos)
@@ -15,7 +15,7 @@ export const wordHover = hoverTooltip((view, pos, side) => {
       create(view) {
         let dom = document.createElement("div")
           // TODO: Add information from the LSP client
-        dom.textContent = text.slice(start - from, end - from) 
+        dom.textContent = text.slice(start - from, end - from)
         hover('CoqIntro_short.v', pos, start - from).then((response) => {
           dom.textContent = response.contents.value
         });

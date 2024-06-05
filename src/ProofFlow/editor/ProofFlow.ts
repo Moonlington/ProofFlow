@@ -11,7 +11,7 @@ import {
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { ProofFlowPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
-import { AreaType } from "../parser/area.ts";
+import {Area, AreaType} from "../parser/area.ts";
 import {
   parseToAreasMV,
   parseToAreasV,
@@ -26,7 +26,6 @@ import { javascript } from "@codemirror/lang-javascript";
 
 import { applyGlobalKeyBindings } from "../commands/shortcuts";
 import { Wrapper, WrapperType } from "../parser/wrapper.ts";
-import { Area } from "../parser/area.ts";
 import {
   mathblockNodeType,
   codeblockNodeType,
@@ -38,12 +37,13 @@ import {
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
 import { LSPType } from "../LSPType.ts";
-import { didClose, didOpen, initialized, initializeServer, shutdown, startServer } from "../../basicLspFunctions.ts";
+import { didClose, didOpen, initialized, initializeServer, shutdown, startServer } from "../basicLspFunctions.ts";
 // CSS
 
 export class ProofFlow {
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
   private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
+  private static _instance: ProofFlow;
 
   private _schema: Schema = ProofFlowSchema; // The schema for the editor
   private editorStateConfig: EditorStateConfig = {
@@ -53,13 +53,13 @@ export class ProofFlow {
 
   private editorView: EditorView; // The view of the editor
 
-  private fileName: string = "file.txt";
+  private _fileName: string = "file.txt";
 
   private filePath: string = "file.text";
 
   private minimap: Minimap | null = null;
 
-  private lspType: LSPType = LSPType.None; 
+  private lspType: LSPType = LSPType.None;
 
   /**
    * Represents the ProofFlow class.
@@ -70,7 +70,7 @@ export class ProofFlow {
   constructor(editorElem: HTMLElement, contentElem: HTMLElement) {
     this._editorElem = editorElem; // Set the editor element
     this._contentElem = contentElem; // Set the content element
-    // Create the editor 
+    // Create the editor
     this.editorView = this.createEditorView();
 
     window.addEventListener("beforeunload", (e) => {
@@ -126,6 +126,30 @@ export class ProofFlow {
     return editorView;
   }
 
+  get fileName(): string {
+    return this._fileName;
+  }
+
+  public static instanceExists(): boolean {
+    return !!ProofFlow._instance;
+  }
+
+  public static createInstance(editorElement: HTMLElement, contentElement: HTMLElement): ProofFlow {
+    if (!ProofFlow._instance) {
+      ProofFlow._instance = new ProofFlow(editorElement, contentElement);
+    }
+    return ProofFlow._instance;
+  }
+
+  public static getInstance(): ProofFlow {
+    if (!ProofFlow._instance) {
+      throw new Error("Instance not created yet. Call createInstance first.");
+    }
+    return ProofFlow._instance;
+  }
+
+
+
   /**
    * Synchronizes the ProseMirror selection with the CodeMirror selection.
    * Helps with navigating from code mirror to other node types
@@ -177,10 +201,10 @@ export class ProofFlow {
     this.renderWrappers(parseToProofFlow(text, areaParsingFunction))
 
     // console.log(this.fileName);
-    initializeServer(this.fileName).then(() => {
+    initializeServer(this._fileName).then(() => {
       initialized().then(() => {
-        didOpen(this.fileName, 'coq', text, '1').then(() => {
-          
+        didOpen(this._fileName, 'coq', text, '1').then(() => {
+
         });
       });
     });
@@ -307,7 +331,7 @@ export class ProofFlow {
   }
 
   public setFileName(fileName: string) {
-    this.fileName = fileName;
+    this._fileName = fileName;
   }
 
   public saveFile() {
@@ -318,7 +342,7 @@ export class ProofFlow {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = this.fileName;
+    a.download = this._fileName;
     document.body.appendChild(a);
     a.click();
 
@@ -330,7 +354,7 @@ export class ProofFlow {
   public reset() {
     console.log(this.lspType);
     if (this.lspType != LSPType.None) {
-      didClose(this.fileName).then(() => {
+      didClose(this._fileName).then(() => {
         shutdown();
       });
       this.lspType = LSPType.None;

@@ -13,6 +13,7 @@ import {
 import { Command, EditorView as CMView, keymap } from "@codemirror/view";
 import type { ComputeChange, CodeMirrorViewOptions } from "./types.ts";
 import { wordHover } from "./extensions/hovertooltip.ts";
+import {codeCompl} from "./extensions/autocomplete.ts";
 
 const computeChange = (
   oldVal: string,
@@ -133,6 +134,7 @@ class CodeMirrorView implements NodeView {
         cmExtensions,
         tabKeymap,
         wordHover,
+        codeCompl
       ],
     });
 

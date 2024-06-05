@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {CompletionContext} from "@codemirror/autocomplete";
 
 const socket = new WebSocket('ws://localhost:3000');
 
@@ -223,6 +224,30 @@ async function gotoDeclaration(uri: string, line: number, character: number): Pr
   }
 }
 
+// TODO: Implement requestCompletion for the LSP functions
+async function requestCompletion(uri: string, context: CompletionContext, trigger: any): Promise<any> {
+  const position = context.pos;
+  const line = context.state.doc.lineAt(position).number - 1; // Convert to zero-based index
+  const character = position - context.state.doc.line(line + 1).from;
+
+  try {
+    const response = await axios.get('http://localhost:3000/completion', {
+      params: {
+        uri: uri,
+        line: line,
+        character: character,
+        context: JSON.stringify(context), // Serialize context if necessary
+        trigger: trigger.character
+      }
+    });
+    console.log('Completion response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error requesting completion:', error);
+    return [];
+  }
+}
+
 export {
   startServer,
   initializeServer,
@@ -238,5 +263,6 @@ export {
   typeDefinition,
   signatureHelp,
   hover,
-  gotoDeclaration
+  gotoDeclaration,
+  requestCompletion
 };
