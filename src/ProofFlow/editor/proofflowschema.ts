@@ -9,6 +9,11 @@ const cell =
   "(markdown | collapsible | math_display | code_mirror | markdown_rendered | input)";
 const containercontent =
   "(markdown | math_display | code_mirror | markdown_rendered)";
+export enum proof {
+  correct,
+  incorrect,
+  unattempted,
+}
 
 /**
  * The ProofFlow schema.
@@ -24,10 +29,27 @@ export const ProofFlowSchema: Schema = new Schema({
     },
 
     input: {
+      attrs: {
+        proof: { default: proof.unattempted },
+      },
       content: `input_content`,
       parseDOM: [{ tag: "input" }],
       toDOM(node: Node) {
-        return ["div", { class: "input" }, 0];
+        const proofValue = node.attrs.proof;
+        let proofClass = "";
+    
+        switch (proofValue) {
+          case proof.correct:
+            proofClass = "input-correct";
+            break;
+          case proof.incorrect:
+            proofClass = "input-incorrect";
+            break;
+          case proof.unattempted:
+            proofClass = "input-unattempted";
+        }
+
+        return ["div", { class: `input ${proofClass}`}, 0];
       },
     },
 

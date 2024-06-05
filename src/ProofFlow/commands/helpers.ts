@@ -13,6 +13,7 @@ import {
 } from "prosemirror-markdown";
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
+import { proof } from "../editor/proofflowschema";
 
 /**
  * Represents the possible places where an insertion can occur.
@@ -247,4 +248,18 @@ export function renderedToMarkdown(node: Node, schema: Schema) {
   let markdownNode: Node = markdownNodeType.create(null, text);
 
   return markdownNode;
+}
+
+export function inputProof(inputNode: Node, newProof: proof, pos: number) {
+    if (inputNode.type.name !== "input") return;
+    let view = proofFlow.getEditorView();
+    const { state, dispatch } = view;
+
+    // Create a transaction to update the node's attributes
+    const transaction = state.tr.setNodeMarkup(pos, null, {
+      ...inputNode.attrs,
+      proof: newProof,
+    });
+
+    dispatch(transaction);
 }

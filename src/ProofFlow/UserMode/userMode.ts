@@ -1,4 +1,7 @@
 import { proofFlow } from "../../main.ts";
+// import { EditorState } from "prosemirror-state";
+// import { inputProof } from "../commands/helpers.ts";
+// import { proof } from "../editor/proofflowschema.ts";
 
 // Enum representing whether a textbox is locked or open to alter
 export enum UserMode {
@@ -10,6 +13,7 @@ export enum UserMode {
  * Handles the user mode switch.
  */
 export function handleUserModeSwitch() {
+  // switchAllInput();
   const userMode = proofFlow.getUserMode();
   const inputButton = document.getElementById("input-button");
 
@@ -84,3 +88,15 @@ function lockCollapsible(area: Element, lock: boolean) {
   const title = area.querySelector("collapsible_title");
   title?.setAttribute("contenteditable", lock ? "false" : "true");
 }
+
+// Test function for color changing
+// function switchAllInput() {
+//   const state = proofFlow.getState();
+//   const doc = state.doc;
+
+//   doc.descendants((node, pos) => {
+//     if (node.type.name === "input") {
+//       inputProof(node, proof.correct, pos);
+//     }
+//   });
+// }

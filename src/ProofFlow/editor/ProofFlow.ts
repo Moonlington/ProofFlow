@@ -1,7 +1,7 @@
 import { Schema, DOMParser, Node } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/index.ts";
 import type { GetPos } from "../codemirror/types.ts";
-import { ProofFlowSchema } from "./proofflowschema.ts";
+import { ProofFlowSchema, proof } from "./proofflowschema.ts";
 import {
   EditorState,
   EditorStateConfig,
@@ -40,6 +40,7 @@ import {
 import { UserMode, handleUserModeSwitch } from "../UserMode/userMode.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
+import { inputProof } from "../commands/helpers.ts";
 // CSS
 
 export class ProofFlow {
