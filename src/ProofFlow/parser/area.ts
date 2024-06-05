@@ -10,4 +10,9 @@ export enum AreaType {
 export class Area {
   areaType = AreaType.None; // The type of the area
   text = ""; // The text content of the area
+  input: boolean = false; // Whether the area is in an input area
+
+  constructor(areaType: AreaType) {
+    this.areaType = areaType;
+  }
 }

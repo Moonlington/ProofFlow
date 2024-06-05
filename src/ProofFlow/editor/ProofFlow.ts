@@ -155,8 +155,8 @@ export class ProofFlow {
         areaParsingFunction = parseToAreasMV;
         break;
       case AcceptedFileType.Lean:
-        areaParsingFunction = parseToAreasLean;
-        break;
+        this.renderWrappers(parseToAreasLean(text));
+        return;
       default:
         return;
     }
