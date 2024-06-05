@@ -38,7 +38,7 @@ import {
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
 import { LSPType } from "../LSPType.ts";
-import { didOpen, initializeServer, shutdown, startServer } from "../../basicLspFunctions.ts";
+import { didClose, didOpen, initialized, initializeServer, shutdown, startServer } from "../../basicLspFunctions.ts";
 // CSS
 
 export class ProofFlow {
@@ -174,11 +174,16 @@ export class ProofFlow {
       default:
         return;
     }
-    this.renderWrappers(parseToProofFlow(text, areaParsingFunction));
+    this.renderWrappers(parseToProofFlow(text, areaParsingFunction))
 
     // console.log(this.fileName);
-    initializeServer(this.fileName);
-    didOpen(this.fileName, 'coq', text, '1');
+    initializeServer(this.fileName).then(() => {
+      initialized().then(() => {
+        didOpen(this.fileName, 'coq', text, '1').then(() => {
+          
+        });
+      });
+    });
   }
 
   public renderWrappers(wrappers: Wrapper[]): void {
@@ -325,7 +330,9 @@ export class ProofFlow {
   public reset() {
     console.log(this.lspType);
     if (this.lspType != LSPType.None) {
-      shutdown();
+      didClose(this.fileName).then(() => {
+        shutdown();
+      });
       this.lspType = LSPType.None;
     }
 

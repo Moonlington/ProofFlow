@@ -146,7 +146,7 @@ async function references(uri: string, line: number, character: number): Promise
   }
 }
 
-async function definition(uri: string, line: number, character: number): Promise<void> {
+async function definition(uri: string, line: number, character: number): Promise<any> {
   try {
     const response = await axios.get('http://localhost:3000/definition', {
       params: {
@@ -191,7 +191,7 @@ async function signatureHelp(uri: string, line: number, character: number): Prom
   }
 }
 
-async function hover(uri: string, line: number, character: number): Promise<void> {
+async function hover(uri: string, line: number, character: number): Promise<any> {
   try {
     const response = await axios.get('http://localhost:3000/hover', {
       params: {
@@ -201,8 +201,10 @@ async function hover(uri: string, line: number, character: number): Promise<void
       }
     });
     console.log('Hover Response:', response.data);
+    return response.data;
   } catch (error) {
     console.error('Error getting hover:', error);
+    return null;
   }
 }
 
