@@ -1,3 +1,4 @@
+import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
 import { ProofFlow } from "./ProofFlow/editor/ProofFlow.ts";
 import {
   AcceptedFileType,
@@ -16,6 +17,11 @@ const contentElement: HTMLElement = document.querySelector("#content")!;
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
 
+export { proofFlow };
+
+// Do this to get proper user rights.
+handleUserModeSwitch();
+
 // Button to create a new instance of the editor and content elements
 const buttonNewInstance = document.getElementById("newtextblock");
 // Add event listener to the button
@@ -23,16 +29,14 @@ buttonNewInstance?.addEventListener("click", (e) => {
   proofFlow.reset();
 });
 
-// Button to insert "hi" in the editor element
-// TODO: remove this button, it's just for testing
-const buttonInsertHi = document.getElementById("insert-hi");
-buttonInsertHi?.addEventListener("click", (e) => {
-  proofFlow.createTextArea("hi");
-});
-
 let buttonSaveFile = document.getElementById("save-file");
 buttonSaveFile?.addEventListener("click", (e) => {
   proofFlow.saveFile();
+});
+
+let userModeButton = document.getElementById("user-mode-button");
+userModeButton?.addEventListener("click", (e) => {
+  proofFlow.switchUserMode(userModeButton);
 });
 
 // Input to read file

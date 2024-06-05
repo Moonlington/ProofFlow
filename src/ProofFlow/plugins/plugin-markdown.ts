@@ -1,6 +1,11 @@
 import { Plugin } from "prosemirror-state";
 import { Node } from "prosemirror-model";
-import { collapsibleContentType, collapsibleNodeType } from "../nodetypes.ts";
+import {
+  collapsibleContentType,
+  collapsibleNodeType,
+  inputContentType,
+  inputNodeType,
+} from "../editor/nodetypes";
 import { TextSelection } from "prosemirror-state";
 
 import {
@@ -8,8 +13,11 @@ import {
   renderedToMarkdown,
   markdownToRendered,
   highLevelCells,
+  getContainingNode,
 } from "../commands/helpers.ts";
 import { ProofFlowSchema } from "../editor/proofflowschema.ts";
+import { proofFlow } from "../../main.ts";
+import { UserMode, lockEditing } from "../UserMode/userMode.ts";
 
 export const markdownPlugin = new Plugin({
   props: {
@@ -22,6 +30,12 @@ export const markdownPlugin = new Plugin({
       let correctPos = 0;
       let offsetToClicked = 0;
       let newNodes = Array<Node>();
+      let container = getContainingNode(view.state.selection);
+
+      // Check if the node is locked
+      let locked: boolean =
+        proofFlow.getUserMode() === UserMode.Student &&
+        container?.type.name !== "input_content";
 
       // Go through all the descendants of the document node
       view.state.doc.descendants((node, pos) => {
@@ -31,8 +45,14 @@ export const markdownPlugin = new Plugin({
         // hence this node will not be re-assigned and we just re-use the original node
         let newNode: Node = node;
         let bIsClickedNode: boolean = isClickedNode(node, pos, clickedPos);
+
         // Case: This is the clicked on rendered markdown node, hence we need to replace it with a markdown node
-        if (bIsClickedNode && node.type.name === "markdown_rendered") {
+        // But not if the node is locked
+        if (
+          bIsClickedNode &&
+          node.type.name === "markdown_rendered" &&
+          !locked
+        ) {
           newNode = renderedToMarkdown(node, ProofFlowSchema);
         }
 
@@ -43,7 +63,8 @@ export const markdownPlugin = new Plugin({
 
         // Case: We are in a collapsible content node and hence need to add the new node
         // to the "collapsible" parent node and then replace the old collapsible content node
-        else if (node.type.name === "collapsible") {
+        // but not if the node is locked
+        else if (node.type.name === "collapsible" && !locked) {
           let collapsibleParentNode: Node = node; // Get the collapsible parent node
           let collapsibleTitleNode: Node = collapsibleParentNode.firstChild!; // Get the collapsible title node
           let collapsibleContentNode: Node = collapsibleParentNode.child(1)!; // Get the collapsible content node
@@ -105,6 +126,47 @@ export const markdownPlugin = new Plugin({
             newCollapsibleContentNode,
           ]);
           newNode = newCollapsibleNode;
+        } else if (node.type.name === "input") {
+          let inputParentNode: Node = node;
+          let inputContentNode: Node = inputParentNode.child(0)!;
+          let newInputChildNodes: Node[] = Array<Node>();
+
+          let inputParentPos = pos;
+
+          let innerOffsetToClicked = 0;
+
+          inputContentNode.descendants((node, pos) => {
+            if (!highLevelCells.includes(node.type.name)) return false;
+
+            let newChildNode: Node = node;
+            let bIsClickedInputNode: boolean = isClickedNode(
+              node,
+              inputParentPos + pos,
+              clickedPos,
+            );
+
+            if (bIsClickedInputNode && node.type.name === "markdown_rendered") {
+              newChildNode = renderedToMarkdown(node, ProofFlowSchema);
+            } else if (!bIsClickedInputNode && node.type.name === "markdown") {
+              newChildNode = markdownToRendered(node, ProofFlowSchema);
+            }
+
+            if (bIsClickedInputNode) {
+              offsetToClicked += innerOffsetToClicked + 1;
+            }
+            innerOffsetToClicked += newChildNode.nodeSize;
+
+            newInputChildNodes.push(newChildNode);
+          });
+
+          let newInputContentNode = inputContentType.create(
+            { visible: true },
+            newInputChildNodes,
+          );
+
+          let newInputNode = inputNodeType.create({}, newInputContentNode);
+
+          newNode = newInputNode;
         }
 
         if (bIsClickedNode) {
@@ -119,6 +181,11 @@ export const markdownPlugin = new Plugin({
       trans.replaceWith(0, view.state.doc.content.size, newNodes);
       trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos), -1));
       view.dispatch(trans);
+
+      // If we switch while inside of student Mode, we need to lock the editing of the new nodes
+      if (locked) {
+        lockEditing(true);
+      }
     },
   },
 });

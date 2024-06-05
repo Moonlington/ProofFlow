@@ -12,6 +12,9 @@ import {
 } from "@codemirror/state";
 import { Command, EditorView as CMView, keymap } from "@codemirror/view";
 import type { ComputeChange, CodeMirrorViewOptions } from "./types.ts";
+import { proofFlow } from "../../main.ts";
+import { UserMode } from "../UserMode/userMode.ts";
+import { getContainingNode } from "../commands/helpers.ts";
 import { wordHover } from "./extensions/hovertooltip.ts";
 
 const computeChange = (
@@ -230,6 +233,38 @@ class CodeMirrorView implements NodeView {
   }
 
   /**
+   * Checks if the input leaving should be blocked in the specified direction.
+   * @param dir - The direction to check. Can be -1 for left or 1 for right.
+   * @returns True if the input leaving should be blocked, false otherwise.
+   */
+  disallowInputLeaving(dir: -1 | 1): boolean {
+    const view = proofFlow.getEditorView();
+    const { state } = view;
+    const { selection } = state;
+    const { $from } = selection;
+    const userMode = proofFlow.getUserMode();
+    const node = $from.node($from.depth);
+
+    const inStudentMode = userMode === UserMode.Student;
+
+    const containingNode = getContainingNode(selection);
+    const inInput = containingNode?.type.name === "input_content";
+
+    if (inStudentMode && inInput) {
+      const isFirstChild = containingNode?.firstChild === node;
+      if (dir === -1 && isFirstChild) {
+        return true;
+      }
+      const isLastChild = containingNode?.lastChild === node;
+      if (dir === 1 && isLastChild) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Escape the codemirror editor and move the cursor to the ProseMirror editor
    * Will return false if the movement will not escape the current view
    */
@@ -259,16 +294,21 @@ class CodeMirrorView implements NodeView {
         return false;
       }
 
-      const targetPos = this.getPos() + (dir < 0 ? 0 : this.node.nodeSize);
-      const pmSelection = Selection.near(
-        this._outerView.state.doc.resolve(targetPos),
-        dir,
-      );
-      this._outerView.dispatch(
-        this._outerView.state.tr.setSelection(pmSelection).scrollIntoView(),
-      );
-      this._outerView.focus();
-      return true;
+      const disallowLeaving = this.disallowInputLeaving(dir);
+
+      if (!disallowLeaving) {
+        const targetPos = this.getPos() + (dir < 0 ? 0 : this.node.nodeSize);
+        const pmSelection = Selection.near(
+          this._outerView.state.doc.resolve(targetPos),
+          dir,
+        );
+        this._outerView.dispatch(
+          this._outerView.state.tr.setSelection(pmSelection).scrollIntoView(),
+        );
+        this._outerView.focus();
+      }
+
+      return disallowLeaving;
     };
   }
 

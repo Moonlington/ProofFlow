@@ -11,6 +11,9 @@ import {
   defaultMarkdownParser,
   defaultMarkdownSerializer,
 } from "prosemirror-markdown";
+import { proofFlow } from "../../main";
+import { UserMode } from "../UserMode/userMode";
+import { proof } from "../editor/proofflowschema";
 
 /**
  * Represents the possible places where an insertion can occur.
@@ -26,6 +29,7 @@ export const highLevelCells: string[] = new Array(
   "markdown",
   "markdown_rendered",
   "collapsible",
+  "input",
 );
 
 /**
@@ -197,6 +201,13 @@ export function allowedToInsert(state: EditorState): boolean {
   let selection = state.selection;
   let selectionType = getSelectionType(selection);
   console.log(selection);
+  let parent = getContainingNode(selection);
+  let parentType = parent?.type.name;
+  if (
+    proofFlow.getUserMode() === UserMode.Student &&
+    !(parentType == "input_content")
+  )
+    return false;
   if (selectionType.isTextSelection) {
     let node = selection.$from.node();
     if (node == null) return true;
@@ -205,6 +216,7 @@ export function allowedToInsert(state: EditorState): boolean {
     let node = (selection as NodeSelection).node;
     if (node.type.name == "collapsible_content") return false;
     if (node.type.name == "collapsible_title") return false;
+    if (node.type.name == "input_content") return false;
   }
   return true;
 }
@@ -236,4 +248,18 @@ export function renderedToMarkdown(node: Node, schema: Schema) {
   let markdownNode: Node = markdownNodeType.create(null, text);
 
   return markdownNode;
+}
+
+export function inputProof(inputNode: Node, newProof: proof, pos: number) {
+    if (inputNode.type.name !== "input") return;
+    let view = proofFlow.getEditorView();
+    const { state, dispatch } = view;
+
+    // Create a transaction to update the node's attributes
+    const transaction = state.tr.setNodeMarkup(pos, null, {
+      ...inputNode.attrs,
+      proof: newProof,
+    });
+
+    dispatch(transaction);
 }

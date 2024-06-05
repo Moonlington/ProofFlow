@@ -1,13 +1,19 @@
 import { Node, Schema } from "prosemirror-model";
 import { node as codeMirrorNode } from "../codemirror";
+
 /**
  * The cell types available in ProofFlow.
  * Can be markdown, math_display, or codecell.
  */
 const cell =
-  "(markdown | collapsible | math_display | code_mirror | markdown_rendered)";
+  "(markdown | collapsible | math_display | code_mirror | markdown_rendered | input)";
 const containercontent =
   "(markdown | math_display | code_mirror | markdown_rendered)";
+export enum proof {
+  correct,
+  incorrect,
+  unattempted,
+}
 
 /**
  * The ProofFlow schema.
@@ -22,6 +28,48 @@ export const ProofFlowSchema: Schema = new Schema({
       content: `${cell}*`,
     },
 
+    input: {
+      attrs: {
+        proof: { default: proof.unattempted },
+      },
+      content: `input_content`,
+      parseDOM: [{ tag: "input" }],
+      toDOM(node: Node) {
+        const proofValue = node.attrs.proof;
+        let proofClass = "";
+    
+        switch (proofValue) {
+          case proof.correct:
+            proofClass = "input-correct";
+            break;
+          case proof.incorrect:
+            proofClass = "input-incorrect";
+            break;
+          case proof.unattempted:
+            proofClass = "input-unattempted";
+        }
+
+        return ["div", { class: `input ${proofClass}`}, 0];
+      },
+    },
+
+    input_content: {
+      content: `${containercontent}+`,
+      parseDOM: [
+        {
+          tag: "input_content",
+          getAttrs(dom) {
+            return {
+              title: (dom as HTMLElement).getAttribute("title") ?? "input",
+            };
+          },
+        },
+      ],
+      toDOM(node: Node) {
+        return ["div", { class: "input_content unlocked", visible: true }, 0];
+      },
+    },
+
     collapsible: {
       content: `(collapsible_title)(collapsible_content)`,
       parseDOM: [{ tag: "collapsible" }],
@@ -33,11 +81,13 @@ export const ProofFlowSchema: Schema = new Schema({
     collapsible_title: {
       block: true,
       content: "text*",
-      parseDOM: [{ tag: "collapsible_title", preserveWhitespace: "full" }],
+      parseDOM: [
+        { tag: "collapsible_title unlocked", preserveWhitespace: "full" },
+      ],
       atom: false,
       code: false,
       toDOM(node) {
-        return ["collapsible_title", 0];
+        return ["collapsible_title", { class: "unlocked" }, 0];
       },
     },
 
@@ -79,7 +129,7 @@ export const ProofFlowSchema: Schema = new Schema({
       leaf: false,
       draggable: false,
       toDOM(node) {
-        return ["markdown", 0];
+        return ["markdown", { class: "markdown" }, 0];
       },
     },
 
@@ -94,7 +144,7 @@ export const ProofFlowSchema: Schema = new Schema({
       atom: true,
       //draggable: false,
       toDOM(node) {
-        return ["markdown-rendered", 0];
+        return ["markdown-rendered", { class: "markdown unlocked" }, 0];
       },
     },
 

@@ -4,12 +4,19 @@ import {
   cmdInsertMarkdown,
   cmdInsertMath,
 } from "../commands/commands.ts";
-import { InsertionPlace } from "../commands/helpers.ts";
+import {
+  InsertionPlace,
+  allowedToInsert,
+  getContainingNode,
+} from "../commands/helpers.ts";
 import { EditorView } from "prosemirror-view";
 import { NodeSelection, Selection } from "prosemirror-state";
 import { Node } from "prosemirror-model";
 import { deleteSelection } from "prosemirror-commands";
 import { undo, redo } from "prosemirror-history";
+import { getInputInsertCommand } from "../commands/insert-commands.ts";
+import { proofFlow } from "../../main.ts";
+import { UserMode } from "../UserMode/userMode.ts";
 
 /**
  * Represents a button bar for interacting with an editor.
@@ -53,6 +60,14 @@ export class ButtonBar {
       if (i === columnCount - 1) {
         // Add delete button
         this.addButton(column, "Delete", () => {
+          const selection = this._editorView.state.selection;
+          const container = getContainingNode(selection);
+          console.log(container);
+          if (
+            proofFlow.getUserMode() === UserMode.Student &&
+            container?.type.name !== "input_content"
+          )
+            return;
           if (this._editorView.state.selection instanceof NodeSelection) {
             // this works for math nodes
             deleteSelection(this._editorView.state, this._editorView.dispatch);
@@ -67,6 +82,10 @@ export class ButtonBar {
               ),
             );
           }
+        });
+        this.addButton(column, "Input", () => {
+          let command = getInputInsertCommand();
+          command(this._editorView.state, this._editorView.dispatch);
         });
       } else if (i === columnCount - 2) {
         // Add undo and redo buttons
@@ -97,6 +116,7 @@ export class ButtonBar {
   addButton(column: HTMLElement, label: string, callback: () => void) {
     const button = document.createElement("button");
     button.textContent = label;
+    button.id = label.toLowerCase() + "-button";
     button.addEventListener("click", callback);
     column.appendChild(button);
   }
@@ -114,20 +134,28 @@ export class ButtonBar {
     name: string,
     bgColor: string,
   ) {
+    // Create a div element to hold the button group
     const buttonGroup = document.createElement("div");
     buttonGroup.className = "button-group";
 
+    // Iterate over the insertion places ("Above" and "Below")
     ["Above", "Below"].forEach((place) => {
+      // Create the text for the button
       const text = name + " " + place;
+
+      // Create the button element
       const button = this.createButton(
         cmd,
         text,
         getInsertionPlace(place),
         bgColor,
       );
+
+      // Append the button to the button group
       buttonGroup.appendChild(button);
     });
 
+    // Append the button group to the column element
     column.appendChild(buttonGroup);
   }
 

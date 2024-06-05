@@ -1,7 +1,7 @@
 import { Schema, DOMParser, Node } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/index.ts";
 import type { GetPos } from "../codemirror/types.ts";
-import { ProofFlowSchema } from "./proofflowschema.ts";
+import { ProofFlowSchema, proof } from "./proofflowschema.ts";
 import {
   EditorState,
   EditorStateConfig,
@@ -34,9 +34,13 @@ import {
   markdownblockNodeType,
   collapsibleTitleNodeType,
   collapsibleContentType,
+  inputNodeType,
+  inputContentType,
 } from "./nodetypes.ts";
+import { UserMode, handleUserModeSwitch } from "../UserMode/userMode.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
+import { inputProof } from "../commands/helpers.ts";
 // CSS
 
 export class ProofFlow {
@@ -51,6 +55,8 @@ export class ProofFlow {
 
   private editorView: EditorView; // The view of the editor
 
+  private userMode: UserMode = UserMode.Student; // The teacher mode of the editor
+
   private fileName: string = "file.txt";
 
   private minimap: Minimap | null = null;
@@ -64,7 +70,7 @@ export class ProofFlow {
   constructor(editorElem: HTMLElement, contentElem: HTMLElement) {
     this._editorElem = editorElem; // Set the editor element
     this._contentElem = contentElem; // Set the content element
-    // Create the editor 
+    // Create the editor
     this.editorView = this.createEditorView();
   }
 
@@ -93,6 +99,9 @@ export class ProofFlow {
               ],
             },
           }),
+      },
+      attributes: {
+        id: "ProofFlowEditor",
       },
     };
 
@@ -163,14 +172,18 @@ export class ProofFlow {
     this.renderWrappers(parseToProofFlow(text, areaParsingFunction));
   }
 
+  /**
+   * Renders the wrappers by creating text or code areas based on the parsed content.
+   *
+   * @param wrappers - An array of Wrapper objects.
+   */
   public renderWrappers(wrappers: Wrapper[]): void {
-    // console.log(wrappers);
     for (let wrapper of wrappers) {
       // Create text or code areas based on the parsed content
-      // console.log(wrapper);
-      // console.log(wrapper.wrapperType);
       if (wrapper.wrapperType == WrapperType.Collapsible) {
         this.createCollapsible(wrapper);
+      } else if (wrapper.wrapperType == WrapperType.Input) {
+        this.createInput(wrapper);
       } else {
         for (let area of wrapper.areas) {
           if (area.areaType == AreaType.Markdown) {
@@ -185,30 +198,38 @@ export class ProofFlow {
     }
   }
 
+  /**
+   * Retrieves the current state of the editor.
+   * @returns The current EditorState.
+   */
   public getState(): EditorState {
     return this.editorView.state;
   }
 
+  /**
+   * Inserts a node at the end of the document.
+   *
+   * @param node - The node to be inserted.
+   */
   private insertAtEnd(node: Node) {
     // Create a new transaction and get the counter
     let trans: Transaction = this.getState().tr;
     let counter = this.getState().doc.content.size;
 
+    // Insert the node at the end of the document and update the editor state
     trans = trans.setSelection(Selection.atEnd(this.getState().doc));
     trans = trans.insert(counter, node);
     this.editorView.state = this.editorView.state.apply(trans);
     this.editorView.updateState(this.editorView.state);
   }
 
-  public createCollapsible(wrapper: Wrapper) {
-    const title = wrapper.info;
-
-    let textNode: Node = collapsibleTitleNodeType.create(null, [
-      ProofFlowSchema.text(title),
-    ]);
-
+  /**
+   * Creates a input element based on the provided wrapper.
+   *
+   * @param wrapper - The wrapper containing information for the input element.
+   */
+  public createInput(wrapper: Wrapper) {
     let contentNodes: Node[] = [];
-
     wrapper.areas.forEach((area) => {
       if (area.areaType == AreaType.Code) {
         const node = this.createCodeNode(area.text);
@@ -221,17 +242,60 @@ export class ProofFlow {
         contentNodes.push(node);
       }
     });
+    let inputNode: Node = inputContentType.create(null, contentNodes);
+    console.log(inputNode);
+    this.insertAtEnd(inputNode);
+  }
+
+  /**
+   * Creates a collapsible element based on the provided wrapper.
+   *
+   * @param wrapper - The wrapper containing information for the collapsible element.
+   */
+  public createCollapsible(wrapper: Wrapper) {
+    // Create the title node
+    const title = wrapper.info;
+    let textNode: Node = collapsibleTitleNodeType.create(null, [
+      ProofFlowSchema.text(title),
+    ]);
+
+    // Create the content nodes
+    let contentNodes: Node[] = [];
+    wrapper.areas.forEach((area) => {
+      if (area.areaType == AreaType.Code) {
+        const node = this.createCodeNode(area.text);
+        contentNodes.push(node);
+      } else if (area.areaType == AreaType.Math) {
+        const node = this.createMathNode(area.text);
+        contentNodes.push(node);
+      } else if (area.areaType == AreaType.Markdown) {
+        const node = this.createTextNode(area.text);
+        contentNodes.push(node);
+      }
+    });
+
+    // Create the content node
     let contentNode: Node = collapsibleContentType.create(
       { visible: true },
       contentNodes,
     );
+
+    // Create the collapsible node
     let collapsibleNode: Node = collapsibleNodeType.create({}, [
       textNode,
       contentNode,
     ]);
+
+    // Insert the collapsible node at the end of the editor
     this.insertAtEnd(collapsibleNode);
   }
 
+  /**
+   * Creates a text node with the specified text.
+   *
+   * @param text - The text content of the node.
+   * @returns The created text node.
+   */
   private createTextNode(text: string): Node {
     let textNode: Node = markdownblockNodeType.create(null, [
       ProofFlowSchema.text(text),
@@ -239,6 +303,12 @@ export class ProofFlow {
     return textNode;
   }
 
+  /**
+   * Creates a code node with the specified text.
+   *
+   * @param text - The text to be included in the code node.
+   * @returns The created code node.
+   */
   private createCodeNode(text: string): Node {
     let textNode: Node = codeblockNodeType.create(null, [
       ProofFlowSchema.text(text),
@@ -246,6 +316,12 @@ export class ProofFlow {
     return textNode;
   }
 
+  /**
+   * Creates a math node with the specified text.
+   *
+   * @param text - The text to be included in the math node.
+   * @returns The created math node.
+   */
   private createMathNode(text: string): Node {
     let textNode: Node = mathblockNodeType.create(null, [
       ProofFlowSchema.text(text),
@@ -283,10 +359,18 @@ export class ProofFlow {
     this.insertAtEnd(mathNode);
   }
 
+  /**
+   * Sets the file name for the ProofFlow instance.
+   *
+   * @param fileName - The name of the file.
+   */
   public setFileName(fileName: string) {
     this.fileName = fileName;
   }
 
+  /**
+   * Saves the file by creating a download link for the content and triggering a click event on it.
+   */
   public saveFile() {
     const content = this.editorView.state.doc;
     const result = getContent(content);
@@ -303,7 +387,10 @@ export class ProofFlow {
     document.body.removeChild(a);
   }
 
-  // TODO: Documentation
+  /**
+   * Resets the editor by destroying the minimap, removing all children from the editor and content elements,
+   * and creating a new editor view.
+   */
   public reset() {
     this.minimap?.destroy();
 
@@ -317,6 +404,38 @@ export class ProofFlow {
       this._contentElem.removeChild(this._contentElem.firstChild);
     }
 
+    // Create a new editor view
     this.editorView = this.createEditorView();
+  }
+
+  /**
+   * Retrieves the editor view associated with the ProofFlow instance.
+   * @returns The editor view.
+   */
+  public getEditorView(): EditorView {
+    return this.editorView;
+  }
+
+  /**
+   * Gets the current user mode.
+   * @returns The user mode.
+   */
+  public getUserMode(): UserMode {
+    return this.userMode;
+  }
+
+  /**
+   * Switches the user mode between Teacher and Student.
+   *
+   * @param UserModebutton - The HTML element representing the user mode button.
+   */
+  public switchUserMode(UserModebutton: HTMLElement) {
+    let newUserMode: UserMode;
+    newUserMode =
+      this.userMode === UserMode.Teacher ? UserMode.Student : UserMode.Teacher;
+    UserModebutton.textContent =
+      newUserMode === UserMode.Student ? "Student Mode" : "Teacher Mode";
+    this.userMode = newUserMode;
+    handleUserModeSwitch();
   }
 }

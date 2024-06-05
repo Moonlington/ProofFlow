@@ -1,3 +1,9 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 #img {
   display: block;
   margin: auto;
@@ -16,7 +22,7 @@
 .ProseMirror > * {
   padding: 1px 4px 5px 4px;
   display: block;
-  width: 100% - 8px;
+  width: calc(100% - 8px);
   border-bottom: #2701ff13 0.5px solid;
 }
 
@@ -29,7 +35,7 @@ collapsible_title {
 
 .collapsible {
   border: #85b46f 3px;
-  width: 100% - 4px;
+  width: calc(100% - 6px);
   border-style: dashed;
 }
 
@@ -75,6 +81,13 @@ div[visible="false"] {
   border-style: solid;
   overflow-y: auto;
   overflow-x: hidden;
+  position: relative;
+}
+
+#editor > *, #content > * {
+  position: relative;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .button-bar {
@@ -100,4 +113,31 @@ div[visible="false"] {
 
 #container {
   min-width: 605px;
+}
+
+.input-correct {
+  border-left: 5px solid #0FFF50;
+}
+
+.input-incorrect {
+  border-left: 5px solid #ff0f0f;
+}
+
+.input-unattempted {
+  border-left: 5px solid blue;
+}
+
+#input-button {
+  visibility: hidden;
+}
+
+.locked {
+  pointer-events: none;
+
+  user-select: text;
+}
+
+.unlocked, .unlocked > *{
+  pointer-events: auto;
+  cursor: auto;
 }
