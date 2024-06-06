@@ -216,10 +216,10 @@ export class ProofFlow {
       case AcceptedFileType.Lean:
         parser = new SimpleParser({
           // Text: [":::text\n", ":::\n"],
-          Code: [":::code\n", ":::\n"],
-          Math: [":::math\n", ":::\n"],
-          Collapsible: [":::collapsible\n", ":::\n"],
-          Input: [":::input\n", ":::\n"],
+          code: [":::code\n", ":::\n"],
+          math: [":::math\n", ":::\n"],
+          collapsible: [":::collapsible\n", ":::\n"],
+          input: [":::input\n", ":::\n"],
         });
         break;
       default:
