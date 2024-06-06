@@ -11,7 +11,7 @@ import {
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { ProofFlowPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
-import { AreaType } from "../parser/area.ts";
+// import { AreaType } from "../parser/area.ts";
 import {
   parseToAreasMV,
   parseToAreasV,
@@ -27,7 +27,7 @@ import { javascript } from "@codemirror/lang-javascript";
 
 import { applyGlobalKeyBindings } from "../commands/shortcuts";
 import { Wrapper, WrapperType } from "../parser/wrapper.ts";
-import { Area } from "../parser/area.ts";
+// import { Area } from "../parser/area.ts";
 import {
   mathblockNodeType,
   codeblockNodeType,
@@ -45,6 +45,15 @@ import { inputProof } from "../commands/helpers.ts";
 import { LSPType } from "../LSPType.ts";
 import { LSPMessenger } from "../../basicLspFunctions.ts";
 import { LSPDiagnostic, DiagnosticsMessageData } from "../../lspMessageTypes.ts";
+import {
+  Area,
+  AreaType,
+  CollapsibleArea,
+  InputArea,
+  ProofFlowDocument,
+} from "./ProofFlowDocument.ts";
+
+import { Parser, SimpleParser } from "../parser/parser.ts";
 // CSS
 
 export class ProofFlow {
@@ -70,6 +79,8 @@ export class ProofFlow {
   private lspType: LSPType = LSPType.None; 
 
   private removeGlobalKeyBindings: () => void;
+
+  private pfDocument: ProofFlowDocument = new ProofFlowDocument([]);
 
   /**
    * Represents the ProofFlow class.
@@ -185,22 +196,37 @@ export class ProofFlow {
     text = text.replace(/\r/gi, '') // Windows uses Carriage feeds but we don't like that.
 
     // Process the file content
-    let areaParsingFunction: (text: string) => Area[];
+    // let documentParsingFunction: (text: string) => ProofFlowDocument;
+    // switch (fileType) {
+    //   case AcceptedFileType.Coq:
+    //     documentParsingFunction = parseToAreasV;
+    //     break;
+    //   case AcceptedFileType.CoqMD:
+    //     documentParsingFunction = parseToAreasMV;
+    //     break;
+    //   case AcceptedFileType.Lean:
+    //     documentParsingFunction = parseToAreasLean
+    //     break;
+    //   default:
+    //     return;
+    // }
+    // this.setProofFlowDocument(documentParsingFunction(text))
+    let parser: Parser;
     switch (fileType) {
-      case AcceptedFileType.Coq:
-        areaParsingFunction = parseToAreasV;
-        break;
-      case AcceptedFileType.CoqMD:
-        areaParsingFunction = parseToAreasMV;
-        break;
       case AcceptedFileType.Lean:
-        this.renderWrappers(parseToAreasLean(text));
-        return;
+        parser = new SimpleParser({
+          // Text: [":::text\n", ":::\n"],
+          Code: [":::code\n", ":::\n"],
+          Math: [":::math\n", ":::\n"],
+          Collapsible: [":::collapsible\n", ":::\n"],
+          Input: [":::input\n", ":::\n"],
+        });
+        break;
       default:
         return;
     }
-    this.renderWrappers(parseToProofFlow(text, areaParsingFunction));
-
+    this.setProofFlowDocument(parser.parse(text));
+    
     let result: any;
     if (fileType == AcceptedFileType.Coq) {
       result = getLSPFileCoqV();
@@ -231,31 +257,55 @@ export class ProofFlow {
     LSPMessenger.didChange(ProofFlow.fileName, result.lines, 0, result.message);
   }
 
-  /**
-   * Renders the wrappers by creating text or code areas based on the parsed content.
-   *
-   * @param wrappers - An array of Wrapper objects.
-   */
-  public renderWrappers(wrappers: Wrapper[]): void {
-    for (let wrapper of wrappers) {
-      // Create text or code areas based on the parsed content
-      if (wrapper.wrapperType == WrapperType.Collapsible) {
-        this.createCollapsible(wrapper);
-      } else if (wrapper.wrapperType == WrapperType.Input) {
-        this.createInput(wrapper);
-      } else {
-        for (let area of wrapper.areas) {
-          if (area.areaType == AreaType.Markdown) {
-            this.createTextArea(area.text);
-          } else if (area.areaType == AreaType.Code) {
-            this.createCodeArea(area.text);
-          } else if (area.areaType == AreaType.Math) {
-            this.createMathArea(area.text);
-          }
-        }
+  public setProofFlowDocument(pfDocument: ProofFlowDocument) {
+    this.pfDocument = pfDocument;
+
+    for (let area of this.pfDocument.areas) {
+      switch (area.type) {
+        case AreaType.Text:
+          this.createTextArea(area);
+          break;
+        case AreaType.Code:
+          this.createCodeArea(area);
+          break;
+        case AreaType.Math:
+          this.createMathArea(area);
+          break;
+        case AreaType.Collapsible:
+          this.createCollapsible(area as CollapsibleArea);
+          break;
+        case AreaType.Input:
+          this.createInput(area as InputArea);
+          break;
       }
     }
   }
+
+  // /**
+  //  * Renders the wrappers by creating text or code areas based on the parsed content.
+  //  *
+  //  * @param wrappers - An array of Wrapper objects.
+  //  */
+  // public renderWrappers(wrappers: Wrapper[]): void {
+  //   for (let wrapper of wrappers) {
+  //     // Create text or code areas based on the parsed content
+  //     if (wrapper.wrapperType == WrapperType.Collapsible) {
+  //       this.createCollapsible(wrapper);
+  //     } else if (wrapper.wrapperType == WrapperType.Input) {
+  //       this.createInput(wrapper);
+  //     } else {
+  //       for (let area of wrapper.areas) {
+  //         if (area.areaType == AreaType.Markdown) {
+  //           this.createTextArea(area.text);
+  //         } else if (area.areaType == AreaType.Code) {
+  //           this.createCodeArea(area.text);
+  //         } else if (area.areaType == AreaType.Math) {
+  //           this.createMathArea(area.text);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   /**
    * Retrieves the current state of the editor.
@@ -287,21 +337,29 @@ export class ProofFlow {
    *
    * @param wrapper - The wrapper containing information for the input element.
    */
-  public createInput(wrapper: Wrapper) {
+  public createInput(area: InputArea) {
     let contentNodes: Node[] = [];
-    wrapper.areas.forEach((area) => {
-      if (area.areaType == AreaType.Code) {
-        const node = this.createCodeNode(area.text);
-        contentNodes.push(node);
-      } else if (area.areaType == AreaType.Math) {
-        const node = this.createMathNode(area.text);
-        contentNodes.push(node);
-      } else if (area.areaType == AreaType.Markdown) {
-        const node = this.createTextNode(area.text);
-        contentNodes.push(node);
+    area.subAreas.forEach((innerArea) => {
+      let node: Node;
+      switch (innerArea.type) {
+        case AreaType.Text:
+          node = this.createTextNode(innerArea);
+          break;
+        case AreaType.Code:
+          node = this.createTextNode(innerArea);
+          break;
+        case AreaType.Math:
+          node = this.createTextNode(innerArea);
+          break;
+        default:
+          return;
       }
+      contentNodes.push(node);
     });
-    let inputNode: Node = inputContentType.create(null, contentNodes);
+    let inputNode: Node = inputContentType.create(
+      { id: area.id },
+      contentNodes,
+    );
     console.log(inputNode);
     this.insertAtEnd(inputNode);
   }
@@ -311,26 +369,31 @@ export class ProofFlow {
    *
    * @param wrapper - The wrapper containing information for the collapsible element.
    */
-  public createCollapsible(wrapper: Wrapper) {
+  public createCollapsible(area: CollapsibleArea) {
     // Create the title node
-    const title = wrapper.info;
+    const title = area.content;
     let textNode: Node = collapsibleTitleNodeType.create(null, [
       ProofFlowSchema.text(title),
     ]);
 
     // Create the content nodes
     let contentNodes: Node[] = [];
-    wrapper.areas.forEach((area) => {
-      if (area.areaType == AreaType.Code) {
-        const node = this.createCodeNode(area.text);
-        contentNodes.push(node);
-      } else if (area.areaType == AreaType.Math) {
-        const node = this.createMathNode(area.text);
-        contentNodes.push(node);
-      } else if (area.areaType == AreaType.Markdown) {
-        const node = this.createTextNode(area.text);
-        contentNodes.push(node);
+    area.subAreas.forEach((innerArea) => {
+      let node: Node;
+      switch (innerArea.type) {
+        case AreaType.Text:
+          node = this.createTextNode(innerArea);
+          break;
+        case AreaType.Code:
+          node = this.createCodeNode(innerArea);
+          break;
+        case AreaType.Math:
+          node = this.createMathNode(innerArea);
+          break;
+        default:
+          return;
       }
+      contentNodes.push(node);
     });
 
     // Create the content node
@@ -340,7 +403,7 @@ export class ProofFlow {
     );
 
     // Create the collapsible node
-    let collapsibleNode: Node = collapsibleNodeType.create({}, [
+    let collapsibleNode: Node = collapsibleNodeType.create({ id: area.id }, [
       textNode,
       contentNode,
     ]);
@@ -355,9 +418,9 @@ export class ProofFlow {
    * @param text - The text content of the node.
    * @returns The created text node.
    */
-  private createTextNode(text: string): Node {
-    let textNode: Node = markdownblockNodeType.create(null, [
-      ProofFlowSchema.text(text),
+  private createTextNode(area: Area): Node {
+    let textNode: Node = markdownblockNodeType.create({ id: area.id }, [
+      ProofFlowSchema.text(area.content),
     ]);
     return textNode;
   }
@@ -368,9 +431,9 @@ export class ProofFlow {
    * @param text - The text to be included in the code node.
    * @returns The created code node.
    */
-  private createCodeNode(text: string): Node {
-    let textNode: Node = codeblockNodeType.create(null, [
-      ProofFlowSchema.text(text),
+  private createCodeNode(area: Area): Node {
+    let textNode: Node = codeblockNodeType.create({ id: area.id }, [
+      ProofFlowSchema.text(area.content),
     ]);
     return textNode;
   }
@@ -381,9 +444,9 @@ export class ProofFlow {
    * @param text - The text to be included in the math node.
    * @returns The created math node.
    */
-  private createMathNode(text: string): Node {
-    let textNode: Node = mathblockNodeType.create(null, [
-      ProofFlowSchema.text(text),
+  private createMathNode(area: Area): Node {
+    let textNode: Node = mathblockNodeType.create({ id: area.id }, [
+      ProofFlowSchema.text(area.content),
     ]);
     return textNode;
   }
@@ -393,8 +456,8 @@ export class ProofFlow {
    *
    * @param text - The text to be inserted in the text area.
    */
-  public createTextArea(text: string): void {
-    let textNode = this.createTextNode(text);
+  public createTextArea(area: Area): void {
+    let textNode = this.createTextNode(area);
     this.insertAtEnd(textNode);
   }
 
@@ -403,8 +466,8 @@ export class ProofFlow {
    *
    * @param text - The code to be inserted in the code area.
    */
-  public createCodeArea(text: string): void {
-    let codeNode = this.createCodeNode(text);
+  public createCodeArea(area: Area): void {
+    let codeNode = this.createCodeNode(area);
     this.insertAtEnd(codeNode);
   }
 
@@ -413,8 +476,8 @@ export class ProofFlow {
    *
    * @param text - The math to be inserted in the math area.
    */
-  public createMathArea(text: string): void {
-    let mathNode = this.createMathNode(text);
+  public createMathArea(area: Area): void {
+    let mathNode = this.createMathNode(area);
     this.insertAtEnd(mathNode);
   }
 

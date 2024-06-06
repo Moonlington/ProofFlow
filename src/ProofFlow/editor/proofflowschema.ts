@@ -30,6 +30,7 @@ export const ProofFlowSchema: Schema = new Schema({
 
     input: {
       attrs: {
+        id: {},
         proof: { default: proof.unattempted },
       },
       content: `input_content`,
@@ -71,6 +72,9 @@ export const ProofFlowSchema: Schema = new Schema({
     },
 
     collapsible: {
+      attrs: {
+        id: {},
+      },
       content: `(collapsible_title)(collapsible_content)`,
       parseDOM: [{ tag: "collapsible" }],
       toDOM(node: Node) {
@@ -121,6 +125,9 @@ export const ProofFlowSchema: Schema = new Schema({
      * Represents a block of markdown text.
      */
     markdown: {
+      attrs: {
+        id: {},
+      },
       block: true,
       content: "text*",
       //parseDOM: [{ tag: "markdown", preserveWhitespace: "full" }],
@@ -138,6 +145,9 @@ export const ProofFlowSchema: Schema = new Schema({
      * Represents a block of markdown text that has been rendered.
      */
     markdown_rendered: {
+      attrs: {
+        id: {},
+      },
       block: true,
       content: "block*",
       parseDOM: [{ tag: "markdown-rendered", preserveWhitespace: true }],
@@ -163,6 +173,9 @@ export const ProofFlowSchema: Schema = new Schema({
      * Represents a block of math display.
      */
     math_display: {
+      attrs: {
+        id: {},
+      },
       group: "block",
       content: "text*",
       atom: true,
@@ -225,7 +238,10 @@ export const ProofFlowSchema: Schema = new Schema({
       code: true,
       defining: true,
       marks: "",
-      attrs: { params: { default: "" } },
+      attrs: {
+        id: {},
+        params: { default: "" },
+      },
       parseDOM: [
         {
           tag: "pre",
