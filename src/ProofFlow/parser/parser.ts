@@ -41,42 +41,62 @@ class SimpleParser implements Parser {
   }
 
   parse(document: string): ProofFlowDocument {
-    let pfDocument: ProofFlowDocument = new ProofFlowDocument([]);
-    let index = 0;
-    while (index > document.length) {
-      let nextAreaType: AreaType;
-      let minIndex: number = -1;
-      for (let type of Object.values(AreaType)) {
-        let startIndex = document.indexOf(this.config[type][0], index);
-        if (minIndex > startIndex) nextAreaType = type;
-      }
+    let pfDocument = new ProofFlowDocument([]);
+    return this.recurParse(pfDocument, document);
+  }
 
-      if (minIndex === -1) {
-        pfDocument.addArea(this.createArea(this.defaultAreaType, document));
-        break;
-      }
+  recurParse(doc: ProofFlowDocument, rest: string): ProofFlowDocument {
+    if (rest === "") return doc;
 
-      index = minIndex + this.config[nextAreaType!][0].length;
-
-      let endIndex: number = document.indexOf(
-        this.config[nextAreaType!][1],
-        index,
-      );
-      if (endIndex === -1) {
-        continue;
+    let nextAreaType: AreaType;
+    let startIndex: number = -1;
+    for (let type of Object.values(AreaType)) {
+      if (type === this.defaultAreaType) continue;
+      let i = rest.indexOf(this.config[type][0]);
+      if (i === -1) continue;
+      if (startIndex > i || startIndex === -1) {
+        startIndex = i;
+        nextAreaType = type;
       }
-      if (minIndex > index)
-        pfDocument.addArea(
-          this.createArea(
-            this.defaultAreaType,
-            document.slice(index, minIndex),
-          ),
-        );
-      pfDocument.addArea(
-        this.createArea(nextAreaType!, document.slice(minIndex, endIndex)),
-      );
-      index = endIndex + this.config[nextAreaType!][1].length;
     }
-    return pfDocument;
+
+    if (startIndex === -1) {
+      doc.addArea(this.createArea(this.defaultAreaType, rest));
+      return doc;
+    }
+
+    if (startIndex !== 0) {
+      doc.addArea(
+        this.createArea(this.defaultAreaType, rest.slice(0, startIndex)),
+      );
+    }
+
+    if (
+      nextAreaType! === AreaType.Collapsible ||
+      nextAreaType! === AreaType.Input
+    ) {
+    }
+
+    let endIndex = rest.indexOf(
+      this.config[nextAreaType!][1],
+      startIndex + this.config[nextAreaType!][0].length,
+    );
+
+    if (endIndex === -1) {
+      doc.addArea(this.createArea(nextAreaType!, rest));
+      return doc;
+    }
+
+    doc.addArea(
+      this.createArea(
+        nextAreaType!,
+        rest.slice(startIndex + this.config[nextAreaType!][0].length, endIndex),
+      ),
+    );
+
+    return this.recurParse(
+      doc,
+      rest.slice(endIndex + this.config[nextAreaType!][1].length),
+    );
   }
 }
