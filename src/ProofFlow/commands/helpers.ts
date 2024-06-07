@@ -251,15 +251,15 @@ export function renderedToMarkdown(node: Node, schema: Schema) {
 }
 
 export function inputProof(inputNode: Node, newProof: proof, pos: number) {
-    if (inputNode.type.name !== "input") return;
-    let view = proofFlow.getEditorView();
-    const { state, dispatch } = view;
+  if (inputNode.type.name !== "input") return;
+  let view = proofFlow.getEditorView();
+  const { state, dispatch } = view;
 
-    // Create a transaction to update the node's attributes
-    const transaction = state.tr.setNodeMarkup(pos, null, {
-      ...inputNode.attrs,
-      proof: newProof,
-    });
+  // Create a transaction to update the node's attributes
+  const transaction = state.tr.setNodeMarkup(pos, null, {
+    ...inputNode.attrs,
+    proof: newProof,
+  });
 
-    dispatch(transaction);
+  dispatch(transaction);
 }

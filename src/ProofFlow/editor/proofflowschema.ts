@@ -37,7 +37,7 @@ export const ProofFlowSchema: Schema = new Schema({
       toDOM(node: Node) {
         const proofValue = node.attrs.proof;
         let proofClass = "";
-    
+
         switch (proofValue) {
           case proof.correct:
             proofClass = "input-correct";
@@ -49,7 +49,7 @@ export const ProofFlowSchema: Schema = new Schema({
             proofClass = "input-unattempted";
         }
 
-        return ["div", { class: `input ${proofClass}`}, 0];
+        return ["div", { class: `input ${proofClass}` }, 0];
       },
     },
 
