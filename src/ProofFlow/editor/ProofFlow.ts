@@ -72,6 +72,9 @@ export class ProofFlow {
     this._contentElem = contentElem; // Set the content element
     // Create the editor
     this.editorView = this.createEditorView();
+    this.minimap = new Minimap();
+    // Apply global key bindings
+    applyGlobalKeyBindings(this.editorView, this.minimap);
   }
 
   // TODO: Documentation
@@ -112,13 +115,9 @@ export class ProofFlow {
       this.syncProseMirrorToCodeMirror();
     });
 
-    this.minimap = new Minimap();
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, editorView);
     buttonBar.render(this._editorElem);
-
-    // Apply global key bindings
-    applyGlobalKeyBindings(editorView, this.minimap);
 
     return editorView;
   }
@@ -392,7 +391,7 @@ export class ProofFlow {
    * and creating a new editor view.
    */
   public reset() {
-    this.minimap?.destroy();
+    this.minimap?.reset();
 
     // Remove all children from the editor element
     while (this._editorElem.firstChild != null) {

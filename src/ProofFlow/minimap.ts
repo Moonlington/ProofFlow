@@ -46,6 +46,11 @@ export class Minimap {
     }
   }
 
+  public reset() {
+    this.stop();
+    this.start();
+  }
+
   public switch() {
     if (this.on) this.stop();
     else this.start();
