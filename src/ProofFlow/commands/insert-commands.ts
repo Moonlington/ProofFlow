@@ -137,7 +137,7 @@ export function getCollapsibleInsertCommand(): Command {
       oldNode,
     ]);
     // Create the collapsible node
-    let collapsibleNode: Node = collapsibleNodeType.create({}, [
+    let collapsibleNode: Node = collapsibleNodeType.create({ id: -1 }, [
       textNode,
       contentNode,
     ]);
@@ -194,7 +194,7 @@ export function getInputInsertCommand(): Command {
     let contentNode: Node = inputContentType.create({ visible: true }, [
       oldNode,
     ]);
-    let collapsibleNode: Node = inputNodeType.create({}, [contentNode]);
+    let collapsibleNode: Node = inputNodeType.create({ id: -1 }, [contentNode]);
     let trans: Transaction = state.tr;
 
     // Replace the selection with the collapsible node

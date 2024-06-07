@@ -190,8 +190,7 @@ export class ProofFlow {
     switch (fileType) {
       case AcceptedFileType.Lean:
         parser = new SimpleParser({
-          // Text: [":::text\n", ":::\n"],
-          code: [":::code\n", ":::\n"],
+          code: ["```lean\n", "```\n"],
           math: [":::math\n", ":::\n"],
           collapsible: [":::collapsible\n", ":::\n"],
           input: [":::input\n", ":::\n"],
@@ -205,7 +204,8 @@ export class ProofFlow {
 
   public setProofFlowDocument(pfDocument: ProofFlowDocument) {
     this.pfDocument = pfDocument;
-
+    console.log("PF DOCUMENT IS BEING SET");
+    console.log(pfDocument);
     for (let area of this.pfDocument.areas) {
       switch (area.type) {
         case AreaType.Text:
@@ -292,20 +292,23 @@ export class ProofFlow {
           node = this.createTextNode(innerArea);
           break;
         case AreaType.Code:
-          node = this.createTextNode(innerArea);
+          node = this.createCodeNode(innerArea);
           break;
         case AreaType.Math:
-          node = this.createTextNode(innerArea);
+          node = this.createMathNode(innerArea);
           break;
         default:
           return;
       }
       contentNodes.push(node);
     });
-    let inputNode: Node = inputContentType.create(
+    let inputContentNode: Node = inputContentType.create(
       { id: area.id },
       contentNodes,
     );
+    let inputNode: Node = inputNodeType.create({ id: area.id }, [
+      inputContentNode,
+    ]);
     console.log(inputNode);
     this.insertAtEnd(inputNode);
   }

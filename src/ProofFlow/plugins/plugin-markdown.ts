@@ -121,7 +121,7 @@ export const markdownPlugin = new Plugin({
           );
 
           // Replace the old colllapsible content child node of the collapsible parent node with the new one
-          let newCollapsibleNode = collapsibleNodeType.create({}, [
+          let newCollapsibleNode = collapsibleNodeType.create({ id: -1 }, [
             collapsibleTitleNode,
             newCollapsibleContentNode,
           ]);
@@ -164,7 +164,10 @@ export const markdownPlugin = new Plugin({
             newInputChildNodes,
           );
 
-          let newInputNode = inputNodeType.create({}, newInputContentNode);
+          let newInputNode = inputNodeType.create(
+            { id: node.attrs.id },
+            newInputContentNode,
+          );
 
           newNode = newInputNode;
         }
