@@ -1,5 +1,8 @@
 import axios from 'axios';
-import {CompletionContext} from "@codemirror/autocomplete";
+import {CompletionContext, CompletionResult} from "@codemirror/autocomplete";
+import {
+  CompletionTriggerKind,
+} from 'vscode-languageserver-protocol';
 
 const socket = new WebSocket('ws://localhost:3000');
 
@@ -225,10 +228,17 @@ async function gotoDeclaration(uri: string, line: number, character: number): Pr
 }
 
 // TODO: Implement requestCompletion for the LSP functions
-async function requestCompletion(uri: string, context: CompletionContext, trigger: any): Promise<any> {
-  const position = context.pos;
-  const line = context.state.doc.lineAt(position).number - 1; // Convert to zero-based index
-  const character = position - context.state.doc.line(line + 1).from;
+//@ts-ignore
+async function requestCompletion(uri: string,
+                                 context: CompletionContext,
+                                 {line, character}: { line: number; character: number; },
+                                 {
+                                   triggerKind,
+                                   triggerCharacter,
+                                 }: {
+                                   triggerKind: CompletionTriggerKind;
+                                   triggerCharacter: string | undefined;
+                                 }): Promise<any> {
 
   try {
     const response = await axios.get('http://localhost:3000/completion', {
@@ -236,8 +246,8 @@ async function requestCompletion(uri: string, context: CompletionContext, trigge
         uri: uri,
         line: line,
         character: character,
-        context: JSON.stringify(context), // Serialize context if necessary
-        trigger: trigger.character
+        triggerKind: triggerKind,
+        triggerCharacter: triggerCharacter
       }
     });
     console.log('Completion response:', response.data);
@@ -247,6 +257,7 @@ async function requestCompletion(uri: string, context: CompletionContext, trigge
     return [];
   }
 }
+
 
 export {
   startServer,

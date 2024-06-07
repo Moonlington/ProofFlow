@@ -1,12 +1,16 @@
 import { requestCompletion} from '../../basicLspFunctions.ts'
 import { ProofFlow } from '../../editor/ProofFlow.ts';
-import { autocompletion, CompletionContext } from "@codemirror/autocomplete";
-import { EditorView } from "@codemirror/view";
+import { autocompletion, CompletionContext, Completion, CompletionResult } from "@codemirror/autocomplete";
+import {
+    CompletionTriggerKind,
+} from 'vscode-languageserver-protocol';
+import { EditorState as CMState } from '@codemirror/state';
+import { Text } from '@codemirror/state';
 
 let timeoutID: any;
 
 function debounce(func: any, delay: any) {
-    return (...args : any[]) => {
+    return (...args: any[]) => {
         if (timeoutID) {
             clearTimeout(timeoutID);
         }
@@ -16,37 +20,44 @@ function debounce(func: any, delay: any) {
     };
 }
 
+function offsetToPos(doc: Text, offset: number) {
+    const line = doc.lineAt(offset);
+    const character = offset - line.from;
+    console.log('Line:', line, 'Character:', character);
+
+    return {line: line.number, character};
+}
+
+
 export const codeCompl = autocompletion({
     override: [
-        async (context: CompletionContext) => {
+        async (context: CompletionContext):Promise<any> => {
             let PF = ProofFlow.getInstance();
-            let triggered = false;
-            let triggerCharacter = context.matchBefore(/\w*/);
+            const { state, pos, explicit } = context;
+            const line = state.doc.lineAt(pos);
 
-            if (context.explicit || triggered) {
-                debounce(async () => {
-                    console.log("context.explicit or triggered", context);
-                    const completionItems = await requestCompletion(
-                        PF.fileName,
-                        context,
-                        {
-                        kind: triggered ? 2 : 1,
-                        character: triggerCharacter
-                        });
+            let trigKind: CompletionTriggerKind = CompletionTriggerKind.Invoked;
+            let trigChar: string | undefined;
+                trigKind = CompletionTriggerKind.TriggerCharacter;
+                trigChar = line.text[pos - line.from - 1];
 
-                    console.log("completionItems:", completionItems);
+            const completionItems =  await requestCompletion(
+                PF.fileName,
+                context,
+                offsetToPos(state.doc, pos),
+                {
+                    triggerKind: trigKind,
+                    triggerCharacter: trigChar,
+                }
+            );
 
-                    return {
-                        from: context.pos,
-                        options: completionItems.items.map((item: { label: any; kind: any; }) => ({
-                            label: item.label,
-                            type: item.kind
-                        }))
-                    };
-                }, 1000)();
-            }
-
-            return null;
+            return {
+                from: context.pos,
+                options: completionItems.items.map((item: { label: any; kind: any; }) => ({
+                    label: item.label,
+                    type: item.kind
+                }))
+            };
         }
     ]
 });
