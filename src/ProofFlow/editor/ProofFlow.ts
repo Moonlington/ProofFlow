@@ -61,6 +61,8 @@ export class ProofFlow {
 
   private minimap: Minimap | null = null;
 
+  private removeGlobalKeyBindings: () => void;
+
   /**
    * Represents the ProofFlow class.
    * @constructor
@@ -72,9 +74,11 @@ export class ProofFlow {
     this._contentElem = contentElem; // Set the content element
     // Create the editor
     this.editorView = this.createEditorView();
-    this.minimap = new Minimap();
     // Apply global key bindings
-    applyGlobalKeyBindings(this.editorView, this.minimap);
+    this.removeGlobalKeyBindings = applyGlobalKeyBindings(
+      this.editorView,
+      this.minimap!,
+    );
   }
 
   // TODO: Documentation
@@ -114,6 +118,8 @@ export class ProofFlow {
     editorView.dom.addEventListener("focus", () => {
       this.syncProseMirrorToCodeMirror();
     });
+
+    this.minimap = new Minimap();
 
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, editorView);
@@ -391,7 +397,8 @@ export class ProofFlow {
    * and creating a new editor view.
    */
   public reset() {
-    this.minimap?.reset();
+    this.minimap?.destroy();
+    this.removeGlobalKeyBindings()
 
     // Remove all children from the editor element
     while (this._editorElem.firstChild != null) {
@@ -405,6 +412,10 @@ export class ProofFlow {
 
     // Create a new editor view
     this.editorView = this.createEditorView();
+    this.removeGlobalKeyBindings = applyGlobalKeyBindings(
+      this.editorView,
+      this.minimap!,
+    );
   }
 
   /**
