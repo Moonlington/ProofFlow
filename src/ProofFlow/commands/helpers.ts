@@ -9,7 +9,6 @@ import {
 import { closeHistory } from "prosemirror-history";
 import {
   defaultMarkdownParser,
-  defaultMarkdownSerializer,
 } from "prosemirror-markdown";
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
@@ -232,7 +231,7 @@ export function markdownToRendered(node: Node, schema: Schema) {
   if (parsedContent) {
     const markdownRenderedNodeType = schema.nodes["markdown_rendered"];
     renderedNode = markdownRenderedNodeType.create(
-      { id: node.attrs.id },
+      { id: node.attrs.id, original_text: node.textContent },
       parsedContent.content,
     );
   }
@@ -241,14 +240,13 @@ export function markdownToRendered(node: Node, schema: Schema) {
 }
 
 export function renderedToMarkdown(node: Node, schema: Schema) {
-  const serializedContent = defaultMarkdownSerializer.serialize(node);
+  // const serializedContent = defaultMarkdownSerializer.serialize(node);
 
   // Create a new markdown node with the serialized content (a.k.a the raw text)
   // Make sure the text is not empty, since creating an empty text cell is not allowed
 
-  let text = serializedContent == "" ? null : schema.text(serializedContent);
-  const markdownNodeType = schema.nodes["markdown"];
-  let markdownNode: Node = markdownNodeType.create({ id: node.attrs.id }, text);
+  let text = node.attrs.original_text == "" ? undefined : schema.text(node.attrs.original_text);
+  let markdownNode: Node = schema.node("markdown", { id: node.attrs.id }, text);
 
   return markdownNode;
 }
