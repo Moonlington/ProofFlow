@@ -134,7 +134,9 @@ export const ProofFlowSchema: Schema = new Schema({
     markdown_rendered: {
       attrs: {
         id: {},
+        original_text: { default: "" },
       },
+      content: "block*",
       group: "area",
       parseDOM: [{ tag: "markdown-rendered", preserveWhitespace: true }],
       atom: true,
