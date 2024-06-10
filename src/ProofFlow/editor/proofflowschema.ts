@@ -124,7 +124,7 @@ export const ProofFlowSchema: Schema = new Schema({
       attrs: {
         id: {},
       },
-      group:"area",
+      group: "area",
       content: "text*",
       code: true,
       toDOM(node) {
@@ -140,7 +140,7 @@ export const ProofFlowSchema: Schema = new Schema({
       attrs: {
         id: {},
       },
-      group:"area",
+      group: "area",
       parseDOM: [{ tag: "markdown-rendered", preserveWhitespace: true }],
       atom: true,
       toDOM(node) {
@@ -411,7 +411,7 @@ export const ProofFlowSchema: Schema = new Schema({
      * Represents inline code.
      */
     code: {
-      group:"area",
+      group: "area",
       parseDOM: [{ tag: "code" }],
       toDOM() {
         return ["code"];

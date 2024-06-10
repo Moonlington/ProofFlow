@@ -52,7 +52,7 @@ class SimpleParser implements Parser {
     let startRegex: RegExpExecArray = null!;
     for (let type of Object.values(AreaType)) {
       if (type === this.defaultAreaType) continue;
-      let regex = this.config[type][0].exec(rest)
+      let regex = this.config[type][0].exec(rest);
       if (regex === null) continue;
       if (startRegex === null || startRegex.index > regex.index) {
         startRegex = regex;
@@ -85,9 +85,9 @@ class SimpleParser implements Parser {
       let area: CollapsibleArea | InputArea;
       switch (nextAreaType) {
         case AreaType.Collapsible:
-          let title = ""
+          let title = "";
           if (startRegex[1] !== undefined) {
-            title = startRegex[1]
+            title = startRegex[1];
           }
           area = new CollapsibleArea(title);
           break;
@@ -100,7 +100,9 @@ class SimpleParser implements Parser {
       return this.recurParse(doc, rest);
     }
 
-    let endRegex = this.config[nextAreaType][1].exec(rest.slice(startRegex.index + startRegex[0].length))
+    let endRegex = this.config[nextAreaType][1].exec(
+      rest.slice(startRegex.index + startRegex[0].length),
+    );
     if (endRegex === null) {
       doc.addArea(this.createArea(nextAreaType, rest));
       return doc;
@@ -109,13 +111,21 @@ class SimpleParser implements Parser {
     doc.addArea(
       this.createArea(
         nextAreaType,
-        rest.slice(startRegex.index + startRegex[0].length, startRegex.index + startRegex[0].length + endRegex.index),
+        rest.slice(
+          startRegex.index + startRegex[0].length,
+          startRegex.index + startRegex[0].length + endRegex.index,
+        ),
       ),
     );
 
     return this.recurParse(
       doc,
-      rest.slice(startRegex.index + startRegex[0].length + endRegex.index + endRegex[0].length),
+      rest.slice(
+        startRegex.index +
+          startRegex[0].length +
+          endRegex.index +
+          endRegex[0].length,
+      ),
     );
   }
 
@@ -135,7 +145,7 @@ class SimpleParser implements Parser {
     let startRegex: RegExpExecArray = null!;
     for (let type of Object.values(AreaType)) {
       if (type === this.defaultAreaType) continue;
-      let regex = this.config[type][0].exec(rest)
+      let regex = this.config[type][0].exec(rest);
       if (regex === null) continue;
       if (startRegex === null || startRegex.index > regex.index) {
         startRegex = regex;
@@ -146,7 +156,10 @@ class SimpleParser implements Parser {
     if (startRegex === null || closingRegex.index < startRegex.index) {
       if (closingRegex.index !== 0)
         areas.push(
-          this.createArea(this.defaultAreaType, rest.slice(0, closingRegex.index)),
+          this.createArea(
+            this.defaultAreaType,
+            rest.slice(0, closingRegex.index),
+          ),
         );
       return [areas, rest.slice(closingRegex.index + closingRegex[0].length)];
     }
@@ -157,23 +170,35 @@ class SimpleParser implements Parser {
       );
     }
 
-    let endRegex = this.config[nextAreaType][1].exec(rest.slice(startRegex.index + startRegex[0].length))
+    let endRegex = this.config[nextAreaType][1].exec(
+      rest.slice(startRegex.index + startRegex[0].length),
+    );
     if (endRegex === null) {
-      areas.push(this.createArea(nextAreaType, rest.slice(0, closingRegex.index)));
+      areas.push(
+        this.createArea(nextAreaType, rest.slice(0, closingRegex.index)),
+      );
       return [areas, rest.slice(closingRegex.index + closingRegex[0].length)];
     }
-    
+
     areas.push(
       this.createArea(
         nextAreaType,
-        rest.slice(startRegex.index + startRegex[0].length, startRegex.index + startRegex[0].length + endRegex.index),
+        rest.slice(
+          startRegex.index + startRegex[0].length,
+          startRegex.index + startRegex[0].length + endRegex.index,
+        ),
       ),
     );
 
     return this.recurContainedAreas(
       areas,
       type,
-      rest.slice(startRegex.index + startRegex[0].length + endRegex.index + endRegex[0].length),
+      rest.slice(
+        startRegex.index +
+          startRegex[0].length +
+          endRegex.index +
+          endRegex[0].length,
+      ),
     );
   }
 }

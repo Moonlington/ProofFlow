@@ -109,16 +109,18 @@ export const markdownPlugin = new Plugin({
           });
 
           // Create the new collapsible content node with the new child nodes
-          let newCollapsibleContentNode = ProofFlowSchema.node("collapsible_content", 
+          let newCollapsibleContentNode = ProofFlowSchema.node(
+            "collapsible_content",
             { visible: collapsibleContentNode.attrs.visible },
             newCollapsibleChildNodes,
           );
 
           // Replace the old colllapsible content child node of the collapsible parent node with the new one
-          let newCollapsibleNode = ProofFlowSchema.node("collapsible", { id: -1 }, [
-            collapsibleTitleNode,
-            newCollapsibleContentNode,
-          ]);
+          let newCollapsibleNode = ProofFlowSchema.node(
+            "collapsible",
+            { id: -1 },
+            [collapsibleTitleNode, newCollapsibleContentNode],
+          );
           newNode = newCollapsibleNode;
         } else if (node.type.name === "input") {
           let inputParentNode: Node = node;
@@ -153,12 +155,14 @@ export const markdownPlugin = new Plugin({
             newInputChildNodes.push(newChildNode);
           });
 
-          let newInputContentNode = ProofFlowSchema.node("input_content", 
+          let newInputContentNode = ProofFlowSchema.node(
+            "input_content",
             { visible: true },
             newInputChildNodes,
           );
 
-          let newInputNode = ProofFlowSchema.node("input", 
+          let newInputNode = ProofFlowSchema.node(
+            "input",
             { id: node.attrs.id },
             newInputContentNode,
           );
