@@ -188,12 +188,30 @@ export class ProofFlow {
     // this.setProofFlowDocument(documentParsingFunction(text))
     let parser: Parser;
     switch (fileType) {
+      case AcceptedFileType.Coq:
+        parser = new SimpleParser({
+          text: [/\(\*\*/,/\*\)/],
+          math: [/\$\$/, /\$\$/],
+          collapsible: [/<hint(?: title="(.*?)")?>/, /<\/hint>/],
+          input: [/<input-area>/, /<\/input-area>/]
+        })
+        let proxy = parser as SimpleParser
+        proxy.defaultAreaType = AreaType.Code
+        break;
+      case AcceptedFileType.CoqMD:
+        parser = new SimpleParser({
+          code: [/```coq\n/, /\n```/],
+          math: [/\$\$/, /\$\$/],
+          collapsible: [/<hint(?: title="(.*?)")?>/, /<\/hint>/],
+          input: [/<input-area>/, /<\/input-area>/]
+        })
+        break;
       case AcceptedFileType.Lean:
         parser = new SimpleParser({
-          code: ["```lean\n", "```\n"],
-          math: [":::math\n", ":::\n"],
-          collapsible: [":::collapsible\n", ":::\n"],
-          input: [":::input\n", ":::\n"],
+          code: [/```lean\n/, /```\n/],
+          math: [/:::math\n/, /:::\n/],
+          collapsible: [/:::collapsible\n(?:# (.*?)\n)?/, /:::\n/],
+          input: [/:::input\n/, /:::\n/],
         });
         break;
       default:
