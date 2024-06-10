@@ -217,21 +217,21 @@ export class ProofFlow {
     switch (fileType) {
       case AcceptedFileType.Coq:
         parser = new SimpleParser({
-          text: [/\(\*\*/,/\*\)/],
+          text: [/\(\*\*/, /\*\)/],
           math: [/\$\$/, /\$\$/],
           collapsible: [/<hint(?: title="(.*?)")?>/, /<\/hint>/],
-          input: [/<input-area>/, /<\/input-area>/]
-        })
-        let proxy = parser as SimpleParser
-        proxy.defaultAreaType = AreaType.Code
+          input: [/<input-area>/, /<\/input-area>/],
+        });
+        let proxy = parser as SimpleParser;
+        proxy.defaultAreaType = AreaType.Code;
         break;
       case AcceptedFileType.CoqMD:
         parser = new SimpleParser({
           code: [/```coq\n/, /\n```/],
           math: [/\$\$/, /\$\$/],
           collapsible: [/<hint(?: title="(.*?)")?>/, /<\/hint>/],
-          input: [/<input-area>/, /<\/input-area>/]
-        })
+          input: [/<input-area>/, /<\/input-area>/],
+        });
         break;
       case AcceptedFileType.Lean:
         parser = new SimpleParser({
@@ -358,11 +358,12 @@ export class ProofFlow {
       }
       contentNodes.push(node);
     });
-    let inputContentNode: Node =  this._schema.node("input_content", 
+    let inputContentNode: Node = this._schema.node(
+      "input_content",
       { id: area.id },
       contentNodes,
     );
-    let inputNode: Node =  this._schema.node("input", { id: area.id }, [
+    let inputNode: Node = this._schema.node("input", { id: area.id }, [
       inputContentNode,
     ]);
     console.log(inputNode);
@@ -377,7 +378,11 @@ export class ProofFlow {
   public createCollapsible(area: CollapsibleArea) {
     // Create the title node
     const title = area.content;
-    let textNode: Node =  this._schema.node("collapsible_title", null, title ? ProofFlowSchema.text(title) : undefined);
+    let textNode: Node = this._schema.node(
+      "collapsible_title",
+      null,
+      title ? ProofFlowSchema.text(title) : undefined,
+    );
 
     // Create the content nodes
     let contentNodes: Node[] = [];
@@ -400,16 +405,18 @@ export class ProofFlow {
     });
 
     // Create the content node
-    let contentNode: Node = this._schema.node("collapsible_content", 
+    let contentNode: Node = this._schema.node(
+      "collapsible_content",
       { visible: true },
       contentNodes,
     );
 
     // Create the collapsible node
-    let collapsibleNode: Node = this._schema.node("collapsible", { id: area.id }, [
-      textNode,
-      contentNode,
-    ]);
+    let collapsibleNode: Node = this._schema.node(
+      "collapsible",
+      { id: area.id },
+      [textNode, contentNode],
+    );
 
     // Insert the collapsible node at the end of the editor
     this.insertAtEnd(collapsibleNode);
@@ -422,7 +429,11 @@ export class ProofFlow {
    * @returns The created text node.
    */
   private createTextNode(area: Area): Node {
-    let textNode: Node = this._schema.node("markdown", { id: area.id }, area.content ? ProofFlowSchema.text(area.content) : undefined);
+    let textNode: Node = this._schema.node(
+      "markdown",
+      { id: area.id },
+      area.content ? ProofFlowSchema.text(area.content) : undefined,
+    );
     return textNode;
   }
 
@@ -433,7 +444,11 @@ export class ProofFlow {
    * @returns The created code node.
    */
   private createCodeNode(area: Area): Node {
-    let textNode: Node = this._schema.node("code_mirror", { id: area.id }, area.content ? ProofFlowSchema.text(area.content) : undefined);
+    let textNode: Node = this._schema.node(
+      "code_mirror",
+      { id: area.id },
+      area.content ? ProofFlowSchema.text(area.content) : undefined,
+    );
     return textNode;
   }
 
@@ -444,7 +459,11 @@ export class ProofFlow {
    * @returns The created math node.
    */
   private createMathNode(area: Area): Node {
-    let textNode: Node = this._schema.node("math_display", { id: area.id }, area.content ? ProofFlowSchema.text(area.content) : undefined);
+    let textNode: Node = this._schema.node(
+      "math_display",
+      { id: area.id },
+      area.content ? ProofFlowSchema.text(area.content) : undefined,
+    );
     return textNode;
   }
 

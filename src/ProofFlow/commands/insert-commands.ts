@@ -125,14 +125,17 @@ export function getCollapsibleInsertCommand(): Command {
       ProofFlowSchema.text("Collapsible: "),
     ]);
     // Create the content node for the collapsible node
-    let contentNode: Node = ProofFlowSchema.node("collapsible_content", { visible: true }, [
-      oldNode,
-    ]);
+    let contentNode: Node = ProofFlowSchema.node(
+      "collapsible_content",
+      { visible: true },
+      [oldNode],
+    );
     // Create the collapsible node
-    let collapsibleNode: Node = ProofFlowSchema.node("collapsible", { id: -1 }, [
-      textNode,
-      contentNode,
-    ]);
+    let collapsibleNode: Node = ProofFlowSchema.node(
+      "collapsible",
+      { id: -1 },
+      [textNode, contentNode],
+    );
     let trans: Transaction = state.tr;
     // Replace the selection with the collapsible node
     if (selectionType.isTextSelection) {
@@ -183,10 +186,14 @@ export function getInputInsertCommand(): Command {
       return false;
 
     // Create the content node and the collapsible node
-    let contentNode: Node = ProofFlowSchema.node("input_content", { visible: true }, [
-      oldNode,
+    let contentNode: Node = ProofFlowSchema.node(
+      "input_content",
+      { visible: true },
+      [oldNode],
+    );
+    let collapsibleNode: Node = ProofFlowSchema.node("input", { id: -1 }, [
+      contentNode,
     ]);
-    let collapsibleNode: Node = ProofFlowSchema.node("input", { id: -1 }, [contentNode]);
     let trans: Transaction = state.tr;
 
     // Replace the selection with the collapsible node
