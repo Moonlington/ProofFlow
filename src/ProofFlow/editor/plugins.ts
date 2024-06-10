@@ -21,7 +21,7 @@ import {
   cmdInsertMath,
 } from "../commands/commands.ts";
 import { InsertionPlace, getContainingNode } from "../commands/helpers.ts";
-import { collapsibleAreaPlugin } from "../collapsiblearea.ts";
+import { collapsibleAreaPlugin } from "../plugins/plugin-collapsible.ts";
 import { markdownPlugin } from "../plugins/plugin-markdown.ts";
 import { EditorView } from "prosemirror-view";
 
