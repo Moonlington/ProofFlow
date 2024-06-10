@@ -1,7 +1,7 @@
-import { Schema, DOMParser, Node } from "prosemirror-model";
+import { Schema, Node } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/codemirrorview.ts";
 import type { GetPos } from "../codemirror/types.ts";
-import { ProofFlowSchema, proof } from "./proofflowschema.ts";
+import { ProofFlowSchema } from "./proofflowschema.ts";
 import {
   EditorState,
   EditorStateConfig,
@@ -12,12 +12,6 @@ import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { ProofFlowPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 // import { AreaType } from "../parser/area.ts";
-import {
-  parseToAreasMV,
-  parseToAreasV,
-  parseToProofFlow,
-  parseToAreasLean,
-} from "../parser/parse-to-proofflow.ts";
 import { ButtonBar } from "./ButtonBar.ts";
 import { getContent, getLSPFileCoqMV, getLSPFileCoqV } from "../outputparser/savefile.ts";
 
@@ -26,18 +20,7 @@ import { linter } from "@codemirror/lint"
 import { javascript } from "@codemirror/lang-javascript";
 
 import { applyGlobalKeyBindings } from "../commands/shortcuts";
-import { Wrapper, WrapperType } from "../parser/wrapper.ts";
 // import { Area } from "../parser/area.ts";
-import {
-  mathblockNodeType,
-  codeblockNodeType,
-  collapsibleNodeType,
-  markdownblockNodeType,
-  collapsibleTitleNodeType,
-  collapsibleContentType,
-  inputNodeType,
-  inputContentType,
-} from "./nodetypes.ts";
 import { UserMode, handleUserModeSwitch } from "../UserMode/userMode.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
@@ -305,32 +288,6 @@ export class ProofFlow {
     }
   }
 
-  // /**
-  //  * Renders the wrappers by creating text or code areas based on the parsed content.
-  //  *
-  //  * @param wrappers - An array of Wrapper objects.
-  //  */
-  // public renderWrappers(wrappers: Wrapper[]): void {
-  //   for (let wrapper of wrappers) {
-  //     // Create text or code areas based on the parsed content
-  //     if (wrapper.wrapperType == WrapperType.Collapsible) {
-  //       this.createCollapsible(wrapper);
-  //     } else if (wrapper.wrapperType == WrapperType.Input) {
-  //       this.createInput(wrapper);
-  //     } else {
-  //       for (let area of wrapper.areas) {
-  //         if (area.areaType == AreaType.Markdown) {
-  //           this.createTextArea(area.text);
-  //         } else if (area.areaType == AreaType.Code) {
-  //           this.createCodeArea(area.text);
-  //         } else if (area.areaType == AreaType.Math) {
-  //           this.createMathArea(area.text);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
   /**
    * Retrieves the current state of the editor.
    * @returns The current EditorState.
@@ -380,11 +337,11 @@ export class ProofFlow {
       }
       contentNodes.push(node);
     });
-    let inputContentNode: Node = inputContentType.create(
+    let inputContentNode: Node =  this._schema.node("input_content", 
       { id: area.id },
       contentNodes,
     );
-    let inputNode: Node = inputNodeType.create({ id: area.id }, [
+    let inputNode: Node =  this._schema.node("input", { id: area.id }, [
       inputContentNode,
     ]);
     console.log(inputNode);
@@ -399,9 +356,7 @@ export class ProofFlow {
   public createCollapsible(area: CollapsibleArea) {
     // Create the title node
     const title = area.content;
-    let textNode: Node = collapsibleTitleNodeType.create(null, [
-      ProofFlowSchema.text(title),
-    ]);
+    let textNode: Node =  this._schema.node("collapsible_title", null, title ? ProofFlowSchema.text(title) : undefined);
 
     // Create the content nodes
     let contentNodes: Node[] = [];
@@ -424,13 +379,13 @@ export class ProofFlow {
     });
 
     // Create the content node
-    let contentNode: Node = collapsibleContentType.create(
+    let contentNode: Node = this._schema.node("collapsible_content", 
       { visible: true },
       contentNodes,
     );
 
     // Create the collapsible node
-    let collapsibleNode: Node = collapsibleNodeType.create({ id: area.id }, [
+    let collapsibleNode: Node = this._schema.node("collapsible", { id: area.id }, [
       textNode,
       contentNode,
     ]);
@@ -446,9 +401,7 @@ export class ProofFlow {
    * @returns The created text node.
    */
   private createTextNode(area: Area): Node {
-    let textNode: Node = markdownblockNodeType.create({ id: area.id }, [
-      ProofFlowSchema.text(area.content),
-    ]);
+    let textNode: Node = this._schema.node("markdown", { id: area.id }, area.content ? ProofFlowSchema.text(area.content) : undefined);
     return textNode;
   }
 
@@ -459,9 +412,7 @@ export class ProofFlow {
    * @returns The created code node.
    */
   private createCodeNode(area: Area): Node {
-    let textNode: Node = codeblockNodeType.create({ id: area.id }, [
-      ProofFlowSchema.text(area.content),
-    ]);
+    let textNode: Node = this._schema.node("code_mirror", { id: area.id }, area.content ? ProofFlowSchema.text(area.content) : undefined);
     return textNode;
   }
 
@@ -472,9 +423,7 @@ export class ProofFlow {
    * @returns The created math node.
    */
   private createMathNode(area: Area): Node {
-    let textNode: Node = mathblockNodeType.create({ id: area.id }, [
-      ProofFlowSchema.text(area.content),
-    ]);
+    let textNode: Node = this._schema.node("math_display", { id: area.id }, area.content ? ProofFlowSchema.text(area.content) : undefined);
     return textNode;
   }
 
