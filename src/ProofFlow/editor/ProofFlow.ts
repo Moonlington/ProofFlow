@@ -201,16 +201,17 @@ export class ProofFlow {
     }
     this.renderWrappers(parseToProofFlow(text, areaParsingFunction));
 
-    let message = "";
+    let result: any;
     if (fileType == AcceptedFileType.Coq) {
-      message = getLSPFileCoqV();
+      result = getLSPFileCoqV();
     } else if (fileType == AcceptedFileType.CoqMD) {
-      message = getLSPFileCoqMV();
+      result = getLSPFileCoqMV();
     }
+    if (result == null) return;
     // console.log(this.fileName);
     LSPMessenger.initializeServer(ProofFlow.fileName).then(() => {
       LSPMessenger.initialized().then(() => {
-        LSPMessenger.didOpen(ProofFlow.fileName, 'coq', message, '1').then(() => {
+        LSPMessenger.didOpen(ProofFlow.fileName, 'coq', result.message, '1').then(() => {
           CodeMirrorView.clearLSP();
         });
       });
@@ -219,13 +220,15 @@ export class ProofFlow {
 
   public static updateLSP() {
     console.log("Sent to LSP");
-    let message = "";
+    let result;
     if (ProofFlow.fileType == AcceptedFileType.Coq) {
-      message = getLSPFileCoqV();
+      result = getLSPFileCoqV();
     } else if (ProofFlow.fileType == AcceptedFileType.CoqMD) {
-      message = getLSPFileCoqMV();
+      result = getLSPFileCoqMV();
     }
-    // LSPMessenger.didChange(ProofFlow.fileName, message, '1');
+    if (result == null) return;
+
+    LSPMessenger.didChange(ProofFlow.fileName, result.lines, 0, result.message);
   }
 
   /**
