@@ -158,7 +158,23 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
-    code_mirror: codeMirrorNode,
+    code_mirror: {
+      content: "text*",
+      marks: "",
+      group: "area",
+      code: true,
+      defining: true,
+      isolating: true,
+      parseDOM: [
+        {
+          tag: "pre",
+          preserveWhitespace: "full",
+        },
+      ],
+      toDOM() {
+        return ["pre", ["code", 0]];
+      },
+    },
 
     /**
      * The text node.
