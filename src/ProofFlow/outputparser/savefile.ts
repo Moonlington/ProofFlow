@@ -29,7 +29,7 @@ export function getLSPFileCoqMV() {
   message += "```coq\n";
   CodeMirrorView.instances.forEach((instance) => {
     message += instance.cm.state.doc.toString() + '\n';
-    count++;
+    count += instance.cm.state.doc.lines;
   })
   message += "```\n";
   let result = {message: message, lines: count};
@@ -41,7 +41,7 @@ export function getLSPFileCoqV() {
   let message = "";
   CodeMirrorView.instances.forEach((instance) => {
     message += instance.cm.state.doc.toString() + '\n';
-    count++;
+    count += instance.cm.state.doc.lines;
   })
   let result = {message: message, lines: count};
   return result;
