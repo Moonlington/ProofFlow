@@ -102,7 +102,7 @@ export class ProofFlow {
       dispatchTransaction: (tr: Transaction) => {
         if (tr.docChanged) {
           console.log("DOC:", tr.doc);
-          console.log("PARSED:", docToPFDocument(tr.doc))
+          console.log("PARSED:", docToPFDocument(tr.doc));
         }
         this.editorView.updateState(this.editorView.state.apply(tr));
       },
@@ -187,21 +187,6 @@ export class ProofFlow {
     text = text.replace(/\r/gi, '') // Windows uses Carriage feeds but we don't like that.
 
     // Process the file content
-    // let documentParsingFunction: (text: string) => ProofFlowDocument;
-    // switch (fileType) {
-    //   case AcceptedFileType.Coq:
-    //     documentParsingFunction = parseToAreasV;
-    //     break;
-    //   case AcceptedFileType.CoqMD:
-    //     documentParsingFunction = parseToAreasMV;
-    //     break;
-    //   case AcceptedFileType.Lean:
-    //     documentParsingFunction = parseToAreasLean
-    //     break;
-    //   default:
-    //     return;
-    // }
-    // this.setProofFlowDocument(documentParsingFunction(text))
     let parser: Parser;
     switch (fileType) {
       case AcceptedFileType.Coq:
