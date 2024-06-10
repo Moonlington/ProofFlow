@@ -7,9 +7,7 @@ import {
   Transaction,
 } from "prosemirror-state";
 import { closeHistory } from "prosemirror-history";
-import {
-  defaultMarkdownParser,
-} from "prosemirror-markdown";
+import { defaultMarkdownParser } from "prosemirror-markdown";
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
 import { ProofStatus } from "../editor/proofflowschema";
@@ -245,7 +243,10 @@ export function renderedToMarkdown(node: Node, schema: Schema) {
   // Create a new markdown node with the serialized content (a.k.a the raw text)
   // Make sure the text is not empty, since creating an empty text cell is not allowed
 
-  let text = node.attrs.original_text == "" ? undefined : schema.text(node.attrs.original_text);
+  let text =
+    node.attrs.original_text == ""
+      ? undefined
+      : schema.text(node.attrs.original_text);
   let markdownNode: Node = schema.node("markdown", { id: node.attrs.id }, text);
 
   return markdownNode;

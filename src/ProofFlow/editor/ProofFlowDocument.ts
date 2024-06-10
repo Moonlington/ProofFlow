@@ -1,6 +1,13 @@
 import { Node } from "prosemirror-model";
 
-export { AreaType, Area, CollapsibleArea, InputArea, ProofFlowDocument, docToPFDocument };
+export {
+  AreaType,
+  Area,
+  CollapsibleArea,
+  InputArea,
+  ProofFlowDocument,
+  docToPFDocument,
+};
 
 enum AreaType {
   Text = "text",
@@ -189,45 +196,52 @@ class ProofFlowDocument {
 }
 
 function docToPFDocument(doc: Node): ProofFlowDocument {
-  let pfDocument = new ProofFlowDocument([])
+  let pfDocument = new ProofFlowDocument([]);
   if (doc.type.name !== "doc") {
-    console.log("docToPFDocument received other node, expected 'doc' received '%s'", doc.type.name)
-    return pfDocument
+    console.log(
+      "docToPFDocument received other node, expected 'doc' received '%s'",
+      doc.type.name,
+    );
+    return pfDocument;
   }
-  let prevNodeId = nextAreaId
+  let prevNodeId = nextAreaId;
   doc.content.forEach((node: Node, offset: number, index: number) => {
-    let area = nodeToArea(node)
-    if (area) pfDocument.addArea(area)
-  })
-  nextAreaId = prevNodeId
-  return pfDocument
+    let area = nodeToArea(node);
+    if (area) pfDocument.addArea(area);
+  });
+  nextAreaId = prevNodeId;
+  return pfDocument;
 }
 
 function nodeToArea(node: Node): Area | undefined {
   switch (node.type.name) {
     case "markdown":
-      return new Area(AreaType.Text, node.textContent)
+      return new Area(AreaType.Text, node.textContent);
     case "markdown_rendered":
-      return new Area(AreaType.Text, node.attrs.original_text)
+      return new Area(AreaType.Text, node.attrs.original_text);
     case "math_display":
-      return new Area(AreaType.Math, node.textContent)
+      return new Area(AreaType.Math, node.textContent);
     case "code_mirror":
-      return new Area(AreaType.Code, node.textContent)
+      return new Area(AreaType.Code, node.textContent);
     case "input":
-      let input = new InputArea()
-      node.content.child(0).content.forEach((n: Node, offset: number, index: number) => {
-        let area = nodeToArea(n)
-        if (area) input.addArea(area)
-      })
-      return input
+      let input = new InputArea();
+      node.content
+        .child(0)
+        .content.forEach((n: Node, offset: number, index: number) => {
+          let area = nodeToArea(n);
+          if (area) input.addArea(area);
+        });
+      return input;
     case "collapsible":
-      let collapsible = new CollapsibleArea(node.content.child(0).textContent)
-      node.content.child(1).content.forEach((n: Node, offset: number, index: number) => {
-        let area = nodeToArea(n)
-        if (area) collapsible.addArea(area)
-      })
-      return collapsible
+      let collapsible = new CollapsibleArea(node.content.child(0).textContent);
+      node.content
+        .child(1)
+        .content.forEach((n: Node, offset: number, index: number) => {
+          let area = nodeToArea(n);
+          if (area) collapsible.addArea(area);
+        });
+      return collapsible;
     default:
-      return undefined
+      return undefined;
   }
 }
