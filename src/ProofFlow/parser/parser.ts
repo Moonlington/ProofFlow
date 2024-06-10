@@ -46,7 +46,6 @@ class SimpleParser implements Parser {
   }
 
   recurParse(doc: ProofFlowDocument, rest: string): ProofFlowDocument {
-    console.log("START RECUR", doc, rest)
     if (rest === "") return doc;
 
     let nextAreaType: AreaType = this.defaultAreaType;
@@ -60,8 +59,6 @@ class SimpleParser implements Parser {
         nextAreaType = type;
       }
     }
-
-    console.log(nextAreaType, startRegex)
 
     if (startRegex === null) {
       doc.addArea(this.createArea(this.defaultAreaType, rest));
@@ -88,8 +85,7 @@ class SimpleParser implements Parser {
       let area: CollapsibleArea | InputArea;
       switch (nextAreaType) {
         case AreaType.Collapsible:
-          let title = "Placeholder Title"
-          console.log(startRegex, startRegex.length)
+          let title = ""
           if (startRegex[1] !== undefined) {
             title = startRegex[1]
           }
@@ -105,7 +101,6 @@ class SimpleParser implements Parser {
     }
 
     let endRegex = this.config[nextAreaType][1].exec(rest.slice(startRegex.index + startRegex[0].length))
-    console.log(endRegex)
     if (endRegex === null) {
       doc.addArea(this.createArea(nextAreaType, rest));
       return doc;
@@ -129,7 +124,6 @@ class SimpleParser implements Parser {
     type: AreaType,
     rest: string,
   ): [Area[], string] {
-    console.log("START CONTAINED RECUR", areas, rest)
     let closingRegex = this.config[type][1].exec(rest);
 
     if (closingRegex === null) {
