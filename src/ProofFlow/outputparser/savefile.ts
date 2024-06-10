@@ -1,5 +1,5 @@
 import { NodeType, Node } from "prosemirror-model";
-import { CodeMirrorView } from "../codemirror";
+import { CodeMirrorView } from "../codemirror/codemirrorview";
 
 export function getContent(node: Node): string {
   let result: string = "";
