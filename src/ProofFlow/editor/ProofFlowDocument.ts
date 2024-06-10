@@ -40,6 +40,14 @@ class CollapsibleArea extends Area {
     area.parent = this;
     return true;
   }
+
+  removeArea(area: Area): boolean {
+    if (this.subAreas.includes(area)) {
+      this.subAreas.splice(this.subAreas.indexOf(area), 1)
+      return true
+    }
+    return false;
+  }
 }
 
 class InputArea extends Area {
@@ -56,6 +64,14 @@ class InputArea extends Area {
     area.parent = this;
     return true;
   }
+
+  removeArea(area: Area): boolean {
+    if (this.subAreas.includes(area)) {
+      this.subAreas.splice(this.subAreas.indexOf(area), 1)
+      return true
+    }
+    return false;
+  }
 }
 
 //TODO: Incorporate handling the index mapping here, this is a big task and should be done carefully.
@@ -71,6 +87,22 @@ class ProofFlowDocument {
     return true;
   }
 
+  addAreaBefore(area: Area, beforeId: number): boolean {
+    let beforeArea = this.getAreaById(beforeId);
+    if (beforeArea === undefined) return false;
+    if (beforeArea.parent !== undefined) {
+      beforeArea.parent.subAreas.splice(
+        beforeArea.parent.subAreas.indexOf(beforeArea),
+        1,
+        area, beforeArea,
+      );
+      area.parent = beforeArea.parent;
+      return true;
+    }
+    this.areas.splice(this.areas.indexOf(beforeArea), 0, area);
+    return true;
+  }
+
   addAreaAfter(area: Area, afterId: number): boolean {
     let afterArea = this.getAreaById(afterId);
     if (afterArea === undefined) return false;
@@ -80,6 +112,7 @@ class ProofFlowDocument {
         0,
         area,
       );
+      area.parent = afterArea.parent;
       return true;
     }
     this.areas.splice(this.areas.indexOf(afterArea), 0, area);
@@ -95,17 +128,35 @@ class ProofFlowDocument {
         1,
         newArea,
       );
+      newArea.parent = replacedArea.parent;
       return true;
     }
     this.areas.splice(this.areas.indexOf(replacedArea), 1, newArea);
     return true;
   }
 
-  removeArea(area: Area): boolean {
-    const index = this.areas.indexOf(area);
-    if (index > -1) {
-      this.areas.splice(index, 1);
-      return true;
+  removeAreaById(id: number): boolean {
+    for (let area of this.areas) {
+      switch (area.type) {
+        case AreaType.Collapsible:
+          let collapsible = area as CollapsibleArea;
+          for (let otherarea of collapsible.subAreas) {
+            if (otherarea.id === id) return collapsible.removeArea(otherarea)
+          }
+          break;
+        case AreaType.Input:
+          let input = area as InputArea;
+          for (let otherarea of input.subAreas) {
+            if (otherarea.id === id) return input.removeArea(otherarea)
+          }
+          break;
+        default:
+          if (area.id === id) {
+            this.areas.splice(this.areas.indexOf(area), 1)
+            return true;
+          };
+          break;
+      }
     }
     return false;
   }
