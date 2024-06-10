@@ -12,12 +12,14 @@ import { Minimap } from "../minimap";
 /**
  * Applies global key bindings to the editor view.
  * @param editorView - The editor view to apply key bindings to.
+ *
+ * @returns function to remove the keybindings
  */
 export function applyGlobalKeyBindings(
   editorView: EditorView,
   minimap: Minimap,
-): void {
-  document.addEventListener("keydown", (event: KeyboardEvent) => {
+): () => void {
+  let globalKeyBindings = (event: KeyboardEvent) => {
     if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       undo(editorView.state, editorView.dispatch);
@@ -51,5 +53,10 @@ export function applyGlobalKeyBindings(
     // "Ctrl + B" or "Cmd + B" for collapsible insert command
     // "Ctrl + I" or "Cmd + I" for input insert command (only for teacher mode)
     // "Ctrl + H" or "Cmd + H" for toggling the minimap
-  });
+  };
+  document.addEventListener("keydown", globalKeyBindings);
+
+  return () => {
+    document.removeEventListener("keydown", globalKeyBindings);
+  };
 }
