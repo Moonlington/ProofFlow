@@ -24,19 +24,25 @@ export function getContent(node: Node): string {
 }
 
 export function getLSPFileCoqMV() {
-  let result = "";
-  result += "```coq\n";
+  let count = 2;
+  let message = "";
+  message += "```coq\n";
   CodeMirrorView.instances.forEach((instance) => {
-    result += instance.cm.state.doc.toString() + '\n';
+    message += instance.cm.state.doc.toString() + '\n';
+    count++;
   })
-  result += "```\n";
+  message += "```\n";
+  let result = {message: message, lines: count};
   return result;
 }
 
 export function getLSPFileCoqV() {
-  let result = "";
+  let count = 0;
+  let message = "";
   CodeMirrorView.instances.forEach((instance) => {
-    result += instance.cm.state.doc.toString() + '\n';
+    message += instance.cm.state.doc.toString() + '\n';
+    count++;
   })
+  let result = {message: message, lines: count};
   return result;
 }

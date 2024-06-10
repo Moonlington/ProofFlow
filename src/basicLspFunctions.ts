@@ -97,13 +97,14 @@ export class LSPMessenger {
     }
   }
   
-  public static async didChange(uri: string, text: string, version: string): Promise<void> {
+  public static async didChange(uri: string, el: number, ec: number, text: string): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/didChange', {
         params: {
           uri: uri,
+          el: el,
+          ec: ec,
           text: text,
-          version: version
         }
       });
       console.log('DidChange Response:', response.data);
