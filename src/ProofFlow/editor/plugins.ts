@@ -16,7 +16,7 @@ import {
   cmdInsertMath,
 } from "../commands/commands.ts";
 import { InsertionPlace } from "../commands/helpers.ts";
-import { collapsibleAreaPlugin } from "../collapsiblearea.ts";
+import { collapsibleAreaPlugin } from "../plugins/plugin-collapsible.ts";
 import { markdownPlugin } from "../plugins/plugin-markdown.ts";
 import { arrowKeyHandler } from "../commands/arrowKeyHandler.ts";
 import { preventDropPlugin } from "../plugins/prevent-drop.ts";
