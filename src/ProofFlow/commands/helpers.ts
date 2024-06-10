@@ -253,7 +253,11 @@ export function renderedToMarkdown(node: Node, schema: Schema) {
   return markdownNode;
 }
 
-export function inputProof(inputNode: Node, newProof: ProofStatus, pos: number) {
+export function inputProof(
+  inputNode: Node,
+  newProof: ProofStatus,
+  pos: number,
+) {
   if (inputNode.type.name !== "input") return;
   let view = proofFlow.getEditorView();
   const { state, dispatch } = view;

@@ -43,8 +43,8 @@ class CollapsibleArea extends Area {
 
   removeArea(area: Area): boolean {
     if (this.subAreas.includes(area)) {
-      this.subAreas.splice(this.subAreas.indexOf(area), 1)
-      return true
+      this.subAreas.splice(this.subAreas.indexOf(area), 1);
+      return true;
     }
     return false;
   }
@@ -67,8 +67,8 @@ class InputArea extends Area {
 
   removeArea(area: Area): boolean {
     if (this.subAreas.includes(area)) {
-      this.subAreas.splice(this.subAreas.indexOf(area), 1)
-      return true
+      this.subAreas.splice(this.subAreas.indexOf(area), 1);
+      return true;
     }
     return false;
   }
@@ -94,7 +94,8 @@ class ProofFlowDocument {
       beforeArea.parent.subAreas.splice(
         beforeArea.parent.subAreas.indexOf(beforeArea),
         1,
-        area, beforeArea,
+        area,
+        beforeArea,
       );
       area.parent = beforeArea.parent;
       return true;
@@ -141,20 +142,20 @@ class ProofFlowDocument {
         case AreaType.Collapsible:
           let collapsible = area as CollapsibleArea;
           for (let otherarea of collapsible.subAreas) {
-            if (otherarea.id === id) return collapsible.removeArea(otherarea)
+            if (otherarea.id === id) return collapsible.removeArea(otherarea);
           }
           break;
         case AreaType.Input:
           let input = area as InputArea;
           for (let otherarea of input.subAreas) {
-            if (otherarea.id === id) return input.removeArea(otherarea)
+            if (otherarea.id === id) return input.removeArea(otherarea);
           }
           break;
         default:
           if (area.id === id) {
-            this.areas.splice(this.areas.indexOf(area), 1)
+            this.areas.splice(this.areas.indexOf(area), 1);
             return true;
-          };
+          }
           break;
       }
     }
