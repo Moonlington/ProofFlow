@@ -115,6 +115,12 @@ export class ProofFlow {
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
       },
+      dispatchTransaction: (tr: Transaction) => {
+        if (tr.docChanged) {
+          console.log(tr.doc.toJSON());
+        }
+        this.editorView.updateState(this.editorView.state.apply(tr));
+      },
 
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
