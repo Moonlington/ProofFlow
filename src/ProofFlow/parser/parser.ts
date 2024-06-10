@@ -13,7 +13,7 @@ interface Parser {
 }
 
 // TODO: NEEDS DOCUMENTATION key = AreaType: [begin, end]
-type AreaConfig = [string, string];
+type AreaConfig = [RegExp, RegExp];
 
 type ParserConfig = {
   [key: string]: AreaConfig;
@@ -46,28 +46,31 @@ class SimpleParser implements Parser {
   }
 
   recurParse(doc: ProofFlowDocument, rest: string): ProofFlowDocument {
+    console.log("START RECUR", doc, rest)
     if (rest === "") return doc;
 
     let nextAreaType: AreaType = this.defaultAreaType;
-    let startIndex: number = -1;
+    let startRegex: RegExpExecArray = null!;
     for (let type of Object.values(AreaType)) {
       if (type === this.defaultAreaType) continue;
-      let i = rest.indexOf(this.config[type][0]);
-      if (i === -1) continue;
-      if (startIndex > i || startIndex === -1) {
-        startIndex = i;
+      let regex = this.config[type][0].exec(rest)
+      if (regex === null) continue;
+      if (startRegex === null || startRegex.index > regex.index) {
+        startRegex = regex;
         nextAreaType = type;
       }
     }
 
-    if (startIndex === -1) {
+    console.log(nextAreaType, startRegex)
+
+    if (startRegex === null) {
       doc.addArea(this.createArea(this.defaultAreaType, rest));
       return doc;
     }
 
-    if (startIndex !== 0) {
+    if (startRegex.index !== 0) {
       doc.addArea(
-        this.createArea(this.defaultAreaType, rest.slice(0, startIndex)),
+        this.createArea(this.defaultAreaType, rest.slice(0, startRegex.index)),
       );
     }
 
@@ -78,14 +81,19 @@ class SimpleParser implements Parser {
       let out = this.recurContainedAreas(
         [],
         nextAreaType,
-        rest.slice(startIndex + this.config[nextAreaType][0].length),
+        rest.slice(startRegex.index + startRegex[0].length),
       );
       let containedAreas: Area[] = out[0];
       rest = out[1];
       let area: CollapsibleArea | InputArea;
       switch (nextAreaType) {
         case AreaType.Collapsible:
-          area = new CollapsibleArea("Collapsible!");
+          let title = "Placeholder Title"
+          console.log(startRegex, startRegex.length)
+          if (startRegex[1] !== undefined) {
+            title = startRegex[1]
+          }
+          area = new CollapsibleArea(title);
           break;
         case AreaType.Input:
           area = new InputArea();
@@ -96,12 +104,9 @@ class SimpleParser implements Parser {
       return this.recurParse(doc, rest);
     }
 
-    let endIndex = rest.indexOf(
-      this.config[nextAreaType][1],
-      startIndex + this.config[nextAreaType][0].length,
-    );
-
-    if (endIndex === -1) {
+    let endRegex = this.config[nextAreaType][1].exec(rest.slice(startRegex.index + startRegex[0].length))
+    console.log(endRegex)
+    if (endRegex === null) {
       doc.addArea(this.createArea(nextAreaType, rest));
       return doc;
     }
@@ -109,13 +114,13 @@ class SimpleParser implements Parser {
     doc.addArea(
       this.createArea(
         nextAreaType,
-        rest.slice(startIndex + this.config[nextAreaType][0].length, endIndex),
+        rest.slice(startRegex.index + startRegex[0].length, startRegex.index + startRegex[0].length + endRegex.index),
       ),
     );
 
     return this.recurParse(
       doc,
-      rest.slice(endIndex + this.config[nextAreaType][1].length),
+      rest.slice(startRegex.index + startRegex[0].length + endRegex.index + endRegex[0].length),
     );
   }
 
@@ -124,60 +129,57 @@ class SimpleParser implements Parser {
     type: AreaType,
     rest: string,
   ): [Area[], string] {
-    let closingIndex: number = rest.indexOf(this.config[type][1]);
+    console.log("START CONTAINED RECUR", areas, rest)
+    let closingRegex = this.config[type][1].exec(rest);
 
-    if (closingIndex === -1) {
+    if (closingRegex === null) {
       areas.push(this.createArea(this.defaultAreaType, rest));
       return [areas, ""];
     }
 
     let nextAreaType: AreaType = this.defaultAreaType;
-    let startIndex: number = -1;
+    let startRegex: RegExpExecArray = null!;
     for (let type of Object.values(AreaType)) {
       if (type === this.defaultAreaType) continue;
-      let i = rest.indexOf(this.config[type][0]);
-      if (i === -1) continue;
-      if (startIndex > i || startIndex === -1) {
-        startIndex = i;
+      let regex = this.config[type][0].exec(rest)
+      if (regex === null) continue;
+      if (startRegex === null || startRegex.index > regex.index) {
+        startRegex = regex;
         nextAreaType = type;
       }
     }
 
-    if (startIndex === -1 || closingIndex < startIndex) {
-      if (closingIndex !== 0)
+    if (startRegex === null || closingRegex.index < startRegex.index) {
+      if (closingRegex.index !== 0)
         areas.push(
-          this.createArea(this.defaultAreaType, rest.slice(0, closingIndex)),
+          this.createArea(this.defaultAreaType, rest.slice(0, closingRegex.index)),
         );
-      return [areas, rest.slice(closingIndex + this.config[type][1].length)];
+      return [areas, rest.slice(closingRegex.index + closingRegex[0].length)];
     }
 
-    if (startIndex !== 0) {
+    if (startRegex.index !== 0) {
       areas.push(
-        this.createArea(this.defaultAreaType, rest.slice(0, startIndex)),
+        this.createArea(this.defaultAreaType, rest.slice(0, startRegex.index)),
       );
     }
 
-    let endIndex = rest.indexOf(
-      this.config[nextAreaType][1],
-      startIndex + this.config[nextAreaType][0].length,
-    );
-
-    // if (endIndex === -1) {
-    //   areas.push(this.createArea(nextAreaType, rest));
-    //   return [];
-    // }
-
+    let endRegex = this.config[nextAreaType][1].exec(rest.slice(startRegex.index + startRegex[0].length))
+    if (endRegex === null) {
+      areas.push(this.createArea(nextAreaType, rest.slice(0, closingRegex.index)));
+      return [areas, rest.slice(closingRegex.index + closingRegex[0].length)];
+    }
+    
     areas.push(
       this.createArea(
         nextAreaType,
-        rest.slice(startIndex + this.config[nextAreaType][0].length, endIndex),
+        rest.slice(startRegex.index + startRegex[0].length, startRegex.index + startRegex[0].length + endRegex.index),
       ),
     );
 
     return this.recurContainedAreas(
       areas,
       type,
-      rest.slice(endIndex + this.config[nextAreaType][1].length),
+      rest.slice(startRegex.index + startRegex[0].length + endRegex.index + endRegex[0].length),
     );
   }
 }
