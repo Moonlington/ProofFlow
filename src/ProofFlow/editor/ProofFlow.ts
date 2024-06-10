@@ -43,6 +43,7 @@ import {
   CollapsibleArea,
   InputArea,
   ProofFlowDocument,
+  docToPFDocument,
 } from "./ProofFlowDocument.ts";
 
 import { Parser, SimpleParser } from "../parser/parser.ts";
@@ -112,7 +113,8 @@ export class ProofFlow {
       },
       dispatchTransaction: (tr: Transaction) => {
         if (tr.docChanged) {
-          console.log(tr.doc.toJSON());
+          console.log("DOC:", tr.doc);
+          console.log("PARSED:", docToPFDocument(tr.doc))
         }
         this.editorView.updateState(this.editorView.state.apply(tr));
       },
