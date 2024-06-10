@@ -90,6 +90,7 @@ export function getCodeInsertCommand(
     let trans: Transaction | undefined;
     trans = insertionFunction(state, state.tr, codeblockNodeType);
     if (dispatch && trans) dispatch(trans);
+    CodeMirrorView.resortInstances();
 
     return true;
   };

@@ -148,7 +148,7 @@ export function parseToAreasV(text: string): Area[] {
       text = text.replace(regCoqdoc, "");
 
       // Coqdoc sometimes contains (******) but this does not have any use
-      if (coqdoc[0].match(reqCoqdocNoUse)) continue;
+      // if (coqdoc[0].match(reqCoqdocNoUse)) continue;
 
       areas = areas.concat(parseNonCode(coqdoc[0]));
       continue;
@@ -204,7 +204,7 @@ export function parseToAreasMV(text: string): Area[] {
       startIndex = i + "```coq\n".length;
     } else {
       let area = new Area(AreaType.Code);
-      area.text = text.substring(startIndex, i);
+      area.text = text.substring(startIndex, i - 1);
       areas.push(area);
       inCode = false;
       startIndex = i + "```\n".length;
