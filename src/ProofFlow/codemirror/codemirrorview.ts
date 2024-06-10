@@ -51,7 +51,7 @@ const computeChange = (
 /**
  * A node view for codemirror nodes, used for implementing the codemirror editor
  */
-class CodeMirrorView implements NodeView {
+export class CodeMirrorView implements NodeView {
   node: ProsemirrorNode;
   _outerView: EditorView;
   _innerView: EditorView | undefined;

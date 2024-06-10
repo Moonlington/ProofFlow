@@ -1,5 +1,5 @@
 import { Schema, DOMParser, Node } from "prosemirror-model";
-import { CodeMirrorView } from "../codemirror/index.ts";
+import { CodeMirrorView } from "../codemirror/codemirrorview.ts";
 import type { GetPos } from "../codemirror/types.ts";
 import { ProofFlowSchema, proof } from "./proofflowschema.ts";
 import {
