@@ -4,7 +4,7 @@
 
 import { Selection, TextSelection, Transaction } from "prosemirror-state";
 import type { EditorView, NodeView } from "prosemirror-view";
-import type { Node as ProsemirrorNode } from "prosemirror-model";
+import { Node as ProsemirrorNode } from "prosemirror-model";
 import { exitCode } from "prosemirror-commands";
 import {
   EditorState as CMState,
@@ -16,6 +16,10 @@ import { proofFlow } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 import { getContainingNode } from "../commands/helpers.ts";
 import { wordHover } from "./extensions/hovertooltip.ts";
+import {codeCompl} from "./extensions/autocomplete.ts";
+import { DiagnosticsMessageData, LSPDiagnostic } from "../../lspMessageTypes.ts";
+import {linter, Diagnostic, setDiagnostics } from "@codemirror/lint"
+import { ProofFlow } from "../editor/ProofFlow.ts";
 
 const computeChange = (
   oldVal: string,
@@ -59,9 +63,14 @@ class CodeMirrorView implements NodeView {
   cm: CMView;
   getPos: () => number;
   updating = false;
+  diagnostic: Diagnostic[] = new Array();
 
   static instances: CodeMirrorView[] = [];
   static focused: CodeMirrorView | null = null;
+
+  static changedDuring = false;
+  static handelingLSP = true;
+  static handelingLSPTimeout: NodeJS.Timeout;
 
   constructor(options: CodeMirrorViewOptions) {
     // Store for later
@@ -99,9 +108,22 @@ class CodeMirrorView implements NodeView {
       },
     ]);
 
+    // let changeExtension = CMView.domEventObservers({change: () => console.log("click")});
+    let changeExtension = CMView.updateListener.of((update) => {
+      if (!update.heightChanged) return;
+      if (!CodeMirrorView.handelingLSP) {
+        ProofFlow.updateLSP();
+        CodeMirrorView.handelingLSP = true;
+        CodeMirrorView.clearLSP();
+      } else {
+        CodeMirrorView.changedDuring = true;
+      }
+    });
+
+
     const cmState = CMState.create({
       doc: this.node.textContent,
-
+      
       // Defining keymaps for codemirror
       extensions: [
         changeFilter,
@@ -135,7 +157,9 @@ class CodeMirrorView implements NodeView {
         ]),
         cmExtensions,
         tabKeymap,
-        wordHover,
+        changeExtension,
+        // wordHover,
+        codeCompl
       ],
     });
 
@@ -143,11 +167,33 @@ class CodeMirrorView implements NodeView {
 
     // Add the newest instance to the list of instances
     CodeMirrorView.instances.push(this);
+    CodeMirrorView.resortInstances();
 
     // Ensure the selection is synchronized from ProseMirror to codemirror
     this._outerView.dom.addEventListener("focus", () =>
       this.forwardSelection(),
     );
+  }
+
+  static clearLSP() {
+    clearTimeout(this.handelingLSPTimeout);
+    this.handelingLSPTimeout = setTimeout(() => {
+      if (CodeMirrorView.changedDuring) {
+        CodeMirrorView.changedDuring = false;
+        ProofFlow.updateLSP();
+        CodeMirrorView.clearLSP();
+      } else {
+        this.handelingLSP = false;
+      }
+    }, 500)
+  }
+
+  static resortInstances() {
+    CodeMirrorView.instances.sort((a, b) => {
+      if (a.getPos() < b.getPos()) return -1;
+      else if (a.getPos() == b.getPos()) return 0;
+      else return 1;
+    });
   }
 
   /**
@@ -368,6 +414,53 @@ class CodeMirrorView implements NodeView {
     CodeMirrorView.instances = CodeMirrorView.instances.filter(
       (instance) => instance !== this,
     );
+    CodeMirrorView.resortInstances();
+  }
+
+  static handleDiagnostics(message: DiagnosticsMessageData) {
+    this.handelingLSP = true;
+    message.diagnostics = message.diagnostics.sort((a: LSPDiagnostic, b: LSPDiagnostic) => {
+      if (a.range.start.line < b.range.start.line) return -1;
+      if (a.range.start.line > b.range.start.line) return 1;
+      if (a.range.start.character < b.range.start.character) return -1;
+      if (a.range.start.character > b.range.start.character) return 1;
+      return 0;
+    })
+    let curLine = 1;
+    let index = 0;
+    console.log(message.diagnostics);
+    CodeMirrorView.instances.forEach((instance) => {
+      let diagnostics: Diagnostic[] = [];
+      let lineCount = instance.cm.state.doc.lines;
+      let lineLengthsOffset = [0];
+      for (let i = 2; i <= lineCount; i++) {
+        lineLengthsOffset.push(instance.cm.state.doc.line(i - 1).length + 1);
+        lineLengthsOffset[i - 1] += lineLengthsOffset[i - 2];
+      }
+
+      function shouldInsert() {
+        let lineStart = message.diagnostics[index].range.start.line;
+        return curLine <= lineStart && lineStart < curLine + lineCount;
+      }
+      function getPos(line: number, char: number) {
+        return lineLengthsOffset[line - curLine] + char;
+      }
+      while (index < message.diagnostics.length && shouldInsert()) {
+        let range = message.diagnostics[index].range;
+        let diagnostic: Diagnostic = {
+          from: getPos(range.start.line, range.start.character),
+          to: getPos(range.end.line, range.end.character),
+          severity: "error",
+          message: message.diagnostics[index].message,
+        }
+        index++;
+        diagnostics.push(diagnostic);
+      }
+      let test = setDiagnostics(instance.cm.state, diagnostics);
+      instance.cm.dispatch(test);
+      curLine += lineCount;
+    })
+    this.clearLSP();
   }
 }
 
