@@ -12,15 +12,6 @@ import {
   Transaction,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { GetPos } from "../codemirror/types.ts";
-import { CodeMirrorView } from "../codemirror/index.ts";
-import {
-  collapsibleContentType,
-  collapsibleNodeType,
-  collapsibleTitleNodeType,
-  inputContentType,
-  inputNodeType,
-} from "../editor/nodetypes";
 import { ProofFlowSchema } from "../editor/proofflowschema";
 
 /**
@@ -129,15 +120,15 @@ export function getCollapsibleInsertCommand(): Command {
       return false;
 
     // Create the title node for the collapsible node
-    let textNode: Node = collapsibleTitleNodeType.create(null, [
+    let textNode: Node = ProofFlowSchema.node("collapsible_title", null, [
       ProofFlowSchema.text("Collapsible: "),
     ]);
     // Create the content node for the collapsible node
-    let contentNode: Node = collapsibleContentType.create({ visible: true }, [
+    let contentNode: Node = ProofFlowSchema.node("collapsible_content", { visible: true }, [
       oldNode,
     ]);
     // Create the collapsible node
-    let collapsibleNode: Node = collapsibleNodeType.create({ id: -1 }, [
+    let collapsibleNode: Node = ProofFlowSchema.node("collapsible", { id: -1 }, [
       textNode,
       contentNode,
     ]);
@@ -191,10 +182,10 @@ export function getInputInsertCommand(): Command {
       return false;
 
     // Create the content node and the collapsible node
-    let contentNode: Node = inputContentType.create({ visible: true }, [
+    let contentNode: Node = ProofFlowSchema.node("input_content", { visible: true }, [
       oldNode,
     ]);
-    let collapsibleNode: Node = inputNodeType.create({ id: -1 }, [contentNode]);
+    let collapsibleNode: Node = ProofFlowSchema.node("input", { id: -1 }, [contentNode]);
     let trans: Transaction = state.tr;
 
     // Replace the selection with the collapsible node

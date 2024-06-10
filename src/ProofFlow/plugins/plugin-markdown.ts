@@ -1,11 +1,5 @@
 import { Plugin } from "prosemirror-state";
 import { Node } from "prosemirror-model";
-import {
-  collapsibleContentType,
-  collapsibleNodeType,
-  inputContentType,
-  inputNodeType,
-} from "../editor/nodetypes";
 import { TextSelection } from "prosemirror-state";
 
 import {
@@ -115,13 +109,13 @@ export const markdownPlugin = new Plugin({
           });
 
           // Create the new collapsible content node with the new child nodes
-          let newCollapsibleContentNode = collapsibleContentType.create(
+          let newCollapsibleContentNode = ProofFlowSchema.node("collapsible_content", 
             { visible: collapsibleContentNode.attrs.visible },
             newCollapsibleChildNodes,
           );
 
           // Replace the old colllapsible content child node of the collapsible parent node with the new one
-          let newCollapsibleNode = collapsibleNodeType.create({ id: -1 }, [
+          let newCollapsibleNode = ProofFlowSchema.node("collapsible", { id: -1 }, [
             collapsibleTitleNode,
             newCollapsibleContentNode,
           ]);
@@ -159,12 +153,12 @@ export const markdownPlugin = new Plugin({
             newInputChildNodes.push(newChildNode);
           });
 
-          let newInputContentNode = inputContentType.create(
+          let newInputContentNode = ProofFlowSchema.node("input_content", 
             { visible: true },
             newInputChildNodes,
           );
 
-          let newInputNode = inputNodeType.create(
+          let newInputNode = ProofFlowSchema.node("input", 
             { id: node.attrs.id },
             newInputContentNode,
           );
