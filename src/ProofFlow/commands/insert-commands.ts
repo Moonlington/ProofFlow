@@ -13,6 +13,7 @@ import {
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { ProofFlowSchema } from "../editor/proofflowschema";
+import { getNextAreaId } from "../editor/ProofFlowDocument";
 
 /**
  * Returns a command function for inserting a node of type `mdNodeType`.
@@ -133,7 +134,7 @@ export function getCollapsibleInsertCommand(): Command {
     // Create the collapsible node
     let collapsibleNode: Node = ProofFlowSchema.node(
       "collapsible",
-      { id: -1 },
+      { id: getNextAreaId() },
       [textNode, contentNode],
     );
     let trans: Transaction = state.tr;
@@ -191,9 +192,11 @@ export function getInputInsertCommand(): Command {
       { visible: true },
       [oldNode],
     );
-    let collapsibleNode: Node = ProofFlowSchema.node("input", { id: -1 }, [
-      contentNode,
-    ]);
+    let collapsibleNode: Node = ProofFlowSchema.node(
+      "input",
+      { id: getNextAreaId() },
+      [contentNode],
+    );
     let trans: Transaction = state.tr;
 
     // Replace the selection with the collapsible node
