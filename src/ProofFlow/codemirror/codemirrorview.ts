@@ -16,7 +16,7 @@ import { proofFlow } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 import { getContainingNode } from "../commands/helpers.ts";
 import { wordHover } from "./extensions/hovertooltip.ts";
-import {codeCompl} from "./extensions/autocomplete.ts";
+import { getAutoCompleteExtension } from "./extensions/autocomplete.ts";
 import { DiagnosticsMessageData, LSPDiagnostic } from "../../lspMessageTypes.ts";
 import {linter, Diagnostic, setDiagnostics } from "@codemirror/lint"
 import { ProofFlow } from "../editor/ProofFlow.ts";
@@ -125,6 +125,7 @@ class CodeMirrorView implements NodeView {
       }
     });
 
+    let codeCompl = getAutoCompleteExtension(this);
 
     const cmState = CMState.create({
       doc: this.node.textContent,
