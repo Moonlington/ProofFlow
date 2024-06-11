@@ -204,7 +204,8 @@ class ProofFlowDocument {
         fullstring,
       );
       area.bounds = new Bounds(startPosition, endPosition);
-
+      let newLastIndex =
+        fullstring.indexOf(areaString, lastIndex) + areaString.length;
       if (area.type === AreaType.Collapsible || area.type === AreaType.Input) {
         let innerAreas: Area[];
         switch (area.type) {
@@ -217,25 +218,25 @@ class ProofFlowDocument {
         }
         for (let subarea of innerAreas) {
           let subAreaString = subarea.toString(this.outputConfig);
-          let startPosition = indexToPosition(
+          let subStartPosition = indexToPosition(
             fullstring.indexOf(subAreaString, lastIndex) +
               this.outputConfig[subarea.type][0].length,
             fullstring,
           );
-          if (startPosition.line > 1) startPosition.index--;
-          let endPosition = indexToPosition(
+          if (subStartPosition.line > 1) subStartPosition.index--;
+          let subEndPosition = indexToPosition(
             fullstring.indexOf(subAreaString, lastIndex) +
               subAreaString.length -
               this.outputConfig[subarea.type][1].length -
               1,
             fullstring,
           );
-          subarea.bounds = new Bounds(startPosition, endPosition);
+          subarea.bounds = new Bounds(subStartPosition, subEndPosition);
           lastIndex =
             fullstring.indexOf(subAreaString, lastIndex) + subAreaString.length;
         }
       }
-      lastIndex = fullstring.indexOf(areaString, lastIndex) + areaString.length;
+      lastIndex = newLastIndex;
     }
   }
 
