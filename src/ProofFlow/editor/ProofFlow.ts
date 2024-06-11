@@ -239,6 +239,8 @@ export class ProofFlow {
         });
       });
     });
+
+    handleUserModeSwitch();
   }
 
   public static updateLSP() {
