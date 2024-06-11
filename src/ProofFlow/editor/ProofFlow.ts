@@ -33,11 +33,20 @@ import {
   AreaType,
   CollapsibleArea,
   InputArea,
+  OutputConfig,
   ProofFlowDocument,
   docToPFDocument,
 } from "./ProofFlowDocument.ts";
 
 import { Parser, SimpleParser } from "../parser/parser.ts";
+import {
+  CoqMDOutput,
+  CoqMDParser,
+  CoqOutput,
+  CoqParser,
+  LeanOutput,
+  LeanParser,
+} from "../parser/parsers.ts";
 // CSS
 
 export class ProofFlow {
@@ -65,6 +74,8 @@ export class ProofFlow {
   private removeGlobalKeyBindings: () => void;
 
   private pfDocument: ProofFlowDocument = new ProofFlowDocument([]);
+
+  private outputConfig: OutputConfig | undefined = undefined;
 
   /**
    * Represents the ProofFlow class.
@@ -102,7 +113,10 @@ export class ProofFlow {
       dispatchTransaction: (tr: Transaction) => {
         if (tr.docChanged) {
           console.log("DOC:", tr.doc);
-          console.log("PARSED:", docToPFDocument(tr.doc));
+          let parsed = docToPFDocument(tr.doc);
+          console.log("PARSED:", parsed);
+          if (this.outputConfig) parsed.outputConfig = this.outputConfig;
+          console.log("PARSED PARSED:", parsed.toString());
         }
         this.editorView.updateState(this.editorView.state.apply(tr));
       },
@@ -190,30 +204,18 @@ export class ProofFlow {
     let parser: Parser;
     switch (fileType) {
       case AcceptedFileType.Coq:
-        parser = new SimpleParser({
-          text: [/\(\*\*/, /\*\)/],
-          math: [/\$\$/, /\$\$/],
-          collapsible: [/<hint(?: title="(.*?)")?>/, /<\/hint>/],
-          input: [/<input-area>/, /<\/input-area>/],
-        });
+        parser = CoqParser;
+        this.outputConfig = CoqOutput;
         let proxy = parser as SimpleParser;
         proxy.defaultAreaType = AreaType.Code;
         break;
       case AcceptedFileType.CoqMD:
-        parser = new SimpleParser({
-          code: [/```coq\n/, /\n```/],
-          math: [/\$\$/, /\$\$/],
-          collapsible: [/<hint(?: title="(.*?)")?>/, /<\/hint>/],
-          input: [/<input-area>/, /<\/input-area>/],
-        });
+        parser = CoqMDParser;
+        this.outputConfig = CoqMDOutput;
         break;
       case AcceptedFileType.Lean:
-        parser = new SimpleParser({
-          code: [/```lean\n/, /```\n/],
-          math: [/:::math\n/, /:::\n/],
-          collapsible: [/:::collapsible\n(?:# (.*?)\n)?/, /:::\n/],
-          input: [/:::input\n/, /:::\n/],
-        });
+        parser = LeanParser;
+        this.outputConfig = LeanOutput;
         break;
       default:
         return;
@@ -252,6 +254,7 @@ export class ProofFlow {
 
   public setProofFlowDocument(pfDocument: ProofFlowDocument) {
     this.pfDocument = pfDocument;
+    if (this.outputConfig) this.pfDocument.outputConfig = this.outputConfig;
     console.log("PF DOCUMENT IS BEING SET");
     console.log(pfDocument);
     for (let area of this.pfDocument.areas) {

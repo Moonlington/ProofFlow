@@ -8,7 +8,35 @@ export {
   ProofFlowDocument,
   docToPFDocument,
   getNextAreaId,
+  OutputConfig,
+  NOPConfig,
 };
+
+type Position = {
+  line: number;
+  index: number;
+};
+
+function indexToPosition(index: number, str: string): Position {
+  let lineNumber = str.substring(0, index).split("\n").length;
+  let indexNumber =
+    index -
+    str
+      .split("\n")
+      .slice(0, lineNumber - 1)
+      .toString().length;
+  return { line: lineNumber, index: indexNumber };
+}
+
+class Bounds {
+  start: Position;
+  end: Position;
+
+  constructor(start: Position, end: Position) {
+    this.start = start;
+    this.end = end;
+  }
+}
 
 enum AreaType {
   Text = "text",
@@ -29,6 +57,7 @@ class Area {
   type: AreaType;
   content: string;
   parent: undefined | CollapsibleArea | InputArea;
+  bounds: Bounds | undefined;
 
   constructor(
     type: Exclude<AreaType, AreaType.Collapsible | AreaType.Input>,
@@ -37,6 +66,10 @@ class Area {
     this.id = getNextAreaId();
     this.type = type;
     this.content = content;
+  }
+
+  toString(config: OutputConfig): string {
+    return config[this.type][0] + this.content + config[this.type][1];
   }
 }
 
@@ -62,6 +95,18 @@ class CollapsibleArea extends Area {
     }
     return false;
   }
+
+  toString(config: OutputConfig): string {
+    let inner = "";
+    for (let area of this.subAreas) {
+      inner += area.toString(config);
+    }
+    return this.content
+      ? config["collapsibletitle"][0].replace("TITLE", this.content) +
+          inner +
+          config[this.type][1]
+      : config[this.type][0] + inner + config[this.type][1];
+  }
 }
 
 class InputArea extends Area {
@@ -86,11 +131,32 @@ class InputArea extends Area {
     }
     return false;
   }
+  toString(config: OutputConfig): string {
+    let inner = "";
+    for (let area of this.subAreas) {
+      inner += area.toString(config);
+    }
+    return config[this.type][0] + inner + config[this.type][1];
+  }
 }
+
+type OutputConfig = {
+  [key: string]: [string, string];
+};
+
+const NOPConfig: OutputConfig = {
+  text: ["", ""],
+  code: ["", ""],
+  math: ["", ""],
+  collapsible: ["", ""],
+  collapsibletitle: ["", ""],
+  input: ["", ""],
+};
 
 //TODO: Incorporate handling the index mapping here, this is a big task and should be done carefully.
 class ProofFlowDocument {
   areas: Area[];
+  private _outputConfig: OutputConfig = NOPConfig;
 
   constructor(areas: Area[]) {
     this.areas = areas;
@@ -98,7 +164,79 @@ class ProofFlowDocument {
 
   addArea(area: Area): boolean {
     this.areas.push(area);
+    this.updateBounds();
     return true;
+  }
+
+  toString(): string {
+    let sum = "";
+    for (let area of this.areas) {
+      sum += area.toString(this.outputConfig);
+    }
+    return sum;
+  }
+
+  public set outputConfig(config: OutputConfig) {
+    this._outputConfig = config;
+    this.updateBounds();
+  }
+
+  public get outputConfig(): OutputConfig {
+    return this._outputConfig;
+  }
+
+  updateBounds() {
+    let fullstring = this.toString();
+    let lastIndex = 0;
+    for (let area of this.areas) {
+      let areaString = area.toString(this.outputConfig);
+      let startPosition = indexToPosition(
+        fullstring.indexOf(areaString, lastIndex) +
+          this.outputConfig[area.type][0].length,
+        fullstring,
+      );
+      if (startPosition.line > 1) startPosition.index--;
+      let endPosition = indexToPosition(
+        fullstring.indexOf(areaString, lastIndex) +
+          areaString.length -
+          this.outputConfig[area.type][1].length -
+          1,
+        fullstring,
+      );
+      area.bounds = new Bounds(startPosition, endPosition);
+
+      if (area.type === AreaType.Collapsible || area.type === AreaType.Input) {
+        let innerAreas: Area[];
+        switch (area.type) {
+          case AreaType.Collapsible:
+            innerAreas = (area as CollapsibleArea).subAreas;
+            break;
+          case AreaType.Input:
+            innerAreas = (area as InputArea).subAreas;
+            break;
+        }
+        for (let subarea of innerAreas) {
+          let subAreaString = subarea.toString(this.outputConfig);
+          let startPosition = indexToPosition(
+            fullstring.indexOf(subAreaString, lastIndex) +
+              this.outputConfig[subarea.type][0].length,
+            fullstring,
+          );
+          if (startPosition.line > 1) startPosition.index--;
+          let endPosition = indexToPosition(
+            fullstring.indexOf(subAreaString, lastIndex) +
+              subAreaString.length -
+              this.outputConfig[subarea.type][1].length -
+              1,
+            fullstring,
+          );
+          subarea.bounds = new Bounds(startPosition, endPosition);
+          lastIndex =
+            fullstring.indexOf(subAreaString, lastIndex) + subAreaString.length;
+        }
+      }
+      lastIndex = fullstring.indexOf(areaString, lastIndex) + areaString.length;
+    }
   }
 
   addAreaBefore(area: Area, beforeId: number): boolean {
@@ -112,9 +250,11 @@ class ProofFlowDocument {
         beforeArea,
       );
       area.parent = beforeArea.parent;
+      this.updateBounds();
       return true;
     }
     this.areas.splice(this.areas.indexOf(beforeArea), 0, area);
+    this.updateBounds();
     return true;
   }
 
@@ -128,9 +268,11 @@ class ProofFlowDocument {
         area,
       );
       area.parent = afterArea.parent;
+      this.updateBounds();
       return true;
     }
     this.areas.splice(this.areas.indexOf(afterArea), 0, area);
+    this.updateBounds();
     return true;
   }
 
@@ -144,9 +286,11 @@ class ProofFlowDocument {
         newArea,
       );
       newArea.parent = replacedArea.parent;
+      this.updateBounds();
       return true;
     }
     this.areas.splice(this.areas.indexOf(replacedArea), 1, newArea);
+    this.updateBounds();
     return true;
   }
 
@@ -168,6 +312,7 @@ class ProofFlowDocument {
         default:
           if (area.id === id) {
             this.areas.splice(this.areas.indexOf(area), 1);
+            this.updateBounds();
             return true;
           }
           break;
