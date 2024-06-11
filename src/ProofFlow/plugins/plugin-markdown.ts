@@ -118,7 +118,7 @@ export const markdownPlugin = new Plugin({
           // Replace the old colllapsible content child node of the collapsible parent node with the new one
           let newCollapsibleNode = ProofFlowSchema.node(
             "collapsible",
-            { id: -1 },
+            { id: collapsibleParentNode.attrs.id },
             [collapsibleTitleNode, newCollapsibleContentNode],
           );
           newNode = newCollapsibleNode;

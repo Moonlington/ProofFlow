@@ -7,6 +7,7 @@ export {
   InputArea,
   ProofFlowDocument,
   docToPFDocument,
+  getNextAreaId,
 };
 
 enum AreaType {
@@ -19,6 +20,10 @@ enum AreaType {
 
 let nextAreaId = 0;
 
+function getNextAreaId(): number {
+  return nextAreaId++;
+}
+
 class Area {
   id: number;
   type: AreaType;
@@ -29,7 +34,7 @@ class Area {
     type: Exclude<AreaType, AreaType.Collapsible | AreaType.Input>,
     content: string,
   ) {
-    this.id = nextAreaId++;
+    this.id = getNextAreaId();
     this.type = type;
     this.content = content;
   }
@@ -198,7 +203,7 @@ class ProofFlowDocument {
 function docToPFDocument(doc: Node): ProofFlowDocument {
   let pfDocument = new ProofFlowDocument([]);
   if (doc.type.name !== "doc") {
-    console.log(
+    console.error(
       "docToPFDocument received other node, expected 'doc' received '%s'",
       doc.type.name,
     );
@@ -214,15 +219,20 @@ function docToPFDocument(doc: Node): ProofFlowDocument {
 }
 
 function nodeToArea(node: Node): Area | undefined {
+  let area: Area;
   switch (node.type.name) {
     case "markdown":
-      return new Area(AreaType.Text, node.textContent);
+      area = new Area(AreaType.Text, node.textContent);
+      break;
     case "markdown_rendered":
-      return new Area(AreaType.Text, node.attrs.original_text);
+      area = new Area(AreaType.Text, node.attrs.original_text);
+      break;
     case "math_display":
-      return new Area(AreaType.Math, node.textContent);
+      area = new Area(AreaType.Math, node.textContent);
+      break;
     case "code_mirror":
-      return new Area(AreaType.Code, node.textContent);
+      area = new Area(AreaType.Code, node.textContent);
+      break;
     case "input":
       let input = new InputArea();
       node.content
@@ -231,7 +241,8 @@ function nodeToArea(node: Node): Area | undefined {
           let area = nodeToArea(n);
           if (area) input.addArea(area);
         });
-      return input;
+      area = input;
+      break;
     case "collapsible":
       let collapsible = new CollapsibleArea(node.content.child(0).textContent);
       node.content
@@ -240,8 +251,12 @@ function nodeToArea(node: Node): Area | undefined {
           let area = nodeToArea(n);
           if (area) collapsible.addArea(area);
         });
-      return collapsible;
+      area = collapsible;
+      break;
     default:
       return undefined;
   }
+
+  area.id = node.attrs.id;
+  return area;
 }

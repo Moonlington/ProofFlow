@@ -1,4 +1,5 @@
 import { Node, Schema } from "prosemirror-model";
+import { getNextAreaId } from "./ProofFlowDocument";
 
 /**
  * The cell types available in ProofFlow.
@@ -146,6 +147,9 @@ export const ProofFlowSchema: Schema = new Schema({
     },
 
     code_mirror: {
+      attrs: {
+        id: { default: null },
+      },
       content: "text*",
       marks: "",
       group: "area",
