@@ -11,6 +11,7 @@ import { defaultMarkdownParser } from "prosemirror-markdown";
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
 import { ProofStatus } from "../editor/proofflowschema";
+import { getNextAreaId } from "../editor/ProofFlowDocument";
 
 /**
  * Represents the possible places where an insertion can occur.
@@ -78,7 +79,7 @@ export function insertAbove(
     let counter = pos;
 
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   } else if (isTextSelection) {
@@ -87,7 +88,7 @@ export function insertAbove(
     let counter = parentPos;
 
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   } else {
@@ -96,7 +97,7 @@ export function insertAbove(
     let counter = pos;
 
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   }
@@ -133,7 +134,7 @@ export function insertUnder(
     let counter = pos;
 
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   } else if (isTextSelection) {
@@ -149,7 +150,7 @@ export function insertUnder(
     let counter = to;
 
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   } else {
@@ -157,7 +158,7 @@ export function insertUnder(
     const pos = state.doc.content.size;
     let counter = pos;
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   }
