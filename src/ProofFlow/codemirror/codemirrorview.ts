@@ -65,6 +65,11 @@ class CodeMirrorView implements NodeView {
   updating = false;
   diagnostic: Diagnostic[] = new Array();
 
+  lineStart = 0;
+  lineOffsets: number[] = new Array();
+  error = false;
+  QEDerror = false;
+
   static instances: CodeMirrorView[] = [];
   static focused: CodeMirrorView | null = null;
 
@@ -426,26 +431,37 @@ class CodeMirrorView implements NodeView {
       if (a.range.start.character > b.range.start.character) return 1;
       return 0;
     })
-    let curLine = 1;
     let index = 0;
     console.log(message.diagnostics);
     CodeMirrorView.instances.forEach((instance) => {
+      instance.error = false;
+      instance.QEDerror = false;
       let diagnostics: Diagnostic[] = [];
       let lineCount = instance.cm.state.doc.lines;
-      let lineLengthsOffset = [0];
-      for (let i = 2; i <= lineCount; i++) {
-        lineLengthsOffset.push(instance.cm.state.doc.line(i - 1).length + 1);
-        lineLengthsOffset[i - 1] += lineLengthsOffset[i - 2];
-      }
+      let lineStart = instance.lineStart;
 
       function shouldInsert() {
-        let lineStart = message.diagnostics[index].range.start.line;
-        return curLine <= lineStart && lineStart < curLine + lineCount;
+        let diagLineStart = message.diagnostics[index].range.start.line;
+        return lineStart <= diagLineStart && diagLineStart < lineStart + lineCount;
       }
       function getPos(line: number, char: number) {
-        return lineLengthsOffset[line - curLine] + char;
+        return instance.lineOffsets[line - lineStart] + char;
       }
+      function QEDerror() {
+        let range = message.diagnostics[index].range;
+        let diagLineStart = range.start.line;
+        if (diagLineStart != lineStart) return false;
+        let diagLineEnd = range.end.line;
+        if (diagLineStart != diagLineEnd) return false;
+        let diagCharStart = range.start.character;
+        let diagCharEnd = range.end.character;
+        if (diagCharStart != 0 || diagCharEnd != 4) return false;
+        if (instance.cm.state.doc.line(1).text.substring(0, 5) != 'Qed.') return false;
+        return true;
+      }
+
       while (index < message.diagnostics.length && shouldInsert()) {
+        if(QEDerror()) instance.QEDerror = true;
         let range = message.diagnostics[index].range;
         let diagnostic: Diagnostic = {
           from: getPos(range.start.line, range.start.character),
@@ -456,9 +472,10 @@ class CodeMirrorView implements NodeView {
         index++;
         diagnostics.push(diagnostic);
       }
+      if (diagnostics.length) instance.error = true;
+
       let test = setDiagnostics(instance.cm.state, diagnostics);
       instance.cm.dispatch(test);
-      curLine += lineCount;
     })
     this.clearLSP();
   }

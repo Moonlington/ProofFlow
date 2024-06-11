@@ -170,6 +170,29 @@ export class ProofFlow {
   public handleDiagnostics(message: DiagnosticsMessageData) {
     //if (message.diagnostics.length == 0) return;
     CodeMirrorView.handleDiagnostics(message);
+
+    function setInstanceColor(state: EditorState, instance: CodeMirrorView, color: proof) {
+      let resolvedPos = state.doc.resolve(instance.getPos());
+      const grandParentDepth = resolvedPos.depth - 1;
+      if (grandParentDepth >= 0) {
+        const grandParentPos = resolvedPos.before(grandParentDepth);
+        let node = state.doc.nodeAt(grandParentPos);
+        if (node != null) {
+          inputProof(node, color, grandParentPos);
+        }
+      }
+    }
+    for (let i = 0; i < CodeMirrorView.instances.length; i++) {
+      let instance = CodeMirrorView.instances[i];
+      if (!instance.error) {
+        setInstanceColor(this.getState(), instance, proof.correct);
+      } else {
+        setInstanceColor(this.getState(), instance, proof.incorrect);
+      }
+      if (instance.QEDerror && i > 0) {
+        setInstanceColor(this.getState(), CodeMirrorView.instances[i - 1], proof.incorrect);
+      }
+    }
   }
 
   /**
