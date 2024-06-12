@@ -37,6 +37,12 @@ class Bounds {
     this.start = start;
     this.end = end;
   }
+
+  contains(pos: Position): boolean {
+    let afterStart = pos.line >= this.start.line && pos.index >= this.start.index
+    let beforeEnd = pos.line <= this.end.line && pos.index <= this.end.index
+    return afterStart && beforeEnd
+  }
 }
 
 enum AreaType {
@@ -332,6 +338,29 @@ class ProofFlowDocument {
           break;
         default:
           if (area.id === id) return area;
+          break;
+      }
+    }
+    return undefined;
+  }
+
+  getAreayByPosition(pos: Position): Area | undefined {
+    for (let area of this.areas) {
+      switch (area.type) {
+        case AreaType.Collapsible:
+          let collapsible = area as CollapsibleArea;
+          for (let otherarea of collapsible.subAreas) {
+            if (otherarea.bounds?.contains(pos)) return otherarea;
+          }
+          break;
+        case AreaType.Input:
+          let input = area as InputArea;
+          for (let otherarea of input.subAreas) {
+            if (otherarea.bounds?.contains(pos)) return otherarea;
+          }
+          break;
+        default:
+          if (area.bounds?.contains(pos)) return area;
           break;
       }
     }
