@@ -10,6 +10,7 @@ export {
   getNextAreaId,
   OutputConfig,
   NOPConfig,
+  nodeToArea
 };
 
 type Position = {
@@ -164,7 +165,6 @@ class ProofFlowDocument {
 
   addArea(area: Area): boolean {
     this.areas.push(area);
-    this.updateBounds();
     return true;
   }
 
@@ -251,11 +251,9 @@ class ProofFlowDocument {
         beforeArea,
       );
       area.parent = beforeArea.parent;
-      this.updateBounds();
       return true;
     }
     this.areas.splice(this.areas.indexOf(beforeArea), 0, area);
-    this.updateBounds();
     return true;
   }
 
@@ -269,11 +267,9 @@ class ProofFlowDocument {
         area,
       );
       area.parent = afterArea.parent;
-      this.updateBounds();
       return true;
     }
     this.areas.splice(this.areas.indexOf(afterArea), 0, area);
-    this.updateBounds();
     return true;
   }
 
@@ -287,11 +283,9 @@ class ProofFlowDocument {
         newArea,
       );
       newArea.parent = replacedArea.parent;
-      this.updateBounds();
       return true;
     }
     this.areas.splice(this.areas.indexOf(replacedArea), 1, newArea);
-    this.updateBounds();
     return true;
   }
 
@@ -313,7 +307,6 @@ class ProofFlowDocument {
         default:
           if (area.id === id) {
             this.areas.splice(this.areas.indexOf(area), 1);
-            this.updateBounds();
             return true;
           }
           break;
@@ -361,6 +354,7 @@ function docToPFDocument(doc: Node): ProofFlowDocument {
     if (area) pfDocument.addArea(area);
   });
   nextAreaId = prevNodeId;
+  pfDocument.updateBounds();
   return pfDocument;
 }
 
