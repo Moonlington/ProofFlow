@@ -263,3 +263,20 @@ export function inputProof(inputNode: Node, newProof: proof, pos: number) {
 
   dispatch(transaction);
 }
+
+let visibleLine = true;
+let indexLine = -1;
+export function toggleLineNumbers() {
+  let sheet = (document.getElementById('dynamic-style') as HTMLStyleElement).sheet;
+  if (sheet == null) return;
+  if (indexLine != -1) {
+    sheet.deleteRule(indexLine);
+  }
+
+  if (visibleLine) {
+    indexLine = sheet.insertRule(".cm-gutters { display: none !important; }")
+  } else {
+    indexLine = -1;
+  }
+  visibleLine = !visibleLine;
+}
