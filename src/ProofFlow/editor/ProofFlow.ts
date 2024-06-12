@@ -518,10 +518,10 @@ export class ProofFlow {
     if (acceptedFileType == AcceptedFileType.Unknown) return;
     // console.log("Initializing!!!")
     if (acceptedFileType == AcceptedFileType.Coq || acceptedFileType == AcceptedFileType.CoqMD) {
-      LSPMessenger.startServer("coq");
+      LSPMessenger.startServer("coq", path);
       this.lspType = LSPType.Coq;
     } else if (acceptedFileType == AcceptedFileType.Lean) {
-      LSPMessenger.startServer("lean");
+      LSPMessenger.startServer("lean", path);
       this.lspType = LSPType.LEAN;
     }
   }

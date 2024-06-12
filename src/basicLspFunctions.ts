@@ -26,12 +26,13 @@ export class LSPMessenger {
     });
   }
 
-  public static async startServer(server: string): Promise<void> {
+  public static async startServer(server: string, path: string): Promise<void> {
     console.log(server);
     try {
       const response = await axios.get('http://localhost:3000/start_server', {
         params: {
-          server: server
+          server: server,
+          path: path
         }
       });
       console.log('Server Response:', response.data);
