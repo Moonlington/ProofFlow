@@ -36,6 +36,7 @@ import {
   OutputConfig,
   ProofFlowDocument,
   docToPFDocument,
+  nodeToArea,
 } from "./ProofFlowDocument.ts";
 
 import { Parser, SimpleParser } from "../parser/parser.ts";
@@ -47,6 +48,7 @@ import {
   LeanOutput,
   LeanParser,
 } from "../parser/parsers.ts";
+import { changedDescendants } from "../commands/helpers.ts";
 // CSS
 
 export class ProofFlow {
@@ -76,6 +78,14 @@ export class ProofFlow {
   private pfDocument: ProofFlowDocument = new ProofFlowDocument([]);
 
   private outputConfig: OutputConfig | undefined = undefined;
+
+  private lastUpdate: Date = new Date();
+  private lastTransaction: Date = new Date();
+
+  private updateTimeoutID: NodeJS.Timeout = undefined!;
+  private msTypingBuffer = 250
+
+  private msMaxUpdateTime = 1000
 
   /**
    * Represents the ProofFlow class.
@@ -111,14 +121,10 @@ export class ProofFlow {
         return mathSerializer.serializeSlice(slice);
       },
       dispatchTransaction: (tr: Transaction) => {
-        if (tr.docChanged) {
-          console.log("DOC:", tr.doc);
-          let parsed = docToPFDocument(tr.doc);
-          console.log("PARSED:", parsed);
-          if (this.outputConfig) parsed.outputConfig = this.outputConfig;
-          console.log("PARSED PARSED:", parsed.toString());
-        }
         this.editorView.updateState(this.editorView.state.apply(tr));
+        if (tr.docChanged) {
+          this.updateWithBuffer(tr.doc)
+        }
       },
 
       // Define a node view for the custom code mirror node as a prop
@@ -157,6 +163,25 @@ export class ProofFlow {
     buttonBar.render(this._editorElem);
 
     return editorView;
+  }
+
+  updateWithBuffer(doc: Node) {
+    let now = new Date();
+    clearTimeout(this.updateTimeoutID);
+    if (now.getTime() - this.lastTransaction.getTime() >= this.msTypingBuffer) {
+      this.updateProofFlowDocument(doc)
+    } else {
+      this.updateTimeoutID = setTimeout(() => this.updateProofFlowDocument(doc), this.msMaxUpdateTime);
+    }
+    this.lastTransaction = now
+  }
+
+  updateProofFlowDocument(doc: Node) {
+    let parsed = docToPFDocument(doc);
+    if (this.outputConfig) parsed.outputConfig = this.outputConfig;
+    console.log(parsed)
+    this.pfDocument = parsed
+    this.lastUpdate = new Date();
   }
 
   /**
