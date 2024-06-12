@@ -15,7 +15,7 @@ import type { ComputeChange, CodeMirrorViewOptions } from "./types.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 import { getContainingNode } from "../commands/helpers.ts";
-import { wordHover } from "./extensions/hovertooltip.ts";
+import { getHoverExtension } from "./extensions/hovertooltip.ts";
 import { getAutoCompleteExtension } from "./extensions/autocomplete.ts";
 import { DiagnosticsMessageData, LSPDiagnostic } from "../../lspMessageTypes.ts";
 import {linter, Diagnostic, setDiagnostics } from "@codemirror/lint"
@@ -126,6 +126,7 @@ class CodeMirrorView implements NodeView {
     });
 
     let codeCompl = getAutoCompleteExtension(this);
+    let wordHover = getHoverExtension(this);
 
     const cmState = CMState.create({
       doc: this.node.textContent,
@@ -164,7 +165,7 @@ class CodeMirrorView implements NodeView {
         cmExtensions,
         tabKeymap,
         changeExtension,
-        // wordHover,
+        wordHover,
         codeCompl
       ],
     });

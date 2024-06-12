@@ -15,7 +15,7 @@ function offsetToPos(instance: CodeMirrorView, doc: Text, offset: number) {
     console.log('Line:', line, 'Character:', character);
 
     console.log('Line: ', lineNumber, 'Character: ', character);
-    return {line: lineNumber, character};
+    return {line: lineNumber, character: character};
 }
 
 export function getAutoCompleteExtension(instance: CodeMirrorView) {
