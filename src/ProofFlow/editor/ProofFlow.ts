@@ -67,9 +67,10 @@ export class ProofFlow {
 
   private minimap: Minimap | null = null;
 
-  private lspType: LSPType = LSPType.None; 
+  private lspType: LSPType = LSPType.None;
 
   private removeGlobalKeyBindings: () => void;
+  private static version: number = 1;
 
   /**
    * Represents the ProofFlow class.
@@ -253,7 +254,9 @@ export class ProofFlow {
     }
     if (result == null) return;
 
-    LSPMessenger.didChange(ProofFlow.fileName, result.lines, 0, result.message);
+    this.version++;
+    LSPMessenger.didChange(ProofFlow.fileName, result.lines, 0, result.message, this.version);
+
   }
 
   /**
@@ -503,7 +506,7 @@ export class ProofFlow {
       this.editorView,
       this.minimap!,
     );
-    
+
   }
 
 

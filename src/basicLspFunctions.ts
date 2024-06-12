@@ -15,7 +15,7 @@ export class LSPMessenger {
       // Example of sending a message to the server
       socket.send(JSON.stringify({ type: 'init', data: 'Client initialized' }));
     });
-    
+
     socket.addEventListener('message', (event) => {
       const message: DiagnosticsMessage = JSON.parse(event.data);
       if (message.type === 'diagnostics') {
@@ -39,7 +39,7 @@ export class LSPMessenger {
       console.error('Error starting server:', error);
     }
   }
-  
+
   public static async initializeServer(filePath: string): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/initialize_server', {
@@ -52,7 +52,7 @@ export class LSPMessenger {
       console.error('Error initializing server:', error);
     }
   }
-  
+
   public static async initialized(): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/initialized');
@@ -61,7 +61,7 @@ export class LSPMessenger {
       console.error('Error during initialization:', error);
     }
   }
-  
+
   public static async shutdown(): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/shutdown');
@@ -70,7 +70,7 @@ export class LSPMessenger {
       console.error('Error during shutdown:', error);
     }
   }
-  
+
   public static async exit(): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/exit');
@@ -79,7 +79,7 @@ export class LSPMessenger {
       console.error('Error during exit:', error);
     }
   }
-  
+
   public static async didOpen(uri: string, languageId: string, text: string, version: string): Promise<void> {
     console.log(uri, languageId, text, version);
     try {
@@ -96,12 +96,13 @@ export class LSPMessenger {
       console.error('Error opening document:', error);
     }
   }
-  
-  public static async didChange(uri: string, el: number, ec: number, text: string): Promise<void> {
+
+  public static async didChange(uri: string, el: number, ec: number, text: string, version: number): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/didChange', {
         params: {
           uri: uri,
+          version: version,
           el: el,
           ec: ec,
           text: text,
@@ -112,7 +113,7 @@ export class LSPMessenger {
       console.error('Error changing document:', error);
     }
   }
-  
+
   public static async didClose(uri: string): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/didClose', {
@@ -125,7 +126,7 @@ export class LSPMessenger {
       console.error('Error closing document:', error);
     }
   }
-  
+
   public static async documentSymbol(uri: string): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/documentSymbol', {
@@ -138,7 +139,7 @@ export class LSPMessenger {
       console.error('Error getting document symbols:', error);
     }
   }
-  
+
   public static async references(uri: string, line: number, character: number): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/references', {
@@ -153,7 +154,7 @@ export class LSPMessenger {
       console.error('Error getting references:', error);
     }
   }
-  
+
   public static async definition(uri: string, line: number, character: number): Promise<any> {
     try {
       const response = await axios.get('http://localhost:3000/definition', {
@@ -168,7 +169,7 @@ export class LSPMessenger {
       console.error('Error getting definition:', error);
     }
   }
-  
+
   public static async typeDefinition(uri: string, line: number, character: number): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/typeDefinition', {
@@ -183,7 +184,7 @@ export class LSPMessenger {
       console.error('Error getting type definition:', error);
     }
   }
-  
+
   public static async signatureHelp(uri: string, line: number, character: number): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/signatureHelp', {
@@ -198,7 +199,7 @@ export class LSPMessenger {
       console.error('Error getting signature help:', error);
     }
   }
-  
+
   public static async hover(uri: string, line: number, character: number): Promise<any> {
     try {
       const response = await axios.get('http://localhost:3000/hover', {
@@ -215,7 +216,7 @@ export class LSPMessenger {
       return null;
     }
   }
-  
+
   public static async gotoDeclaration(uri: string, line: number, character: number): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/gotoDeclaration', {
@@ -230,6 +231,21 @@ export class LSPMessenger {
       console.error('Error going to declaration:', error);
     }
   }
+
+  // public static async publishDiagnostics(uri: string, line: number, character: number): Promise<void> {
+  //   try {
+  //     const response = await axios.get('http://localhost:3000/publishDiagnostics', {
+  //       params: {
+  //         uri: uri,
+  //         range: line,
+  //         character: character
+  //       }
+  //     });
+  //     console.log('GotoDeclaration Response:', response.data);
+  //   } catch (error) {
+  //     console.error('Error going to declaration:', error);
+  //   }
+  // }
 
   //@ts-ignore
   public static async requestCompletion(uri: string,
