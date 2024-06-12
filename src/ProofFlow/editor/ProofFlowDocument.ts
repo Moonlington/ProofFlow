@@ -10,7 +10,7 @@ export {
   getNextAreaId,
   OutputConfig,
   NOPConfig,
-  nodeToArea
+  nodeToArea,
 };
 
 type Position = {
@@ -39,9 +39,10 @@ class Bounds {
   }
 
   contains(pos: Position): boolean {
-    let afterStart = pos.line >= this.start.line && pos.index >= this.start.index
-    let beforeEnd = pos.line <= this.end.line && pos.index <= this.end.index
-    return afterStart && beforeEnd
+    let afterStart =
+      pos.line >= this.start.line && pos.index >= this.start.index;
+    let beforeEnd = pos.line <= this.end.line && pos.index <= this.end.index;
+    return afterStart && beforeEnd;
   }
 }
 
