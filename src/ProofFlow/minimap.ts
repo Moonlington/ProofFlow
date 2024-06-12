@@ -30,7 +30,8 @@ export class Minimap {
       this._minimapViewerDiv,
       this._minimapContentDiv,
     );
-    document.body.appendChild(this._minimapDiv);
+
+    document.getElementById("content")!.appendChild(this._minimapDiv);
 
     this.observer = new MutationObserver(this.callback);
     this.start();
@@ -132,8 +133,7 @@ export class Minimap {
     let bodyRatio = bodyHeight / bodyWidth;
     let winRatio = window.innerHeight / window.innerWidth;
 
-    this._minimapDiv.style.width = "7.5%";
-    this._minimapDiv.style.height = "90%";
+    this._minimapDiv.style.width = "15%";
 
     this._realScale = this._minimapDiv.clientWidth / bodyWidth;
     this._bodyScale = this._minimapDiv.clientWidth / document.body.clientWidth;

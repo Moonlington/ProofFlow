@@ -1,0 +1,66 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+#app {
+  min-width: 600px;
+  position: fixed;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  height: 100vh;
+  color: var(--text-color);
+}
+
+#top-bar {
+  padding-bottom: 2px;
+}
+
+#top-bar > * {
+  margin-right: 2px;
+}
+
+#editor, #content {
+  width: 50%;
+  min-width: 275px;
+  height: 100vh;
+  background-clip: padding-box;
+  border-color: black;
+  border-width: 1px;
+  border-style: solid;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+#editor > *, #content > * {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+#editor {
+  background-color: var(--primary-color);
+  float: left;
+}
+
+#content {
+  background-color: var(--primary-color);
+  float: right;
+}
+
+.ProseMirror > * {
+  padding: 1px 4px 5px 4px;
+  display: block;
+}
+
+div[visible="false"] {
+  display: none;
+}
+
+button {
+  color: var(--button-text-color);
+  fill: var(--button-text-color);
+}

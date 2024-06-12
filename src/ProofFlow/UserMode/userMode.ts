@@ -21,10 +21,11 @@ export function handleUserModeSwitch() {
     throw new Error("input-button not found");
   }
   if (userMode === UserMode.Student) {
-    inputButton.style.visibility = "hidden";
+    inputButton.style.display = "none";
+    inputButton.style.color;
     lockEditing(true);
   } else {
-    inputButton.style.visibility = "visible";
+    inputButton.style.display = "";
     lockEditing(false);
   }
 }

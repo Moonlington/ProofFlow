@@ -1,0 +1,18 @@
+@import './ProofFlow.css';
+@import './index.css';
+@import './minimap.css';
+@import './buttonBar.css';
+@import './cells.css';
+@import './settings.css';
+
+:root {
+    --primary-color: #EAEFF2;
+    --secondary-color: #00E0D4;
+    --tertiary-color: #FF4500;
+    --quaternary-color: #d5dee7;
+    --highlight: #1cf5ea;
+    --hover: #00e0d52c;
+    --text-color: #000000;
+    --button-text-color: #000000;
+    --popup-shadow: rgba(0, 0, 0, 0.3);
+}

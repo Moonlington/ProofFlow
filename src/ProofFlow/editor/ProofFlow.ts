@@ -398,7 +398,7 @@ export class ProofFlow {
    */
   public reset() {
     this.minimap?.destroy();
-    this.removeGlobalKeyBindings()
+    this.removeGlobalKeyBindings();
 
     // Remove all children from the editor element
     while (this._editorElem.firstChild != null) {
@@ -439,12 +439,10 @@ export class ProofFlow {
    *
    * @param UserModebutton - The HTML element representing the user mode button.
    */
-  public switchUserMode(UserModebutton: HTMLElement) {
+  public switchUserMode() {
     let newUserMode: UserMode;
     newUserMode =
       this.userMode === UserMode.Teacher ? UserMode.Student : UserMode.Teacher;
-    UserModebutton.textContent =
-      newUserMode === UserMode.Student ? "Student Mode" : "Teacher Mode";
     this.userMode = newUserMode;
     handleUserModeSwitch();
   }

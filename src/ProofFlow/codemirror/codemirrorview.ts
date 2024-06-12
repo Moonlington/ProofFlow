@@ -86,6 +86,8 @@ class CodeMirrorView implements NodeView {
     // The editor's outer node is our DOM representation
     this.dom = this.cm.dom;
 
+    this.dom.style.backgroundColor = "#00000002";
+
     // Keymaps for the codemirror editor
     const tabKeymap = keymap.of([
       {

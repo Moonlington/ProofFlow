@@ -4,40 +4,41 @@ import {
   AcceptedFileType,
   isCorrectFileType,
 } from "./ProofFlow/parser/accepted-file-types";
-import "./ProofFlow/styles/ProofFlow.css";
-import "./ProofFlow/styles/index.css";
-import "./ProofFlow/styles/minimap.css";
+import "./styles/styles.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
+import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
+import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
 
-// Get the editor and content elements
-const editorElement: HTMLElement = document.querySelector("#editor")!;
-const contentElement: HTMLElement = document.querySelector("#content")!;
+const app = document.createElement("div");
+app.id = "app";
+
+// Append the app to the body
+document.body.appendChild(app);
+
+// Create a container for the editor and content elements
+const container = document.createElement("div");
+container.id = "container";
+app.appendChild(container);
+
+const editor = document.createElement("div");
+editor.id = "editor";
+container.appendChild(editor);
+
+const content = document.createElement("div");
+content.id = "content";
+container.appendChild(content);
 
 // Create a new instance of the ProofFlow class
-let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
-
+let proofFlow: ProofFlow = new ProofFlow(editor, content);
 export { proofFlow };
+
+const settingsOverlay = new SettingsOverlay(container);
+
+const settingBar = new SettingsBar(content, settingsOverlay, proofFlow.getEditorView());
 
 // Do this to get proper user rights.
 handleUserModeSwitch();
-
-// Button to create a new instance of the editor and content elements
-const buttonNewInstance = document.getElementById("newtextblock");
-// Add event listener to the button
-buttonNewInstance?.addEventListener("click", (e) => {
-  proofFlow.reset();
-});
-
-let buttonSaveFile = document.getElementById("save-file");
-buttonSaveFile?.addEventListener("click", (e) => {
-  proofFlow.saveFile();
-});
-
-let userModeButton = document.getElementById("user-mode-button");
-userModeButton?.addEventListener("click", (e) => {
-  proofFlow.switchUserMode(userModeButton);
-});
 
 // Input to read file
 document
