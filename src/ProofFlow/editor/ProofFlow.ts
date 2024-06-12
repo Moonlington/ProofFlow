@@ -460,7 +460,7 @@ export class ProofFlow {
     }
 
     this.minimap?.destroy();
-    this.removeGlobalKeyBindings()
+    this.removeGlobalKeyBindings();
 
     // Remove all children from the editor element
     while (this._editorElem.firstChild != null) {
