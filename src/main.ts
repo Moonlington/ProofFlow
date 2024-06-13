@@ -9,7 +9,6 @@ import "./ProofFlow/styles/index.css";
 import "./ProofFlow/styles/minimap.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
-import { LSPMessenger } from "./basicLspFunctions";
 
 // Get the editor and content elements
 const editorElement: HTMLElement = document.querySelector("#editor")!;
@@ -17,9 +16,6 @@ const contentElement: HTMLElement = document.querySelector("#content")!;
 
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
-let lspMessenger: LSPMessenger = new LSPMessenger(
-  proofFlow.handleDiagnostics.bind(proofFlow),
-);
 
 export { proofFlow };
 
