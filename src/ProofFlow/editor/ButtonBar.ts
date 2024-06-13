@@ -8,7 +8,10 @@ import { InsertionPlace, getContainingNode } from "../commands/helpers.ts";
 import { EditorView } from "prosemirror-view";
 import { EditorState, NodeSelection, Selection } from "prosemirror-state";
 import { deleteSelection, selectParentNode } from "prosemirror-commands";
-import { getCollapsibleInsertCommand, getInputInsertCommand } from "../commands/insert-commands.ts";
+import {
+  getCollapsibleInsertCommand,
+  getInputInsertCommand,
+} from "../commands/insert-commands.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 
@@ -154,7 +157,7 @@ export class ButtonBar {
           command(this._editorView.state, this._editorView.dispatch);
         },
         hoverText: "Place the current node in an colapsible node",
-      }
+      },
     ];
 
     buttons.forEach(({ name, command, hoverText }) => {
@@ -173,8 +176,7 @@ export class ButtonBar {
     button.innerHTML = label;
     if (label === "line nr") {
       button.id = "line-nr-button";
-    }
-    else {
+    } else {
       button.id = label.toLowerCase() + "-button";
     }
     button.addEventListener("click", callback);

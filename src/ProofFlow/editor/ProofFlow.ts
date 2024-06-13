@@ -444,6 +444,10 @@ export class ProofFlow {
     newUserMode =
       this.userMode === UserMode.Teacher ? UserMode.Student : UserMode.Teacher;
     this.userMode = newUserMode;
+    window.localStorage.setItem(
+      "teacherMode",
+      newUserMode === UserMode.Teacher ? "true" : "false",
+    );
     handleUserModeSwitch();
   }
 }

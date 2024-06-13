@@ -21,7 +21,7 @@ export class SettingsOverlay {
     // Create the popup
     const popup = document.createElement("div");
     popup.className = "popup";
-    
+
     // Add close button
     const closeButton = this.closeButton();
     popup.appendChild(closeButton);
@@ -30,13 +30,26 @@ export class SettingsOverlay {
     const header = document.createElement("h2");
     header.textContent = "Settings Menu";
 
-    // Add user mode settings
-    const userModeContainer = this.userModeContainer();
-    
-    // Add color scheme settings
-    const colorSchemeContainer = this.colorSchemeContainer();
+    const localStorage = window.localStorage;
+    const teacherMode: boolean = Boolean(
+      localStorage.getItem("teacherMode") === "true",
+    );
+    const darkMode: boolean = Boolean(
+      localStorage.getItem("darkMode") === "true",
+    );
+    const colorScheme = localStorage.getItem("colorScheme") || "";
+    const lspPath = localStorage.getItem("lspPath") || "";
 
-    const lspContainer = this.lspContainer();
+    // Add user mode settings
+    const userModeContainer = this.userModeContainer(teacherMode);
+
+    // Add color scheme settings
+    const colorSchemeContainer = this.colorSchemeContainer(
+      darkMode,
+      colorScheme,
+    );
+
+    const lspContainer = this.lspContainer(lspPath);
 
     popup.appendChild(header);
     popup.appendChild(userModeContainer);
@@ -51,7 +64,7 @@ export class SettingsOverlay {
 
   /**
    * Sets the visibility of the overlay element.
-   * 
+   *
    * @param visible - A boolean value indicating whether the overlay should be visible or not.
    */
   public showOverlay(visible: boolean) {
@@ -62,7 +75,7 @@ export class SettingsOverlay {
   /**
    * Creates and returns a close button element.
    * The close button is used to close the settings overlay.
-   * 
+   *
    * @returns The close button element.
    */
   private closeButton(): HTMLButtonElement {
@@ -80,10 +93,10 @@ export class SettingsOverlay {
    * Creates and returns an HTML element representing the user mode container.
    * This container includes a label, checkbox, and description for the teacher mode.
    * The checkbox has an event listener attached to it.
-   * 
+   *
    * @returns {HTMLElement} The user mode container element.
    */
-  private userModeContainer(): HTMLElement{
+  private userModeContainer(modeSet: boolean): HTMLElement {
     const userModeContainer = document.createElement("div");
     userModeContainer.className = "settings-container";
 
@@ -94,6 +107,11 @@ export class SettingsOverlay {
     userModeCheckbox.type = "checkbox";
     userModeCheckbox.id = "user-mode-checkbox";
     userModeCheckbox.classList.add("checkbox");
+
+    if (modeSet) {
+      userModeCheckbox.checked = true;
+      proofFlow.switchUserMode();
+    }
 
     // add the event listener
     userModeCheckbox.addEventListener("click", () => {
@@ -115,25 +133,31 @@ export class SettingsOverlay {
   /**
    * Creates and returns the color scheme container element.
    * The color scheme container contains a label and a dropdown select element for choosing the color scheme.
-   * 
+   *
    * @returns The color scheme container element.
    */
-  private colorSchemeContainer(): HTMLElement {
+  private colorSchemeContainer(
+    darkMode: boolean,
+    colorScheme: string,
+  ): HTMLElement {
     const colorSchemeContainer = document.createElement("div");
     colorSchemeContainer.className = "settings-container";
 
     const colorSchemeLabel = document.createElement("h4");
     colorSchemeLabel.textContent = "Color Scheme";
 
-    const invertedCheckbox = document.createElement("input");
-    invertedCheckbox.type = "checkbox";
-    invertedCheckbox.id = "dark-checkbox";
-    invertedCheckbox.classList.add("checkbox");
+    const darkModeCheckbox = document.createElement("input");
+    darkModeCheckbox.type = "checkbox";
+    darkModeCheckbox.id = "dark-checkbox";
+    darkModeCheckbox.classList.add("checkbox");
+
+    if (darkMode) {
+      darkModeCheckbox.checked = true;
+    }
 
     const darkDescription = document.createElement("label");
     darkDescription.htmlFor = "dark-checkbox";
-    darkDescription.textContent =
-      "Dark mode";
+    darkDescription.textContent = "Dark mode";
     darkDescription.classList.add("checkbox");
 
     const colorSchemeSelect = document.createElement("select");
@@ -147,19 +171,28 @@ export class SettingsOverlay {
       colorSchemeSelect.appendChild(optionElement);
     });
 
-    invertedCheckbox.addEventListener("click", () => {
-      updateColors(colorSchemeSelect.value, invertedCheckbox.checked);
+    if (colorScheme) {
+      colorSchemeSelect.value = colorScheme;
+    }
+
+    darkModeCheckbox.addEventListener("click", () => {
+      updateColors(colorSchemeSelect.value, darkModeCheckbox.checked);
+      window.localStorage.setItem(
+        "darkMode",
+        darkModeCheckbox.checked.toString(),
+      );
     });
 
     colorSchemeSelect.addEventListener("change", (e) => {
       const target = e.target as HTMLSelectElement;
-      updateColors(target.value, invertedCheckbox.checked);
+      updateColors(target.value, darkModeCheckbox.checked);
+      window.localStorage.setItem("colorScheme", target.value);
     });
 
     const br = document.createElement("br");
 
     colorSchemeContainer.appendChild(colorSchemeLabel);
-    colorSchemeContainer.appendChild(invertedCheckbox);
+    colorSchemeContainer.appendChild(darkModeCheckbox);
     colorSchemeContainer.appendChild(darkDescription);
     colorSchemeContainer.appendChild(br);
     colorSchemeContainer.appendChild(colorSchemeSelect);
@@ -167,7 +200,7 @@ export class SettingsOverlay {
     return colorSchemeContainer;
   }
 
-  private lspContainer(): HTMLElement {
+  private lspContainer(currentPath: string): HTMLElement {
     const lspContainer = document.createElement("div");
     const lspLabel = document.createElement("h4");
     lspLabel.textContent = "LSP Server Path";
@@ -177,12 +210,14 @@ export class SettingsOverlay {
     lspPath.id = "lsp-path";
     lspPath.placeholder = "Enter the path to the LSP server";
     lspPath.classList.add("settings-text-input");
+    lspPath.value = currentPath;
 
     const lspButton = document.createElement("button");
     lspButton.textContent = "Apply";
     lspButton.addEventListener("click", () => {
       console.log("LSP Path: " + lspPath.value);
       // proofFlow.setLspPath(lspPath.value);
+      window.localStorage.setItem("lspPath", lspPath.value);
     });
     lspButton.classList.add("settings-apply-button");
 

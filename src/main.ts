@@ -9,6 +9,7 @@ import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
 import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
+import { updateColors } from "./ProofFlow/settings/updateColors.ts";
 
 const app = document.createElement("div");
 app.id = "app";
@@ -43,6 +44,11 @@ const settingBar = new SettingsBar(
 
 // Do this to get proper user rights.
 handleUserModeSwitch();
+
+const darkMode = window.localStorage.getItem("darkMode") == "true";
+const colorScheme =
+  window.localStorage.getItem("colorScheme") || "Ocean Breeze";
+updateColors(colorScheme, darkMode);
 
 // Input to read file
 document

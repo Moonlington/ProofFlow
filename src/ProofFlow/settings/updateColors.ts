@@ -2,7 +2,6 @@ import { colorSchemes } from "./colorSchemes";
 
 export const colorSchemesKeys: string[] = Object.keys(colorSchemes);
 
-
 export function updateColors(newSchema: string, darkMode: boolean): void {
   const variables: string[] = [
     "primary-color",
@@ -32,11 +31,17 @@ export function updateColors(newSchema: string, darkMode: boolean): void {
     // For everything
     document.documentElement.style.setProperty(`--${element}`, color);
     // For Minimap D;
-    document.getElementById("ProofFlowEditor")!.style.setProperty(`--${element}`, color);
-    document.getElementById("button-bar")!.style.setProperty(`--${element}`, color);
+    document
+      .getElementById("ProofFlowEditor")!
+      .style.setProperty(`--${element}`, color);
+    document
+      .getElementById("button-bar")!
+      .style.setProperty(`--${element}`, color);
   });
 
-  document.getElementById("settings")!.style.backgroundColor = darkMode ? "#FFFFFF0A" : "#0000000A";
+  document.getElementById("settings")!.style.backgroundColor = darkMode
+    ? "#FFFFFF0A"
+    : "#0000000A";
 }
 
 function invertHexColor(hex: string): string {
@@ -46,11 +51,12 @@ function invertHexColor(hex: string): string {
   const b = parseInt(hex.slice(5, 7), 16);
 
   // Invert the colors
-  const invertedR = (255 - r).toString(16).padStart(2, '0');
-  const invertedG = (255 - g).toString(16).padStart(2, '0');
-  const invertedB = (255 - b).toString(16).padStart(2, '0');
+  const invertedR = (255 - r).toString(16).padStart(2, "0");
+  const invertedG = (255 - g).toString(16).padStart(2, "0");
+  const invertedB = (255 - b).toString(16).padStart(2, "0");
 
   // Return the inverted color in hex format
-  if (hex.length === 9) return `#${invertedR}${invertedG}${invertedB}${hex[6]}${hex[7]}`; 
+  if (hex.length === 9)
+    return `#${invertedR}${invertedG}${invertedB}${hex[6]}${hex[7]}`;
   return `#${invertedR}${invertedG}${invertedB}`;
 }
