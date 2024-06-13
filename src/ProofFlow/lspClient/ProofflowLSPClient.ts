@@ -1,3 +1,5 @@
+export { ProofflowLSPClient, ProofflowLSPClientFileType };
+
 import {
   ProofFlowDocument,
   Position,
@@ -11,6 +13,7 @@ import {
   CompletionList,
   CompletionItem,
   DiagnosticsMessage,
+  DiagnosticsMessageData,
   InitializeParams,
   DidOpenTextDocumentParams,
   DidChangeTextDocumentParams,
@@ -49,7 +52,7 @@ class ProofflowLSPClient implements LSPClientHandler {
   constructor(
     uri: string,
     wsUrl: string,
-    diagnosticsFunc: (diag: DiagnosticsMessage) => void,
+    diagnosticsFunc: (diag: DiagnosticsMessageData) => void,
     fileType: ProofflowLSPClientFileType,
   ) {
     this.uri = uri;
@@ -68,15 +71,28 @@ class ProofflowLSPClient implements LSPClientHandler {
       const message: DiagnosticsMessage = JSON.parse(event.data);
       if (message.type === "diagnostics") {
         console.log("Received diagnostics:", message.data);
-        diagnosticsFunc(message);
+        diagnosticsFunc(message.data);
       }
     });
   }
 
-  waitForResponse<ParamsType, ResultType>(
+  waitForOpenConnection(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(() => {
+        if (this.socket.readyState === this.socket.OPEN) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 200);
+    });
+  }
+
+  async waitForResponse<ParamsType, ResultType>(
     type: string,
     params: ParamsType,
   ): Promise<ResultType> {
+    await this.waitForOpenConnection();
+    console.log("Message to LSP", type, params);
     return new Promise((resolve, reject) => {
       this.socket.send(JSON.stringify({ type: type, params: params }));
       let waitForResponse = (event: MessageEvent) => {
@@ -94,7 +110,12 @@ class ProofflowLSPClient implements LSPClientHandler {
     });
   }
 
-  expectNoResponse<ParamsType>(type: string, params: ParamsType): void {
+  async expectNoResponse<ParamsType>(
+    type: string,
+    params: ParamsType,
+  ): Promise<void> {
+    await this.waitForOpenConnection();
+    console.log("Message to LSP (no resp)", type, params);
     this.socket.send(JSON.stringify({ type: type, data: params }));
   }
 
