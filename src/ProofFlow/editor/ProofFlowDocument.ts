@@ -11,6 +11,8 @@ export {
   OutputConfig,
   NOPConfig,
   nodeToArea,
+  Position,
+  Range,
 };
 
 type Position = {
@@ -19,17 +21,17 @@ type Position = {
 };
 
 function indexToPosition(index: number, str: string): Position {
-  let lineNumber = str.substring(0, index).split("\n").length;
+  let lineNumber = str.substring(0, index).split("\n").length - 1;
   let indexNumber =
     index -
     str
       .split("\n")
-      .slice(0, lineNumber - 1)
+      .slice(0, lineNumber)
       .toString().length;
   return { line: lineNumber, index: indexNumber };
 }
 
-class Bounds {
+class Range {
   start: Position;
   end: Position;
 
@@ -65,7 +67,7 @@ class Area {
   type: AreaType;
   content: string;
   parent: undefined | CollapsibleArea | InputArea;
-  bounds: Bounds | undefined;
+  range: Range | undefined;
 
   constructor(
     type: Exclude<AreaType, AreaType.Collapsible | AreaType.Input>,
@@ -210,7 +212,7 @@ class ProofFlowDocument {
           1,
         fullstring,
       );
-      area.bounds = new Bounds(startPosition, endPosition);
+      area.range = new Range(startPosition, endPosition);
       let newLastIndex =
         fullstring.indexOf(areaString, lastIndex) + areaString.length;
       if (area.type === AreaType.Collapsible || area.type === AreaType.Input) {
@@ -238,7 +240,7 @@ class ProofFlowDocument {
               1,
             fullstring,
           );
-          subarea.bounds = new Bounds(subStartPosition, subEndPosition);
+          subarea.range = new Range(subStartPosition, subEndPosition);
           lastIndex =
             fullstring.indexOf(subAreaString, lastIndex) + subAreaString.length;
         }
@@ -351,17 +353,17 @@ class ProofFlowDocument {
         case AreaType.Collapsible:
           let collapsible = area as CollapsibleArea;
           for (let otherarea of collapsible.subAreas) {
-            if (otherarea.bounds?.contains(pos)) return otherarea;
+            if (otherarea.range?.contains(pos)) return otherarea;
           }
           break;
         case AreaType.Input:
           let input = area as InputArea;
           for (let otherarea of input.subAreas) {
-            if (otherarea.bounds?.contains(pos)) return otherarea;
+            if (otherarea.range?.contains(pos)) return otherarea;
           }
           break;
         default:
-          if (area.bounds?.contains(pos)) return area;
+          if (area.range?.contains(pos)) return area;
           break;
       }
     }
