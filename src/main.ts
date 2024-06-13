@@ -35,7 +35,11 @@ export { proofFlow };
 
 const settingsOverlay = new SettingsOverlay(container);
 
-const settingBar = new SettingsBar(content, settingsOverlay, proofFlow.getEditorView());
+const settingBar = new SettingsBar(
+  content,
+  settingsOverlay,
+  proofFlow.getEditorView(),
+);
 
 // Do this to get proper user rights.
 handleUserModeSwitch();

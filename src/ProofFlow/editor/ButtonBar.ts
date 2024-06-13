@@ -4,14 +4,11 @@ import {
   cmdInsertMarkdown,
   cmdInsertMath,
 } from "../commands/commands.ts";
-import {
-  InsertionPlace,
-  getContainingNode,
-} from "../commands/helpers.ts";
+import { InsertionPlace, getContainingNode } from "../commands/helpers.ts";
 import { EditorView } from "prosemirror-view";
-import { NodeSelection, Selection } from "prosemirror-state";
+import { EditorState, NodeSelection, Selection } from "prosemirror-state";
 import { deleteSelection, selectParentNode } from "prosemirror-commands";
-import { getInputInsertCommand } from "../commands/insert-commands.ts";
+import { getCollapsibleInsertCommand, getInputInsertCommand } from "../commands/insert-commands.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 
@@ -21,6 +18,7 @@ import { UserMode } from "../UserMode/userMode.ts";
 export class ButtonBar {
   private _schema: Schema;
   private _editorView: EditorView;
+  private _bar: HTMLElement;
 
   /**
    * Creates an instance of ButtonBar.
@@ -30,6 +28,7 @@ export class ButtonBar {
   constructor(schema: Schema, editorView: EditorView) {
     this._schema = schema;
     this._editorView = editorView;
+    this._bar = document.createElement("div");
   }
 
   /**
@@ -37,9 +36,19 @@ export class ButtonBar {
    * @param {HTMLElement} parentElement - The parent HTML element to which the button bar will be appended.
    */
   render(parentElement: HTMLElement) {
-    const bar = document.createElement("div");
-    bar.className = "button-bar";
+    this._bar.className = "button-bar";
 
+    this.addCellButtons();
+    this.addOtherButtons();
+
+    parentElement.insertBefore(this._bar, parentElement.firstChild);
+  }
+
+  /**
+   * Adds cell buttons to the editor.
+   * These buttons allow the user to insert different types of cells (Text, Code, Math) above or below the current cell.
+   */
+  private addCellButtons() {
     const latex = `<svg viewBox="0 0 1200 500" xmlns="http://www.w3.org/2000/svg">
     <path d="m5.46 4.23h-.25c-.1 1.02-.24 2.26-2 2.26h-.81c-.47 0-.49-.07-.49-.4v-5.31c0-.34 0-.48.94-.48h.33v-.3c-.36.03-1.26.03-1.67.03-.39 0-1.17 0-1.51-.03v.3h.23c.77 0 .79.11.79.47v5.25c0 .36-.02.47-.79.47h-.23v.31h5.19z" transform="matrix(45 0 0 45 40 47.65)"/>
     <path d="m2.81.16c-.04-.12-.06-.16-.19-.16s-.16.04-.2.16l-1.61 4.08c-.07.17-.19.48-.81.48v.25h1.55v-.25c-.31 0-.5-.14-.5-.34 0-.05.01-.07.03-.14 0 0 .34-.86.34-.86h1.98l.4 1.02c.02.04.04.09.04.12 0 .2-.38.2-.57.2v.25h1.97v-.25h-.14c-.47 0-.52-.07-.59-.27 0 0-1.7-4.29-1.7-4.29zm-.4.71.89 2.26h-1.78z" transform="matrix(45 0 0 45 151.6 40)"/>
@@ -54,13 +63,39 @@ export class ButtonBar {
       { name: latex, cmd: cmdInsertMath },
     ];
 
-    // Add buttons for specific commands
     commands.forEach(({ name, cmd }) => {
-      this.addButtonGroup(bar, cmd, name);
+      const above = name + " ↑";
+      const below = name + " ↓";
+      this.addButton(
+        above,
+        () =>
+          cmd(this._schema, InsertionPlace.Above)(
+            this._editorView.state,
+            this._editorView.dispatch,
+          ),
+        `Insert ${name} cell above the current cell.`,
+      );
+      this.addButton(
+        below,
+        () =>
+          cmd(this._schema, InsertionPlace.Underneath)(
+            this._editorView.state,
+            this._editorView.dispatch,
+          ),
+        `Insert ${name} cell bellow the current cell.`,
+      );
     });
+  }
 
-    // Add delete button
-    this.addButton(bar, "Delete", () => {
+  /**
+   * Adds other buttons to the button bar.
+   * The buttons include Delete, Parent, and Input.
+   * - Delete: Deletes the selected content.
+   * - Parent: Selects the parent node.
+   * - Input: Inserts an input node.
+   */
+  private addOtherButtons() {
+    const deleteFunction = () => {
       const selection = this._editorView.state.selection;
       const container = getContainingNode(selection);
       if (
@@ -82,79 +117,55 @@ export class ButtonBar {
           ),
         );
       }
-    });
+    };
 
-    this.addButton(bar, "Parent", () => {
-      selectParentNode(this._editorView.state, this._editorView.dispatch);
-    });
+    const buttons = [
+      {
+        name: "Delete",
+        command: deleteFunction,
+        hoverText: "Delete the selected node or content.",
+      },
+      {
+        name: "Parent",
+        command: () =>
+          selectParentNode(this._editorView.state, this._editorView.dispatch),
+        hoverText: "Select the parent node",
+      },
+      {
+        name: "Input",
+        command: () => {
+          let command = getInputInsertCommand();
+          command(this._editorView.state, this._editorView.dispatch);
+        },
+        hoverText: "Place the current node in an input node",
+      },
+      {
+        name: "Colapse",
+        command: () => {
+          let command = getCollapsibleInsertCommand();
+          command(this._editorView.state, this._editorView.dispatch);
+        },
+        hoverText: "Place the current node in an colapsible node",
+      }
+    ];
 
-    // Add input button
-    this.addButton(bar, "Input", () => {
-      let command = getInputInsertCommand();
-      command(this._editorView.state, this._editorView.dispatch);
+    buttons.forEach(({ name, command, hoverText }) => {
+      this.addButton(name, command, hoverText);
     });
-
-    parentElement.insertBefore(bar, parentElement.firstChild);
   }
 
   /**
    * Adds a button to the button bar.
-   * @param {HTMLElement} bar - The button bar element to which the button will be added.
    * @param {string} label - The label/text of the button.
    * @param {() => void} callback - The callback function to execute when the button is clicked.
+   * @param {string} hoverText - The hover text of the button.
    */
-  addButton(bar: HTMLElement, label: string, callback: () => void) {
+  private addButton(label: string, callback: () => void, hoverText: string) {
     const button = document.createElement("button");
     button.innerHTML = label;
     button.id = label.toLowerCase() + "-button";
     button.addEventListener("click", callback);
-    bar.appendChild(button);
-  }
-
-  /**
-   * Adds a group of buttons for a specific command.
-   * @param {HTMLElement} bar - The button bar element to which the button group will be added.
-   * @param {Function} cmd - The command function to execute when a button in the group is clicked.
-   * @param {string} name - The name/label of the command.
-   * @param {string} bgColor - The background color of the buttons in the group.
-   */
-  addButtonGroup(bar: HTMLElement, cmd: Function, name: string) {
-    // Create a button for "Above"
-    const buttonAbove = this.createButton(
-      cmd,
-      name + " ↑",
-      InsertionPlace.Above,
-    );
-
-    // Create a button for "Below"
-    const buttonBelow = this.createButton(
-      cmd,
-      name + " ↓",
-      InsertionPlace.Underneath,
-    );
-
-    // Append the buttons to the button bar
-    bar.appendChild(buttonAbove);
-    bar.appendChild(buttonBelow);
-  }
-
-  /**
-   * Creates a button element.
-   * @param {Function} cmd - The command function to execute when the button is clicked.
-   * @param {string} text - The text/label of the button.
-   * @param {InsertionPlace} place - The insertion place for the command.
-   * @param {string} bgColor - The background color of the button.
-   * @returns {HTMLButtonElement} The created button element.
-   */
-  createButton(cmd: Function, text: string, place: InsertionPlace) {
-    const button = document.createElement("button");
-    button.innerHTML = text;
-    button.addEventListener("click", () =>
-      cmd(this._schema, place)(
-        this._editorView.state,
-        this._editorView.dispatch,
-      ),
-    );
-    return button;
+    button.title = hoverText;
+    this._bar.appendChild(button);
   }
 }

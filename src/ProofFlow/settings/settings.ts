@@ -96,7 +96,7 @@ export class SettingsOverlay {
   }
 
   public showOverlay(visible: boolean) {
-    console.log('showing overlay: ' + visible);
-    this._overlay.style.display = visible ? 'flex' : 'none';
+    console.log("showing overlay: " + visible);
+    this._overlay.style.display = visible ? "flex" : "none";
   }
 }
