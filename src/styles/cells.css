@@ -45,3 +45,8 @@ markdown, math-display {
 	color: var(--text-color) !important;
   background-color: var(--primary-color) !important;
 }
+
+.cm-editor, .cm-editor > *, .ͼ2 .cm-gutters, .cm-activeLineGutter {
+  background-color: var(--primary-color) !important;
+  color: var(--text-color) !important;
+}

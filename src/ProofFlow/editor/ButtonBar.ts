@@ -126,6 +126,13 @@ export class ButtonBar {
         hoverText: "Delete the selected node or content.",
       },
       {
+        name: "line nr",
+        command: () => {
+          console.log("line nr toggle");
+        },
+        hoverText: "Toggle line numbers",
+      },
+      {
         name: "Parent",
         command: () =>
           selectParentNode(this._editorView.state, this._editorView.dispatch),
@@ -163,7 +170,12 @@ export class ButtonBar {
   private addButton(label: string, callback: () => void, hoverText: string) {
     const button = document.createElement("button");
     button.innerHTML = label;
-    button.id = label.toLowerCase() + "-button";
+    if (label === "line nr") {
+      button.id = "line-nr-button";
+    }
+    else {
+      button.id = label.toLowerCase() + "-button";
+    }
     button.addEventListener("click", callback);
     button.title = hoverText;
     this._bar.appendChild(button);
