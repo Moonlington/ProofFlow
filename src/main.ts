@@ -17,7 +17,9 @@ const contentElement: HTMLElement = document.querySelector("#content")!;
 
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
-let lspMessenger: LSPMessenger = new LSPMessenger(proofFlow.handleDiagnostics.bind(proofFlow));
+let lspMessenger: LSPMessenger = new LSPMessenger(
+  proofFlow.handleDiagnostics.bind(proofFlow),
+);
 
 export { proofFlow };
 

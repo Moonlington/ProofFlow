@@ -17,18 +17,14 @@ export {
 
 type Position = {
   line: number;
-  index: number;
+  character: number;
 };
 
 function indexToPosition(index: number, str: string): Position {
   let lineNumber = str.substring(0, index).split("\n").length - 1;
-  let indexNumber =
-    index -
-    str
-      .split("\n")
-      .slice(0, lineNumber)
-      .toString().length;
-  return { line: lineNumber, index: indexNumber };
+  let characterNumber =
+    index - str.split("\n").slice(0, lineNumber).toString().length;
+  return { line: lineNumber, character: characterNumber };
 }
 
 class Range {
@@ -42,8 +38,9 @@ class Range {
 
   contains(pos: Position): boolean {
     let afterStart =
-      pos.line >= this.start.line && pos.index >= this.start.index;
-    let beforeEnd = pos.line <= this.end.line && pos.index <= this.end.index;
+      pos.line >= this.start.line && pos.character >= this.start.character;
+    let beforeEnd =
+      pos.line <= this.end.line && pos.character <= this.end.character;
     return afterStart && beforeEnd;
   }
 }
@@ -204,7 +201,7 @@ class ProofFlowDocument {
           this.outputConfig[area.type][0].length,
         fullstring,
       );
-      if (startPosition.line > 1) startPosition.index--;
+      if (startPosition.line > 1) startPosition.character--;
       let endPosition = indexToPosition(
         fullstring.indexOf(areaString, lastIndex) +
           areaString.length -
@@ -232,7 +229,7 @@ class ProofFlowDocument {
               this.outputConfig[subarea.type][0].length,
             fullstring,
           );
-          if (subStartPosition.line > 1) subStartPosition.index--;
+          if (subStartPosition.line > 1) subStartPosition.character--;
           let subEndPosition = indexToPosition(
             fullstring.indexOf(subAreaString, lastIndex) +
               subAreaString.length -
