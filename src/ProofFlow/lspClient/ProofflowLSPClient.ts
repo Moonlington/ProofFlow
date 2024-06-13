@@ -78,11 +78,17 @@ class ProofflowLSPClient implements LSPClientHandler {
 
   waitForOpenConnection(): Promise<void> {
     return new Promise((resolve, reject) => {
+      const maxNumberOfAttempts = 10;
+      let attempts = 0;
       const interval = setInterval(() => {
-        if (this.socket.readyState === this.socket.OPEN) {
+        if (attempts >= maxNumberOfAttempts) {
+          clearInterval(interval);
+          reject();
+        } else if (this.socket.readyState === this.socket.OPEN) {
           clearInterval(interval);
           resolve();
         }
+        attempts++;
       }, 200);
     });
   }
