@@ -1,5 +1,6 @@
 import { hoverTooltip } from "@codemirror/view";
 import { LSPMessenger } from "../../../basicLspFunctions";
+import { ProofFlow } from "../../editor/ProofFlow";
 
 export const wordHover = hoverTooltip((view, pos, side) => {
   let { from, to, text } = view.state.doc.lineAt(pos);
@@ -15,7 +16,7 @@ export const wordHover = hoverTooltip((view, pos, side) => {
     create(view) {
       let dom = document.createElement("div");
       dom.textContent = text.slice(start - from, end - from);
-      LSPMessenger.hover('CoqIntro_short.v', pos, start - from).then((response) => {
+      ProofFlow.lspMessenger.hover('CoqIntro_short.v', pos, start - from).then((response) => {
         dom.textContent = response.contents.value
       });
       return { dom };

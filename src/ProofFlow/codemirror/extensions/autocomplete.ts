@@ -26,7 +26,7 @@ export const codeCompl = autocompletion({
                 trigKind = CompletionTriggerKind.TriggerCharacter;
                 trigChar = line.text[pos - line.from - 1];
 
-            const completionItems =  await LSPMessenger.requestCompletion(
+            const completionItems =  await ProofFlow.lspMessenger.requestCompletion(
                 ProofFlow.fileName,
                 context,
                 offsetToPos(state.doc, pos),

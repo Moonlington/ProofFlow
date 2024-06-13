@@ -26,7 +26,7 @@ export class LSPMessenger {
     });
   }
 
-  public static async startServer(server: string): Promise<void> {
+  public async startServer(server: string): Promise<void> {
     console.log(server);
     try {
       const response = await axios.get('http://localhost:3000/start_server', {
@@ -40,7 +40,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async initializeServer(filePath: string): Promise<void> {
+  public async initializeServer(filePath: string): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/initialize_server', {
         params: {
@@ -53,7 +53,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async initialized(): Promise<void> {
+  public async initialized(): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/initialized');
       console.log('Initialized Response:', response.data);
@@ -62,7 +62,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async shutdown(): Promise<void> {
+  public async shutdown(): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/shutdown');
       console.log('Shutdown Response:', response.data);
@@ -71,7 +71,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async exit(): Promise<void> {
+  public async exit(): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/exit');
       console.log('Exit Response:', response.data);
@@ -80,7 +80,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async didOpen(uri: string, languageId: string, text: string, version: string): Promise<void> {
+  public async didOpen(uri: string, languageId: string, text: string, version: string): Promise<void> {
     console.log(uri, languageId, text, version);
     try {
       const response = await axios.get('http://localhost:3000/didOpen', {
@@ -97,7 +97,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async didChange(uri: string, el: number, ec: number, text: string): Promise<void> {
+  public async didChange(uri: string, el: number, ec: number, text: string): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/didChange', {
         params: {
@@ -113,7 +113,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async didClose(uri: string): Promise<void> {
+  public async didClose(uri: string): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/didClose', {
         params: {
@@ -126,7 +126,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async documentSymbol(uri: string): Promise<void> {
+  public async documentSymbol(uri: string): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/documentSymbol', {
         params: {
@@ -139,7 +139,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async references(uri: string, line: number, character: number): Promise<void> {
+  public async references(uri: string, line: number, character: number): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/references', {
         params: {
@@ -154,7 +154,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async definition(uri: string, line: number, character: number): Promise<any> {
+  public async definition(uri: string, line: number, character: number): Promise<any> {
     try {
       const response = await axios.get('http://localhost:3000/definition', {
         params: {
@@ -169,7 +169,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async typeDefinition(uri: string, line: number, character: number): Promise<void> {
+  public async typeDefinition(uri: string, line: number, character: number): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/typeDefinition', {
         params: {
@@ -184,7 +184,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async signatureHelp(uri: string, line: number, character: number): Promise<void> {
+  public async signatureHelp(uri: string, line: number, character: number): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/signatureHelp', {
         params: {
@@ -199,7 +199,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async hover(uri: string, line: number, character: number): Promise<any> {
+  public async hover(uri: string, line: number, character: number): Promise<any> {
     try {
       const response = await axios.get('http://localhost:3000/hover', {
         params: {
@@ -216,7 +216,7 @@ export class LSPMessenger {
     }
   }
   
-  public static async gotoDeclaration(uri: string, line: number, character: number): Promise<void> {
+  public async gotoDeclaration(uri: string, line: number, character: number): Promise<void> {
     try {
       const response = await axios.get('http://localhost:3000/gotoDeclaration', {
         params: {
@@ -232,7 +232,7 @@ export class LSPMessenger {
   }
 
   //@ts-ignore
-  public static async requestCompletion(uri: string,
+  public async requestCompletion(uri: string,
                                   context: CompletionContext,
                                   {line, character}: { line: number; character: number; },
                                   {

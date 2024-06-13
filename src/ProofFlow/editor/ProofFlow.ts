@@ -59,6 +59,7 @@ export class ProofFlow {
     plugins: ProofFlowPlugins,
   };
 
+  static lspMessenger: LSPMessenger;
   private editorView: EditorView; // The view of the editor
 
   private userMode: UserMode = UserMode.Student; // The teacher mode of the editor
@@ -96,10 +97,11 @@ export class ProofFlow {
     this._contentElem = contentElem; // Set the content element
     // Create the editor
     this.editorView = this.createEditorView();
+    ProofFlow.lspMessenger = new LSPMessenger(this.handleDiagnostics.bind(this));
 
     window.addEventListener("beforeunload", (e) => {
       if (this.lspType != LSPType.None) {
-        LSPMessenger.shutdown();
+        ProofFlow.lspMessenger.shutdown();
       }
     });
     // Apply global key bindings
@@ -260,9 +262,9 @@ export class ProofFlow {
     }
     if (result == null) return;
     // console.log(this.fileName);
-    LSPMessenger.initializeServer(ProofFlow.fileName).then(() => {
-      LSPMessenger.initialized().then(() => {
-        LSPMessenger.didOpen(ProofFlow.fileName, 'coq', result.message, '1').then(() => {
+    ProofFlow.lspMessenger.initializeServer(ProofFlow.fileName).then(() => {
+      ProofFlow.lspMessenger.initialized().then(() => {
+        ProofFlow.lspMessenger.didOpen(ProofFlow.fileName, 'coq', result.message, '1').then(() => {
           CodeMirrorView.clearLSP();
         });
       });
@@ -279,7 +281,7 @@ export class ProofFlow {
     }
     if (result == null) return;
 
-    LSPMessenger.didChange(ProofFlow.fileName, result.lines, 0, result.message);
+    this.lspMessenger.didChange(ProofFlow.fileName, result.lines, 0, result.message);
   }
 
   public setProofFlowDocument(pfDocument: ProofFlowDocument) {
@@ -531,8 +533,8 @@ export class ProofFlow {
   public reset() {
     console.log(this.lspType);
     if (this.lspType != LSPType.None) {
-      LSPMessenger.didClose(ProofFlow.fileName).then(() => {
-        LSPMessenger.shutdown();
+      ProofFlow.lspMessenger.didClose(ProofFlow.fileName).then(() => {
+        ProofFlow.lspMessenger.shutdown();
       });
       this.lspType = LSPType.None;
     }
@@ -596,10 +598,10 @@ export class ProofFlow {
     if (acceptedFileType == AcceptedFileType.Unknown) return;
     // console.log("Initializing!!!")
     if (acceptedFileType == AcceptedFileType.Coq || acceptedFileType == AcceptedFileType.CoqMD) {
-      LSPMessenger.startServer("coq");
+      ProofFlow.lspMessenger.startServer("coq");
       this.lspType = LSPType.Coq;
     } else if (acceptedFileType == AcceptedFileType.Lean) {
-      LSPMessenger.startServer("lean");
+      ProofFlow.lspMessenger.startServer("lean");
       this.lspType = LSPType.LEAN;
     }
   }

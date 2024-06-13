@@ -1,0 +1,57 @@
+{
+  "name": "ts-lsp-client",
+  "type": "module",
+  "version": "1.0.3",
+  "description": "Standalone Language Server Protocol Implementation with minimal dependencies",
+  "main": "build/src/main.js",
+  "types": "build/src/main.d.ts",
+  "files": [
+    "build/src"
+  ],
+  "engines": {
+    "node": ">= 14.21",
+    "pnpm": ">= 6.0.0"
+  },
+  "packageManager": "pnpm@6.0.0",
+  "devDependencies": {
+    "@types/node": "~14.18.52",
+    "@types/pino": "^7.0.5",
+    "@typescript-eslint/eslint-plugin": "^5.60.1",
+    "@typescript-eslint/parser": "^5.60.1",
+    "@vitest/coverage-c8": "^0.31.1",
+    "eslint": "^8.43.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-vitest": "^0.2.2",
+    "nyc": "^15.1.0",
+    "prettier": "~2.3.0",
+    "rimraf": "~3.0.2",
+    "tsutils": "~3.21.0",
+    "typescript": "~4.3.2",
+    "typescript-language-server": "^3.3.2",
+    "vitest": "^0.31.1"
+  },
+  "scripts": {
+    "start": "node build/src/main.js",
+    "clean": "rimraf coverage build tmp",
+    "prebuild": "npm run lint",
+    "build": "tsc -p tsconfig.release.json",
+    "build:watch": "tsc -w -p tsconfig.release.json",
+    "lint": "eslint src/ __tests__/ --ext .ts,.tsx",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "author": "Raffaele Fioratto <raffaele.fioratto@gmail.com>",
+  "license": "MIT",
+  "repository": "ImperiumMaximus/ts-lsp-client",
+  "bugs": "https://github.com/ImperiumMaximus/ts-lsp-client/issues",
+  "dependencies": {
+    "express": "^4.19.2",
+    "json-rpc-2.0": "^1.7.0",
+    "pino": "^7.0.5",
+    "pino-pretty": "^5.1.3",
+    "tslib": "~2.6.2"
+  },
+  "volta": {
+    "node": "14.21.3"
+  }
+}
