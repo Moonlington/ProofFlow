@@ -68,7 +68,6 @@ export class SettingsOverlay {
    * @param visible - A boolean value indicating whether the overlay should be visible or not.
    */
   public showOverlay(visible: boolean) {
-    console.log("showing overlay: " + visible);
     this._overlay.style.display = visible ? "flex" : "none";
   }
 
