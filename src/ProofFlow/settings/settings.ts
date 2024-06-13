@@ -36,9 +36,12 @@ export class SettingsOverlay {
     // Add color scheme settings
     const colorSchemeContainer = this.colorSchemeContainer();
 
+    const lspContainer = this.lspContainer();
+
     popup.appendChild(header);
     popup.appendChild(userModeContainer);
     popup.appendChild(colorSchemeContainer);
+    popup.appendChild(lspContainer);
 
     overlay.appendChild(popup);
     this._container.appendChild(overlay);
@@ -162,5 +165,32 @@ export class SettingsOverlay {
     colorSchemeContainer.appendChild(colorSchemeSelect);
 
     return colorSchemeContainer;
+  }
+
+  private lspContainer(): HTMLElement {
+    const lspContainer = document.createElement("div");
+    const lspLabel = document.createElement("h4");
+    lspLabel.textContent = "LSP Server Path";
+
+    const lspPath = document.createElement("input");
+    lspPath.type = "text";
+    lspPath.id = "lsp-path";
+    lspPath.placeholder = "Enter the path to the LSP server";
+    lspPath.classList.add("settings-text-input");
+
+    const lspButton = document.createElement("button");
+    lspButton.textContent = "Apply";
+    lspButton.addEventListener("click", () => {
+      console.log("LSP Path: " + lspPath.value);
+      // proofFlow.setLspPath(lspPath.value);
+    });
+    lspButton.classList.add("settings-apply-button");
+
+    lspContainer.appendChild(lspLabel);
+    lspContainer.appendChild(lspPath);
+    lspContainer.appendChild(lspButton);
+
+    lspContainer.classList.add("settings-container");
+    return lspContainer;
   }
 }
