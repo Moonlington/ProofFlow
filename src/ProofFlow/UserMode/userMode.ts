@@ -1,7 +1,4 @@
 import { proofFlow } from "../../main.ts";
-// import { EditorState } from "prosemirror-state";
-// import { inputProof } from "../commands/helpers.ts";
-// import { proof } from "../editor/proofflowschema.ts";
 
 // Enum representing whether a textbox is locked or open to alter
 export enum UserMode {
@@ -16,16 +13,21 @@ export function handleUserModeSwitch() {
   // switchAllInput();
   const userMode = proofFlow.getUserMode();
   const inputButton = document.getElementById("input-button");
+  const collapsibleButton = document.getElementById("colapse-button");
 
   if (!inputButton) {
     throw new Error("input-button not found");
   }
+  if (!collapsibleButton) {
+    throw new Error("colapse-button not found");
+  }
   if (userMode === UserMode.Student) {
     inputButton.style.display = "none";
-    inputButton.style.color;
+    collapsibleButton.style.display = "none";
     lockEditing(true);
   } else {
     inputButton.style.display = "";
+    collapsibleButton.style.display = "";
     lockEditing(false);
   }
 }
