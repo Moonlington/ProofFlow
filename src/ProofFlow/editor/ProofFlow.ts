@@ -150,10 +150,14 @@ export class ProofFlow {
 
   updateWithBuffer(doc: Node) {
     let now = new Date();
-    clearTimeout(this.updateTimeoutID);
     if (now.getTime() - this.lastTransaction.getTime() >= this.msTypingBuffer) {
+      clearTimeout(this.updateTimeoutID);
       this.updateProofFlowDocument(doc);
-    } else {
+    } else if (
+      now.getTime() - this.lastUpdate.getTime() <
+      this.msMaxUpdateTime
+    ) {
+      clearTimeout(this.updateTimeoutID);
       this.updateTimeoutID = setTimeout(
         () => this.updateProofFlowDocument(doc),
         this.msMaxUpdateTime,
@@ -163,6 +167,7 @@ export class ProofFlow {
   }
 
   updateProofFlowDocument(doc: Node) {
+    clearTimeout(this.updateTimeoutID);
     let parsed = docToPFDocument(doc);
     if (this.outputConfig) parsed.outputConfig = this.outputConfig;
     console.log(parsed);
