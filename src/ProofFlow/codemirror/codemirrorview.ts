@@ -7,6 +7,7 @@ import type { EditorView, NodeView } from "prosemirror-view";
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { exitCode } from "prosemirror-commands";
 import {
+  Annotation, 
   EditorState as CMState,
   Transaction as CMTransaction,
 } from "@codemirror/state";
@@ -73,9 +74,6 @@ class CodeMirrorView implements NodeView {
   static instances: CodeMirrorView[] = [];
   static focused: CodeMirrorView | null = null;
 
-  static changedDuring = false;
-  static handelingLSP = true;
-  static handelingLSPTimeout: NodeJS.Timeout;
 
   constructor(options: CodeMirrorViewOptions) {
     // Store for later
@@ -112,18 +110,6 @@ class CodeMirrorView implements NodeView {
         preventDefault: true,
       },
     ]);
-
-    // let changeExtension = CMView.domEventObservers({change: () => console.log("click")});
-    let changeExtension = CMView.updateListener.of((update) => {
-      if (!update.heightChanged) return;
-      if (!CodeMirrorView.handelingLSP) {
-        ProofFlow.updateLSP();
-        CodeMirrorView.handelingLSP = true;
-        CodeMirrorView.clearLSP();
-      } else {
-        CodeMirrorView.changedDuring = true;
-      }
-    });
 
     let codeCompl = getAutoCompleteExtension(this);
     let wordHover = getHoverExtension(this);
@@ -164,8 +150,7 @@ class CodeMirrorView implements NodeView {
         ]),
         cmExtensions,
         tabKeymap,
-        changeExtension,
-        wordHover,
+        // wordHover, This crashes the LSP since requests are made before the LSP has finished processing the document
         codeCompl
       ],
     });
@@ -180,19 +165,6 @@ class CodeMirrorView implements NodeView {
     this._outerView.dom.addEventListener("focus", () =>
       this.forwardSelection(),
     );
-  }
-
-  static clearLSP() {
-    clearTimeout(this.handelingLSPTimeout);
-    this.handelingLSPTimeout = setTimeout(() => {
-      if (CodeMirrorView.changedDuring) {
-        CodeMirrorView.changedDuring = false;
-        ProofFlow.updateLSP();
-        CodeMirrorView.clearLSP();
-      } else {
-        this.handelingLSP = false;
-      }
-    }, 500)
   }
 
   static resortInstances() {
@@ -214,7 +186,7 @@ class CodeMirrorView implements NodeView {
   }
 
   /**
-   * Method to move the cursor to the ProseMirrocr editor
+   * Method to move the cursor to the ProseMirror editor
    */
   forwardSelection() {
     if (!this.cm.hasFocus) {
@@ -229,7 +201,7 @@ class CodeMirrorView implements NodeView {
     }
 
     // Ensure only one cursor is active
-    if (CodeMirrorView.focused instanceof CodeMirrorView) {
+    if (CodeMirrorView.focused != this && CodeMirrorView.focused != null) {
       CodeMirrorView.focused.blurInstance();
     }
 
@@ -280,6 +252,10 @@ class CodeMirrorView implements NodeView {
         change.to + start,
         content as ProsemirrorNode,
       );
+      const annotation = cmTr.annotation
+      if (annotation.name == "LSP") {
+        tr.setMeta("LSP", true);
+      }
       this._outerView.dispatch(tr);
       this.forwardSelection();
     }
@@ -425,7 +401,7 @@ class CodeMirrorView implements NodeView {
   }
 
   static handleDiagnostics(message: DiagnosticsMessageData) {
-    this.handelingLSP = true;
+    ProofFlow.handelingLSP = true;
     message.diagnostics = message.diagnostics.sort((a: LSPDiagnostic, b: LSPDiagnostic) => {
       if (a.range.start.line < b.range.start.line) return -1;
       if (a.range.start.line > b.range.start.line) return 1;
@@ -434,7 +410,7 @@ class CodeMirrorView implements NodeView {
       return 0;
     })
     let index = 0;
-    console.log(message.diagnostics);
+    // console.log(message.diagnostics);
     CodeMirrorView.instances.forEach((instance) => {
       instance.error = false;
       instance.QEDerror = false;
@@ -476,10 +452,12 @@ class CodeMirrorView implements NodeView {
       }
       if (diagnostics.length) instance.error = true;
 
-      let test = setDiagnostics(instance.cm.state, diagnostics);
-      instance.cm.dispatch(test);
+      let tr = setDiagnostics(instance.cm.state, diagnostics);
+      const LSPAnnotation = Annotation.define<string>();
+      tr.annotations = LSPAnnotation.of("LSP");
+      instance.cm.dispatch(tr);
     })
-    this.clearLSP();
+    ProofFlow.clearLSP();
   }
 }
 

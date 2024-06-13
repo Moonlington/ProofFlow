@@ -260,6 +260,7 @@ export function inputProof(inputNode: Node, newProof: proof, pos: number) {
     ...inputNode.attrs,
     proof: newProof,
   });
+  transaction.setMeta("LSP", true);
 
   dispatch(transaction);
 }

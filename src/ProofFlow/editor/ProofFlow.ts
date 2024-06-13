@@ -72,6 +72,10 @@ export class ProofFlow {
   private removeGlobalKeyBindings: () => void;
   private static version: number = 1;
 
+  static changedDuring = false;
+  static handelingLSP = true;
+  static handelingLSPTimeout: NodeJS.Timeout;
+
   /**
    * Represents the ProofFlow class.
    * @constructor
@@ -104,6 +108,13 @@ export class ProofFlow {
       state: editorState,
       clipboardTextSerializer: (slice) => {
         return mathSerializer.serializeSlice(slice);
+      },
+      dispatchTransaction: (tr: Transaction) => {
+        this.editorView.updateState(this.editorView.state.apply(tr));
+        const LSPtrans = tr.getMeta("LSP");
+        if (tr.docChanged && !LSPtrans) {
+          this.documentChanged();
+        }
       },
 
       // Define a node view for the custom code mirror node as a prop
@@ -142,6 +153,29 @@ export class ProofFlow {
     buttonBar.render(this._editorElem);
 
     return editorView;
+  }
+
+  documentChanged() {
+    if (!ProofFlow.handelingLSP) {
+      ProofFlow.updateLSP();
+      ProofFlow.handelingLSP = true;
+      ProofFlow.clearLSP();
+    } else {
+      ProofFlow.changedDuring = true;
+    }
+  }
+
+  static clearLSP() {
+    clearTimeout(this.handelingLSPTimeout);
+    this.handelingLSPTimeout = setTimeout(() => {
+      if (ProofFlow.changedDuring) {
+        ProofFlow.changedDuring = false;
+        ProofFlow.updateLSP();
+        ProofFlow.clearLSP();
+      } else {
+        this.handelingLSP = false;
+      }
+    }, 500)
   }
 
   /**
@@ -204,7 +238,7 @@ export class ProofFlow {
    */
   public openFile(text: string, fileType: AcceptedFileType) {
     ProofFlow.fileType = fileType;
-    CodeMirrorView.handelingLSP = true;
+    ProofFlow.handelingLSP = true;
     this.initializeServerProofFlow(fileType);
     text = text.replace(/\r/gi, '') // Windows uses Carriage feeds but we don't like that.
 
@@ -236,7 +270,7 @@ export class ProofFlow {
     LSPMessenger.initializeServer(ProofFlow.fileName).then(() => {
       LSPMessenger.initialized().then(() => {
         LSPMessenger.didOpen(ProofFlow.fileName, 'coq', result.message, '1').then(() => {
-          CodeMirrorView.clearLSP();
+          ProofFlow.clearLSP();
         });
       });
     });
