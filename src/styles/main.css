@@ -4,6 +4,7 @@
 @import './buttonBar.css';
 @import './cells.css';
 @import './settings.css';
+@import './settingButtonBar.css';
 
 :root {
     --primary-color: #EAEFF2;

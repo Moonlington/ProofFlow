@@ -4,7 +4,7 @@ import {
   AcceptedFileType,
   isCorrectFileType,
 } from "./ProofFlow/parser/accepted-file-types";
-import "./styles/styles.css";
+import "./styles/main.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
