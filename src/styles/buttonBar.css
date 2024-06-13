@@ -3,7 +3,7 @@
     justify-content: left;
     align-items: stretch;
     background-color: var(--primary-color);
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid var(--hover);
     flex-wrap: wrap;
     top: 0;
     position: sticky;
@@ -11,7 +11,7 @@
 }
 
 .button-bar button {
-    border: 1px solid #ccc;
+    border: 1px solid var(--button-text-color);
     border-radius: 4px;
     cursor: pointer;
     font-size: 12px;

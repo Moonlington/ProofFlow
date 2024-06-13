@@ -23,7 +23,7 @@
     align-items: flex-start;
     cursor: default;
     margin: 0em;
-    border: black 1px solid;
+    border: var(--button-text-color) 1px solid;
 }
 
 .settings-button:hover {

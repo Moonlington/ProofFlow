@@ -27,7 +27,7 @@ markdown, math-display {
 }
 
 .input-unattempted {
-  border-left: 5px solid blue;
+  border-left: 5px solid var(--secondary-color);
 }
 
 .locked {

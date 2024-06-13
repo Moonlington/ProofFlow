@@ -120,6 +120,9 @@ export class Minimap {
       iframeDoc.head.appendChild(newStyleTag);
     });
 
+    const bodyStyle = document.body.style;
+    iframeDoc = bodyStyle;
+
     this.getDimensions();
     this.trackScroll();
   }

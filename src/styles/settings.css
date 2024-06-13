@@ -42,7 +42,7 @@
 }
 
 .settings-container:hover {
-    background-color: var(--quaternary-color);
+    background-color: var(--hover);
 }
 
 .close-button {

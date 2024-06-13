@@ -28,9 +28,7 @@
   min-width: 275px;
   height: 100vh;
   background-clip: padding-box;
-  border-color: black;
-  border-width: 1px;
-  border-style: solid;
+  border: none;
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
@@ -44,6 +42,9 @@
 #editor {
   background-color: var(--primary-color);
   float: left;
+  border-right: 1px solid var(--secondary-color);
+  scrollbar-width: thin;
+  scrollbar-color: var(--secondary-color) var(--primary-color);
 }
 
 #content {

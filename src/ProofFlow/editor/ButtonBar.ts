@@ -37,6 +37,7 @@ export class ButtonBar {
    */
   render(parentElement: HTMLElement) {
     this._bar.className = "button-bar";
+    this._bar.id = "button-bar";
 
     this.addCellButtons();
     this.addOtherButtons();
@@ -126,7 +127,7 @@ export class ButtonBar {
         hoverText: "Delete the selected node or content.",
       },
       {
-        name: "line nr",
+        name: "Line nr",
         command: () => {
           console.log("line nr toggle");
         },
