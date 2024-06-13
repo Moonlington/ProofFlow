@@ -266,7 +266,7 @@ export class ProofFlow {
         return;
     }
     this.setProofFlowDocument(parser.parse(text));
-    
+
     let result: any;
     if (fileType == AcceptedFileType.Coq) {
       result = getLSPFileCoqV();
