@@ -1,4 +1,4 @@
-import { colorSchemes } from "./colorSchemes";
+import { colorSchemes } from "./colorschemes";
 
 export const colorSchemesKeys: string[] = Object.keys(colorSchemes);
 

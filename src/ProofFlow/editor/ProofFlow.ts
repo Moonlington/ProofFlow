@@ -179,6 +179,7 @@ export class ProofFlow {
    * @param fileType - The type of the file.
    */
   public openFile(text: string, fileType: AcceptedFileType) {
+    console.log("Opening file");
     ProofFlow.fileType = fileType;
     CodeMirrorView.handelingLSP = true;
     this.initializeServerProofFlow(fileType);

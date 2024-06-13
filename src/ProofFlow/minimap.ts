@@ -43,7 +43,7 @@ export class Minimap {
       this._minimapDiv.className,
     );
     for (let element of elements) {
-      document.body.removeChild(element);
+      document.getElementById("content")!.removeChild(element);
     }
   }
 

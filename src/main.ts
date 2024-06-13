@@ -63,6 +63,7 @@ document
  * @param e - The input event.
  */
 function readSingleFile(e: Event) {
+  console.log("Reading file...");
   // Get the file list from the input event and check if it's empty
   if (!e.target) return;
   const fileList = (<HTMLInputElement>e.target).files;
