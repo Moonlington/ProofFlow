@@ -10,6 +10,7 @@ import "katex/dist/katex.min.css";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
 import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
 import { updateColors } from "./ProofFlow/settings/updateColors.ts";
+import { LSPMessenger } from "./basicLspFunctions";
 
 const app = document.createElement("div");
 app.id = "app";
@@ -32,6 +33,8 @@ container.appendChild(content);
 
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editor, content);
+let lspMessenger: LSPMessenger = new LSPMessenger(proofFlow.handleDiagnostics.bind(proofFlow));
+
 export { proofFlow };
 
 const settingsOverlay = new SettingsOverlay(container);
@@ -82,6 +85,7 @@ function readSingleFile(e: Event) {
     if (readerEvent?.target?.result) {
       // Get the result from the reader event
       const result = readerEvent.target.result.toString();
+      proofFlow.reset();
       proofFlow.setFileName(file.name);
       proofFlow.openFile(result, fileType);
     }
