@@ -15,13 +15,8 @@ import type { ComputeChange, CodeMirrorViewOptions } from "./types.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 import { getContainingNode } from "../commands/helpers.ts";
-import { codeCompl } from "./extensions/autocomplete.ts";
-import {
-  DiagnosticsMessageData,
-  LSPDiagnostic,
-} from "../../lspMessageTypes.ts";
 import { Diagnostic, setDiagnostics } from "@codemirror/lint";
-import { ProofFlow } from "../editor/ProofFlow.ts";
+import { DiagnosticsMessageData, LSPDiagnostic } from "../lspClient/models.ts";
 
 const computeChange = (
   oldVal: string,
@@ -116,7 +111,6 @@ export class CodeMirrorView implements NodeView {
     let changeExtension = CMView.updateListener.of((update) => {
       if (!update.heightChanged) return;
       if (!CodeMirrorView.handelingLSP) {
-        ProofFlow.updateLSP();
         CodeMirrorView.handelingLSP = true;
         CodeMirrorView.clearLSP();
       } else {
@@ -162,7 +156,6 @@ export class CodeMirrorView implements NodeView {
         tabKeymap,
         changeExtension,
         // wordHover,
-        codeCompl,
       ],
     });
 
@@ -183,7 +176,6 @@ export class CodeMirrorView implements NodeView {
     this.handelingLSPTimeout = setTimeout(() => {
       if (CodeMirrorView.changedDuring) {
         CodeMirrorView.changedDuring = false;
-        ProofFlow.updateLSP();
         CodeMirrorView.clearLSP();
       } else {
         this.handelingLSP = false;

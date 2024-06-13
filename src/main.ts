@@ -34,9 +34,6 @@ container.appendChild(content);
 
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editor, content);
-let lspMessenger: LSPMessenger = new LSPMessenger(
-  proofFlow.handleDiagnostics.bind(proofFlow),
-);
 
 // Create the settings overlay
 const settingsOverlay = new SettingsOverlay(container);

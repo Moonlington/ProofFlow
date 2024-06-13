@@ -13,11 +13,6 @@ import { ProofFlowPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 // import { AreaType } from "../parser/area.ts";
 import { ButtonBar } from "./ButtonBar.ts";
-import {
-  getContent,
-  getLSPFileCoqMV,
-  getLSPFileCoqV,
-} from "../outputparser/savefile.ts";
 
 import { basicSetup } from "codemirror";
 import { linter } from "@codemirror/lint";
@@ -28,13 +23,6 @@ import { applyGlobalKeyBindings } from "../commands/shortcuts";
 import { UserMode, handleUserModeSwitch } from "../UserMode/userMode.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
-import { inputProof } from "../commands/helpers.ts";
-import { LSPType } from "../LSPType.ts";
-import { LSPMessenger } from "../../basicLspFunctions.ts";
-import {
-  LSPDiagnostic,
-  DiagnosticsMessageData,
-} from "../../lspMessageTypes.ts";
 import { createSettings } from "../../main.ts";
 import { reloadColorScheme, updateColors } from "../settings/updateColors.ts";
 import {
@@ -57,6 +45,14 @@ import {
   LeanOutput,
   LeanParser,
 } from "../parser/parsers.ts";
+import { LSPClientHandler } from "../lspClient/lspClientHandler.ts";
+import { DiagnosticsMessageData } from "../lspClient/models.ts";
+import {
+  ProofflowLSPClient,
+  ProofflowLSPClientFileType,
+} from "../lspClient/ProofflowLSPClient.ts";
+import { autocomplete } from "../codemirror/extensions/autocomplete.ts";
+import { wordHover } from "../codemirror/extensions/hovertooltip.ts";
 // CSS
 
 export class ProofFlow {
@@ -71,14 +67,12 @@ export class ProofFlow {
   private editorView: EditorView; // The view of the editor
 
   private userMode: UserMode = UserMode.Student; // The teacher mode of the editor
-  static fileName: string = "file.txt";
+  private fileName: string = "file.txt";
 
   // static filePath: string = "file.text";
   static fileType: AcceptedFileType = AcceptedFileType.Unknown;
 
   private minimap: Minimap | null = null;
-
-  private lspType: LSPType = LSPType.None;
 
   private removeGlobalKeyBindings: () => void;
 
@@ -94,6 +88,8 @@ export class ProofFlow {
 
   private msMaxUpdateTime = 1000;
 
+  private lspClient?: LSPClientHandler;
+
   /**
    * Represents the ProofFlow class.
    * @constructor
@@ -107,9 +103,7 @@ export class ProofFlow {
     this.editorView = this.createEditorView();
 
     window.addEventListener("beforeunload", (e) => {
-      if (this.lspType != LSPType.None) {
-        LSPMessenger.shutdown();
-      }
+      this.lspClient?.shutdown();
     });
     // Apply global key bindings
     this.removeGlobalKeyBindings = applyGlobalKeyBindings(
@@ -151,6 +145,8 @@ export class ProofFlow {
                 basicSetup,
                 linter(null),
                 javascript(),
+                autocomplete(this),
+                wordHover(this),
               ],
             },
           }),
@@ -201,6 +197,12 @@ export class ProofFlow {
     console.log(parsed);
     this.pfDocument = parsed;
     this.lastUpdate = new Date();
+
+    this.lspClient?.didChange(parsed);
+  }
+
+  getLSPClient(): LSPClientHandler | undefined {
+    return this.lspClient;
   }
 
   /**
@@ -238,71 +240,47 @@ export class ProofFlow {
    * @param text - The content of the Coq file.
    * @param fileType - The type of the file.
    */
-  public openFile(text: string, fileType: AcceptedFileType) {
-    console.log("Opening file");
+  public async openFile(text: string, fileType: AcceptedFileType) {
     ProofFlow.fileType = fileType;
     CodeMirrorView.handelingLSP = true;
-    this.initializeServerProofFlow(fileType);
     text = text.replace(/\r/gi, ""); // Windows uses Carriage feeds but we don't like that.
 
     // Process the file content
     let parser: Parser;
+    let lspClientFileType: ProofflowLSPClientFileType;
     switch (fileType) {
       case AcceptedFileType.Coq:
         parser = CoqParser;
         this.outputConfig = CoqOutput;
         let proxy = parser as SimpleParser;
         proxy.defaultAreaType = AreaType.Code;
+        lspClientFileType = ProofflowLSPClientFileType.Coq;
         break;
       case AcceptedFileType.CoqMD:
         parser = CoqMDParser;
         this.outputConfig = CoqMDOutput;
+        lspClientFileType = ProofflowLSPClientFileType.Coq;
         break;
       case AcceptedFileType.Lean:
         parser = LeanParser;
         this.outputConfig = LeanOutput;
+        lspClientFileType = ProofflowLSPClientFileType.Lean;
         break;
       default:
         return;
     }
-    this.setProofFlowDocument(parser.parse(text));
+    let pfDocument = parser.parse(text);
+    this.setProofFlowDocument(pfDocument);
 
-    let result: any;
-    if (fileType == AcceptedFileType.Coq) {
-      result = getLSPFileCoqV();
-    } else if (fileType == AcceptedFileType.CoqMD) {
-      result = getLSPFileCoqMV();
-    }
-    if (result == null) return;
-    // console.log(this.fileName);
-    LSPMessenger.initializeServer(ProofFlow.fileName).then(() => {
-      LSPMessenger.initialized().then(() => {
-        LSPMessenger.didOpen(
-          ProofFlow.fileName,
-          "coq",
-          result.message,
-          "1",
-        ).then(() => {
-          CodeMirrorView.clearLSP();
-        });
-      });
-    });
-
-    // Ensure the minimap is updated wiht the correct colorscheme.
-    reloadColorScheme();
-  }
-
-  public static updateLSP() {
-    console.log("Sent to LSP");
-    let result;
-    if (ProofFlow.fileType == AcceptedFileType.Coq) {
-      result = getLSPFileCoqV();
-    } else if (ProofFlow.fileType == AcceptedFileType.CoqMD) {
-      result = getLSPFileCoqMV();
-    }
-    if (result == null) return;
-
-    LSPMessenger.didChange(ProofFlow.fileName, result.lines, 0, result.message);
+    this.lspClient = new ProofflowLSPClient(
+      this.fileName,
+      "ws://localhost:3000",
+      this.handleDiagnostics,
+      lspClientFileType,
+    );
+    await this.lspClient.initialize();
+    this.lspClient.initialized();
+    this.lspClient.didOpen(pfDocument);
   }
 
   public setProofFlowDocument(pfDocument: ProofFlowDocument) {
@@ -525,21 +503,20 @@ export class ProofFlow {
    * @param fileName - The name of the file.
    */
   public setFileName(fileName: string) {
-    ProofFlow.fileName = fileName;
+    this.fileName = fileName;
   }
 
   /**
    * Saves the file by creating a download link for the content and triggering a click event on it.
    */
   public saveFile() {
-    const content = this.editorView.state.doc;
-    const result = getContent(content);
+    const result = this.pfDocument.toString();
     const blob = new Blob([result], { type: "text" });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = ProofFlow.fileName;
+    a.download = this.fileName;
     document.body.appendChild(a);
     a.click();
 
@@ -552,13 +529,9 @@ export class ProofFlow {
    * and creating a new editor view.
    */
   public reset() {
-    console.log(this.lspType);
-    if (this.lspType != LSPType.None) {
-      LSPMessenger.didClose(ProofFlow.fileName).then(() => {
-        LSPMessenger.shutdown();
-      });
-      this.lspType = LSPType.None;
-    }
+    this.lspClient?.didClose();
+    this.lspClient?.shutdown();
+    this.lspClient = undefined;
 
     this.minimap?.destroy();
     this.removeGlobalKeyBindings();
@@ -614,21 +587,5 @@ export class ProofFlow {
       newUserMode === UserMode.Teacher ? "true" : "false",
     );
     handleUserModeSwitch();
-  }
-
-  private initializeServerProofFlow(acceptedFileType: AcceptedFileType) {
-    console.log(acceptedFileType);
-    if (acceptedFileType == AcceptedFileType.Unknown) return;
-    // console.log("Initializing!!!")
-    if (
-      acceptedFileType == AcceptedFileType.Coq ||
-      acceptedFileType == AcceptedFileType.CoqMD
-    ) {
-      LSPMessenger.startServer("coq");
-      this.lspType = LSPType.Coq;
-    } else if (acceptedFileType == AcceptedFileType.Lean) {
-      LSPMessenger.startServer("lean");
-      this.lspType = LSPType.LEAN;
-    }
   }
 }
