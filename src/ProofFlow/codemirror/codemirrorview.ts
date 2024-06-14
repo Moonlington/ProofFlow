@@ -457,7 +457,7 @@ class CodeMirrorView implements NodeView {
         if (diagLineStart != diagLineEnd) return false;
         let diagCharStart = range.start.character;
         let diagCharEnd = range.end.character;
-        if (diagCharStart != 0 || diagCharEnd != 4) return false;
+        if (diagCharStart != 0) return false;
         if (instance.cm.state.doc.line(1).text.substring(0, 5) != 'Qed.') return false;
         return true;
       }
