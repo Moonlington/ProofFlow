@@ -553,6 +553,8 @@ export class ProofFlow {
     );
 
     createSettings();
+
+    handleUserModeSwitch();
   }
 
   /**
