@@ -2,7 +2,7 @@
  *  Adapted from https://github.com/sibiraj-s/prosemirror-codemirror-6
  *--------------------------------------------------------*/
 
-import { Selection, TextSelection, Transaction } from "prosemirror-state";
+import { Selection, TextSelection } from "prosemirror-state";
 import type { EditorView, NodeView } from "prosemirror-view";
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { exitCode } from "prosemirror-commands";
@@ -15,13 +15,12 @@ import type { ComputeChange, CodeMirrorViewOptions } from "./types.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 import { getContainingNode } from "../commands/helpers.ts";
-import { wordHover } from "./extensions/hovertooltip.ts";
 import { codeCompl } from "./extensions/autocomplete.ts";
 import {
   DiagnosticsMessageData,
   LSPDiagnostic,
 } from "../../lspMessageTypes.ts";
-import { linter, Diagnostic, setDiagnostics } from "@codemirror/lint";
+import { Diagnostic, setDiagnostics } from "@codemirror/lint";
 import { ProofFlow } from "../editor/ProofFlow.ts";
 
 const computeChange = (
