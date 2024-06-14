@@ -43,12 +43,12 @@ export class SettingsBar {
       {
         symbol: "&#8617;",
         cmd: () => undo(this._editorView.state, this._editorView.dispatch),
-        hoverText: "Undo Last Action(ctr-z)",
+        hoverText: "Undo Last Action(Ctrl-z)",
       },
       {
         symbol: "&#8618;",
         cmd: () => redo(this._editorView.state, this._editorView.dispatch),
-        hoverText: "Redo Last Action(ctr-y)",
+        hoverText: "Redo Last Action(Ctrl-y)",
       },
     ];
 

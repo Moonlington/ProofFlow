@@ -227,4 +227,6 @@ export class SettingsOverlay {
     lspContainer.classList.add("settings-container");
     return lspContainer;
   }
+
+  //TODO Add a container for the minimap setting?
 }

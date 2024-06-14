@@ -1,5 +1,5 @@
 export enum LSPType {
-    None,
-    Coq,
-    LEAN,
+  None,
+  Coq,
+  LEAN,
 }

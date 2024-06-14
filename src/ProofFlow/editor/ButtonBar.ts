@@ -77,7 +77,7 @@ export class ButtonBar {
             this._editorView.state,
             this._editorView.dispatch,
           ),
-        `Insert ${name} cell above the current cell.`,
+        `Insert ${name} cell above the current cell.(Ctrl-Shift-${name === "Text" ? "m" : name === "Code" ? "c" : "b"})`,
       );
       this.addButton(
         below,
@@ -86,7 +86,7 @@ export class ButtonBar {
             this._editorView.state,
             this._editorView.dispatch,
           ),
-        `Insert ${name} cell bellow the current cell.`,
+        `Insert ${name} cell bellow the current cell.(Ctrl-${name === "Text" ? "m" : name === "Code" ? "c" : "b"})`,
       );
     });
   }
@@ -134,13 +134,13 @@ export class ButtonBar {
         command: () => {
           console.log("line nr toggle");
         },
-        hoverText: "Toggle line numbers",
+        hoverText: "Toggle line numbers", //TODO Add functionality and shortcut
       },
       {
         name: "Parent",
         command: () =>
           selectParentNode(this._editorView.state, this._editorView.dispatch),
-        hoverText: "Select the parent node",
+        hoverText: "Select the parent node(Ctrl-p)",
       },
       {
         name: "Input",
@@ -148,7 +148,7 @@ export class ButtonBar {
           let command = getInputInsertCommand();
           command(this._editorView.state, this._editorView.dispatch);
         },
-        hoverText: "Place the current node in an input node",
+        hoverText: "Place the current node in an input node(Ctrl-i)",
       },
       {
         name: "Colapse",
@@ -156,7 +156,7 @@ export class ButtonBar {
           let command = getCollapsibleInsertCommand();
           command(this._editorView.state, this._editorView.dispatch);
         },
-        hoverText: "Place the current node in an colapsible node",
+        hoverText: "Place the current node in an colapsible node(Ctrl-b)",
       },
     ];
 

@@ -91,7 +91,7 @@ export const colorSchemes: ColorSchemes = {
     "#0000FF", // highlight
     "#0000FF20", // hover
     "#000000", // text-color
-    "#000000", // button-text-color
+    "#FFFFFF", // button-text-color
   ],
   "Pine View": [
     "#EDF0EE", // primary-color

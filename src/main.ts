@@ -33,7 +33,9 @@ container.appendChild(content);
 
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editor, content);
-let lspMessenger: LSPMessenger = new LSPMessenger(proofFlow.handleDiagnostics.bind(proofFlow));
+let lspMessenger: LSPMessenger = new LSPMessenger(
+  proofFlow.handleDiagnostics.bind(proofFlow),
+);
 
 export { proofFlow };
 
