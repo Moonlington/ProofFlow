@@ -7,17 +7,15 @@ import { EditorState as CMState } from '@codemirror/state';
 import { Text } from '@codemirror/state';
 import { LSPMessenger } from '../../../basicLspFunctions.ts';
 import CodeMirrorView from '../codemirrorview.ts';
+import { offsetToPos } from './mappinghelper.ts';
 
-function offsetToPos(instance: CodeMirrorView, doc: Text, offset: number) {
-    const line = doc.lineAt(offset);
-    const lineNumber = instance.lineStart + doc.lineAt(offset).number - 1;
-    const character = offset - line.from;
-    console.log('Line:', line, 'Character:', character);
-
-    console.log('Line: ', lineNumber, 'Character: ', character);
-    return {line: lineNumber, character: character};
-}
-
+/**
+ * Copied and modified from https://codemirror.net/examples/autocompletion/
+ * 
+ * Extension for autocomplete in CodeMirror
+ * @param instance Relevant CodeMirror instance
+ * @returns 
+ */
 export function getAutoCompleteExtension(instance: CodeMirrorView) {
     return autocompletion({
         override: [

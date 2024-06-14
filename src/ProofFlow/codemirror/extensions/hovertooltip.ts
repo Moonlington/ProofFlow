@@ -3,17 +3,15 @@ import { LSPMessenger } from "../../../basicLspFunctions";
 import { Text } from '@codemirror/state';
 import CodeMirrorView from "../codemirrorview";
 import { ProofFlow } from "../../editor/ProofFlow";
+import { offsetToPos } from "./mappinghelper";
 
-function offsetToPos(instance: CodeMirrorView, doc: Text, offset: number) {
-  const line = doc.lineAt(offset);
-  const lineNumber = instance.lineStart + doc.lineAt(offset).number - 1;
-  const character = offset - line.from;
-  console.log('Line:', line, 'Character:', character);
-
-  console.log('Line: ', lineNumber, 'Character: ', character);
-  return {line: lineNumber, character: character};
-}
-
+/**
+ * Copied and modified from https://codemirror.net/examples/tooltip/
+ * 
+ * Extension for hovering in CodeMirror
+ * @param instance Relevant CodeMirror instance
+ * @returns 
+ */
 export function getHoverExtension(instance: CodeMirrorView) {
   return hoverTooltip((view, pos, side) => {
     let { from, to, text } = view.state.doc.lineAt(pos);

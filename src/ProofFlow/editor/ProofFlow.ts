@@ -158,6 +158,9 @@ export class ProofFlow {
     return editorView;
   }
 
+  /**
+   * Sends new version of document to LSP.
+   */
   documentChanged() {
     if (!ProofFlow.handelingLSP) {
       ProofFlow.updateLSP();
@@ -168,6 +171,10 @@ export class ProofFlow {
     }
   }
 
+  /**
+   * Debouncer for sending new messages to LSP
+   * Also keeps track of changes that arrive 
+   */
   static clearLSP() {
     clearTimeout(this.handelingLSPTimeout);
     this.handelingLSPTimeout = setTimeout(() => {
@@ -205,16 +212,21 @@ export class ProofFlow {
     }
   }
 
+  /**
+   * Processes all diagnostics in the editor.
+   * It first sets errors inside codemirror instances.
+   * Next it sets the color on the left side of input areas.
+   */
   private handleDiagnosticsInBuffer() {
     let message = ProofFlow.diagnosticBuffer;
+    // Set errors inside CodeMirror instances
     CodeMirrorView.handleDiagnostics(message);
 
+    // Helper function for setting the color of input areas.
     function setInstanceColor(this: ProofFlow, state: EditorState, instance: CodeMirrorView, color: proof) {
       let instanceHasFocus = instance.cm.hasFocus;
-      if (instanceHasFocus) {
-        console.log(this.getState().selection)
-      }
 
+      // Get the input area node
       let resolvedPos = state.doc.resolve(instance.getPos());
       const grandParentDepth = resolvedPos.depth - 1;
       if (grandParentDepth >= 0) {
@@ -224,12 +236,18 @@ export class ProofFlow {
           inputProof(node, color, grandParentPos);
         }
       }
+      // If the instance had focus we have to explicitly refocus because ProseMirror loses
+      // the focus somehow
       if (instanceHasFocus) {
         console.log(this.getState().selection)
         instance.forceForwardSelection();
       }
     }
+
     const boundSetInstanceColor = setInstanceColor.bind(this);
+    // Iterates over all instances of CodeMirror
+    // Set color based on if there is an error
+    // If there is a QED error then if the previous instance is an input area, set it to incorrect.
     for (let i = 0; i < CodeMirrorView.instances.length; i++) {
       let instance = CodeMirrorView.instances[i];
       if (!instance.error) {
@@ -243,6 +261,11 @@ export class ProofFlow {
     }
   }
 
+  /**
+   * If there is a timer active it clears it. It then sets a time to handle the
+   * diagnostics for later processing.
+   * @param message All diagnostics data received from the LSP
+   */
   public handleDiagnostics(message: DiagnosticsMessageData) {
     clearTimeout(ProofFlow.bufferDiagnosticTimeout);
     ProofFlow.diagnosticBuffer = message;
@@ -300,6 +323,9 @@ export class ProofFlow {
     handleUserModeSwitch();
   }
 
+  /**
+   * Writes the ProofFlow document to text and upload it to the LSP.
+   */
   public static updateLSP() {
     console.log("Sent to LSP");
     let result;

@@ -125,19 +125,19 @@ class CodeMirrorView implements NodeView {
         keymap.of([
           {
             key: "ArrowUp",
-            run: this.mayBeEscape("line", -1),
+            run: this.maybeEscape("line", -1),
           },
           {
             key: "ArrowLeft",
-            run: this.mayBeEscape("char", -1),
+            run: this.maybeEscape("char", -1),
           },
           {
             key: "ArrowDown",
-            run: this.mayBeEscape("line", 1),
+            run: this.maybeEscape("line", 1),
           },
           {
             key: "ArrowRight",
-            run: this.mayBeEscape("char", 1),
+            run: this.maybeEscape("char", 1),
           },
           {
             key: "Ctrl-Enter",
@@ -169,6 +169,9 @@ class CodeMirrorView implements NodeView {
     );
   }
 
+  /**
+   * Sort all CodeMirror instances based on document position.
+   */
   static resortInstances() {
     CodeMirrorView.instances.sort((a, b) => {
       if (a.getPos() < b.getPos()) return -1;
@@ -321,7 +324,7 @@ class CodeMirrorView implements NodeView {
    * Escape the codemirror editor and move the cursor to the ProseMirror editor
    * Will return false if the movement will not escape the current view
    */
-  mayBeEscape(unit: "char" | "line", dir: -1 | 1): Command {
+  maybeEscape(unit: "char" | "line", dir: -1 | 1): Command {
     return (view) => {
       const { state } = view;
       const { selection } = state;
@@ -424,8 +427,13 @@ class CodeMirrorView implements NodeView {
     CodeMirrorView.resortInstances();
   }
 
+  /**
+   * Sets errors (underlying red squigly lines) for all diagnostics received by the LSP.
+   * @param message Diagnostics from LSP
+   */
   static handleDiagnostics(message: DiagnosticsMessageData) {
     ProofFlow.handelingLSP = true;
+    // Sort all diagnostics based on range
     message.diagnostics = message.diagnostics.sort((a: LSPDiagnostic, b: LSPDiagnostic) => {
       if (a.range.start.line < b.range.start.line) return -1;
       if (a.range.start.line > b.range.start.line) return 1;
@@ -433,8 +441,8 @@ class CodeMirrorView implements NodeView {
       if (a.range.start.character > b.range.start.character) return 1;
       return 0;
     })
+    // Index of next diagnostic that should be inserted
     let index = 0;
-    // console.log(message.diagnostics);
     CodeMirrorView.instances.forEach((instance) => {
       instance.error = false;
       instance.QEDerror = false;
@@ -442,13 +450,18 @@ class CodeMirrorView implements NodeView {
       let lineCount = instance.cm.state.doc.lines;
       let lineStart = instance.lineStart;
 
+      // Diagnostic is in this instance
       function shouldInsert() {
         let diagLineStart = message.diagnostics[index].range.start.line;
         return lineStart <= diagLineStart && diagLineStart < lineStart + lineCount;
       }
+
+      // Convert line and character to pos in Prosemirror
       function getPos(line: number, char: number) {
         return instance.lineOffsets[line - lineStart] + char;
       }
+
+      // Determines if the code contains a QED error
       function QEDerror() {
         let range = message.diagnostics[index].range;
         let diagLineStart = range.start.line;
@@ -461,9 +474,11 @@ class CodeMirrorView implements NodeView {
         if (instance.cm.state.doc.line(1).text.substring(0, 5) != 'Qed.') return false;
         return true;
       }
-
+    
+      // While there is still a diagnostic and this diagnostic should be inserted
       while (index < message.diagnostics.length && shouldInsert()) {
         if(QEDerror()) instance.QEDerror = true;
+        // Insert the diagnostic
         let range = message.diagnostics[index].range;
         let diagnostic: Diagnostic = {
           from: getPos(range.start.line, range.start.character),
@@ -471,11 +486,12 @@ class CodeMirrorView implements NodeView {
           severity: "error",
           message: message.diagnostics[index].message,
         }
-        index++;
+        index++; // This diagnostic is finished, go to the next one
         diagnostics.push(diagnostic);
       }
       if (diagnostics.length) instance.error = true;
 
+      // Create a transaction and mark it as an LSP transaction
       let tr = setDiagnostics(instance.cm.state, diagnostics);
       tr.annotations = [CodeMirrorView.LSPAnnotation.of("LSP"), CMTransaction.addToHistory.of(false)];
       instance.cm.dispatch(tr);
