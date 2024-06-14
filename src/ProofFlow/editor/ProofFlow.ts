@@ -24,7 +24,6 @@ import { UserMode, handleUserModeSwitch } from "../UserMode/userMode.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
 import { createSettings } from "../../main.ts";
-import { reloadColorScheme, updateColors } from "../settings/updateColors.ts";
 import {
   Area,
   AreaType,
@@ -112,7 +111,6 @@ export class ProofFlow {
     );
   }
 
-  
   /**
    * Creates an instance of the EditorView.
    * @returns {EditorView} The created EditorView instance.

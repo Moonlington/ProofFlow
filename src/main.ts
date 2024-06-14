@@ -6,7 +6,10 @@ import {
 import "./styles/main.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
-import { reloadColorScheme, updateColors } from "./ProofFlow/settings/updateColors.ts";
+import {
+  reloadColorScheme,
+  updateColors,
+} from "./ProofFlow/settings/updateColors.ts";
 import { LSPMessenger } from "./basicLspFunctions";
 import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";

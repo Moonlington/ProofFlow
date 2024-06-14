@@ -4,7 +4,13 @@ import {
   ProofFlowDocument,
   Range,
 } from "../editor/ProofFlowDocument.ts";
-import { CompletionItem, CompletionList, Hover, InitializeResult, SignatureHelp } from "./models.ts";
+import {
+  CompletionItem,
+  CompletionList,
+  Hover,
+  InitializeResult,
+  SignatureHelp,
+} from "./models.ts";
 
 type RangeResponse = Range | Range[];
 

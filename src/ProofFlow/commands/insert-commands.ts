@@ -79,7 +79,7 @@ export function getCodeInsertCommand(
     view?: EditorView,
   ): boolean => {
     if (!allowedToInsert(state)) return false;
-    
+
     let trans: Transaction | undefined;
     trans = insertionFunction(state, state.tr, codeblockNodeType);
     if (dispatch && trans) dispatch(trans);
