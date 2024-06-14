@@ -78,7 +78,7 @@ class ProofflowLSPClient implements LSPClientHandler {
 
   waitForOpenConnection(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const maxNumberOfAttempts = 10;
+      const maxNumberOfAttempts = 25;
       let attempts = 0;
       const interval = setInterval(() => {
         if (attempts >= maxNumberOfAttempts) {
@@ -89,7 +89,7 @@ class ProofflowLSPClient implements LSPClientHandler {
           resolve();
         }
         attempts++;
-      }, 200);
+      }, 500);
     });
   }
 
@@ -100,10 +100,11 @@ class ProofflowLSPClient implements LSPClientHandler {
     await this.waitForOpenConnection();
     console.log("Message to LSP", type, params);
     return new Promise((resolve, reject) => {
-      this.socket.send(JSON.stringify({ type: type, params: params }));
+      this.socket.send(JSON.stringify({ type: type, data: params }));
       let waitForResponse = (event: MessageEvent) => {
         const message: LSPServerResponse<ResultType> = JSON.parse(event.data);
         if (message.type === type) {
+          console.log("Received message back", message);
           resolve(message.data);
         }
         this.socket.removeEventListener("message", waitForResponse);
@@ -112,7 +113,7 @@ class ProofflowLSPClient implements LSPClientHandler {
       setTimeout(() => {
         this.socket.removeEventListener("message", waitForResponse);
         reject();
-      }, 5000);
+      }, 20000);
     });
   }
 
@@ -160,7 +161,7 @@ class ProofflowLSPClient implements LSPClientHandler {
     let params: DidOpenTextDocumentParams = {
       textDocument: {
         uri: this.uri,
-        languageId: "",
+        languageId: this.fileType,
         version: this.version++,
         text: pfDocument.toString(),
       },
