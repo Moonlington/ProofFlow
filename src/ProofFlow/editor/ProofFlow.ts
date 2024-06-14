@@ -21,7 +21,6 @@ import {
 import { ButtonBar } from "./ButtonBar.ts";
 import { getContent, getLSPFileCoqMV, getLSPFileCoqV } from "../outputparser/savefile.ts";
 
-import { basicSetup } from "codemirror";
 import { linter } from "@codemirror/lint"
 import { javascript } from "@codemirror/lang-javascript";
 
@@ -45,6 +44,7 @@ import { inputProof } from "../commands/helpers.ts";
 import { LSPType } from "../LSPType.ts";
 import { LSPMessenger } from "../../basicLspFunctions.ts";
 import { LSPDiagnostic, DiagnosticsMessageData } from "../../lspMessageTypes.ts";
+import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
 // CSS
 
 export class ProofFlow {
@@ -130,7 +130,7 @@ export class ProofFlow {
             cmOptions: {
               extensions: [
                 // will be changed, and later code from basic setup will be added to the codebase
-                basicSetup,
+                basicSetupNoHistory,
                 linter(null),
                 javascript(),
               ],

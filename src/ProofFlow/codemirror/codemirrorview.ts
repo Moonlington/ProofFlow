@@ -71,6 +71,8 @@ class CodeMirrorView implements NodeView {
   error = false;
   QEDerror = false;
 
+  static LSPAnnotation = Annotation.define<string>();
+
   static instances: CodeMirrorView[] = [];
   static focused: CodeMirrorView | null = null;
 
@@ -273,9 +275,10 @@ class CodeMirrorView implements NodeView {
         change.to + start,
         content as ProsemirrorNode,
       );
-      const annotation = cmTr.annotation
-      if (annotation.name == "LSP") {
+      const annotation = cmTr.annotation(CodeMirrorView.LSPAnnotation);
+      if (annotation != null && annotation == "LSP") {
         tr.setMeta("LSP", true);
+        tr.setMeta("addToHistory", false);
       }
       this._outerView.dispatch(tr);
       this.forwardSelection();
@@ -474,8 +477,7 @@ class CodeMirrorView implements NodeView {
       if (diagnostics.length) instance.error = true;
 
       let tr = setDiagnostics(instance.cm.state, diagnostics);
-      const LSPAnnotation = Annotation.define<string>();
-      tr.annotations = LSPAnnotation.of("LSP");
+      tr.annotations = [CodeMirrorView.LSPAnnotation.of("LSP"), CMTransaction.addToHistory.of(false)];
       instance.cm.dispatch(tr);
     })
     ProofFlow.clearLSP();

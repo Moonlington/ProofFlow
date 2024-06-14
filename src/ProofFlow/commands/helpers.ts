@@ -261,6 +261,7 @@ export function inputProof(inputNode: Node, newProof: proof, pos: number) {
     proof: newProof,
   });
   transaction.setMeta("LSP", true);
+  transaction.setMeta("addToHistory", false);
 
   dispatch(transaction);
 }
