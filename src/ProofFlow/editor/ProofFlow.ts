@@ -275,12 +275,12 @@ export class ProofFlow {
 
     this.lspClient = new ProofflowLSPClient(
       this.fileName,
-      "ws://localhost:3000",
+      "ws://localhost:8080",
       this.handleDiagnostics,
       lspClientFileType,
     );
     await this.lspClient.initialize();
-    this.lspClient.initialized();
+    // this.lspClient.initialized();
     this.lspClient.didOpen(pfDocument);
   }
 
