@@ -10,7 +10,6 @@ import {
   reloadColorScheme,
   updateColors,
 } from "./ProofFlow/settings/updateColors.ts";
-import { LSPMessenger } from "./basicLspFunctions";
 import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
 import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
