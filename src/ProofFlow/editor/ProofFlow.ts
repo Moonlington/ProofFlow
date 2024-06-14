@@ -1,7 +1,7 @@
-import { Schema, DOMParser, Node } from "prosemirror-model";
+import { Schema, Node } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/index.ts";
 import type { GetPos } from "../codemirror/types.ts";
-import { ProofFlowSchema, proof } from "./proofflowschema.ts";
+import { ProofFlowSchema } from "./proofflowschema.ts";
 import {
   EditorState,
   EditorStateConfig,
@@ -19,10 +19,14 @@ import {
   parseToAreasLean,
 } from "../parser/parse-to-proofflow.ts";
 import { ButtonBar } from "./ButtonBar.ts";
-import { getContent, getLSPFileCoqMV, getLSPFileCoqV } from "../outputparser/savefile.ts";
+import {
+  getContent,
+  getLSPFileCoqMV,
+  getLSPFileCoqV,
+} from "../outputparser/savefile.ts";
 
 import { basicSetup } from "codemirror";
-import { linter } from "@codemirror/lint"
+import { linter } from "@codemirror/lint";
 import { javascript } from "@codemirror/lang-javascript";
 
 import { applyGlobalKeyBindings } from "../commands/shortcuts";
@@ -44,13 +48,17 @@ import { Minimap } from "../minimap.ts";
 import { inputProof } from "../commands/helpers.ts";
 import { LSPType } from "../LSPType.ts";
 import { LSPMessenger } from "../../basicLspFunctions.ts";
-import { LSPDiagnostic, DiagnosticsMessageData } from "../../lspMessageTypes.ts";
+import {
+  LSPDiagnostic,
+  DiagnosticsMessageData,
+} from "../../lspMessageTypes.ts";
+import { createSettings } from "../../main.ts";
+import { reloadColorScheme, updateColors } from "../settings/updateColors.ts";
 // CSS
 
 export class ProofFlow {
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
   private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
-
   private _schema: Schema = ProofFlowSchema; // The schema for the editor
   private editorStateConfig: EditorStateConfig = {
     schema: ProofFlowSchema,
@@ -67,7 +75,7 @@ export class ProofFlow {
 
   private minimap: Minimap | null = null;
 
-  private lspType: LSPType = LSPType.None; 
+  private lspType: LSPType = LSPType.None;
 
   private removeGlobalKeyBindings: () => void;
 
@@ -95,7 +103,11 @@ export class ProofFlow {
     );
   }
 
-  // TODO: Documentation
+  
+  /**
+   * Creates an instance of the EditorView.
+   * @returns {EditorView} The created EditorView instance.
+   */
   private createEditorView(): EditorView {
     // Create the editor state
     const editorState = EditorState.create(this.editorStateConfig);
@@ -179,10 +191,11 @@ export class ProofFlow {
    * @param fileType - The type of the file.
    */
   public openFile(text: string, fileType: AcceptedFileType) {
+    console.log("Opening file");
     ProofFlow.fileType = fileType;
     CodeMirrorView.handelingLSP = true;
     this.initializeServerProofFlow(fileType);
-    text = text.replace(/\r/gi, '') // Windows uses Carriage feeds but we don't like that.
+    text = text.replace(/\r/gi, ""); // Windows uses Carriage feeds but we don't like that.
 
     // Process the file content
     let areaParsingFunction: (text: string) => Area[];
@@ -211,11 +224,19 @@ export class ProofFlow {
     // console.log(this.fileName);
     LSPMessenger.initializeServer(ProofFlow.fileName).then(() => {
       LSPMessenger.initialized().then(() => {
-        LSPMessenger.didOpen(ProofFlow.fileName, 'coq', result.message, '1').then(() => {
+        LSPMessenger.didOpen(
+          ProofFlow.fileName,
+          "coq",
+          result.message,
+          "1",
+        ).then(() => {
           CodeMirrorView.clearLSP();
         });
       });
     });
+
+    // Ensure the minimap is updated wiht the correct colorscheme.
+    reloadColorScheme();
   }
 
   public static updateLSP() {
@@ -478,9 +499,9 @@ export class ProofFlow {
       this.editorView,
       this.minimap!,
     );
-    
-  }
 
+    createSettings();
+  }
 
   /**
    * Retrieves the editor view associated with the ProofFlow instance.
@@ -503,13 +524,15 @@ export class ProofFlow {
    *
    * @param UserModebutton - The HTML element representing the user mode button.
    */
-  public switchUserMode(UserModebutton: HTMLElement) {
+  public switchUserMode() {
     let newUserMode: UserMode;
     newUserMode =
       this.userMode === UserMode.Teacher ? UserMode.Student : UserMode.Teacher;
-    UserModebutton.textContent =
-      newUserMode === UserMode.Student ? "Student Mode" : "Teacher Mode";
     this.userMode = newUserMode;
+    window.localStorage.setItem(
+      "teacherMode",
+      newUserMode === UserMode.Teacher ? "true" : "false",
+    );
     handleUserModeSwitch();
   }
 
@@ -517,7 +540,10 @@ export class ProofFlow {
     console.log(acceptedFileType);
     if (acceptedFileType == AcceptedFileType.Unknown) return;
     // console.log("Initializing!!!")
-    if (acceptedFileType == AcceptedFileType.Coq || acceptedFileType == AcceptedFileType.CoqMD) {
+    if (
+      acceptedFileType == AcceptedFileType.Coq ||
+      acceptedFileType == AcceptedFileType.CoqMD
+    ) {
       LSPMessenger.startServer("coq");
       this.lspType = LSPType.Coq;
     } else if (acceptedFileType == AcceptedFileType.Lean) {
@@ -525,5 +551,4 @@ export class ProofFlow {
       this.lspType = LSPType.LEAN;
     }
   }
-
 }

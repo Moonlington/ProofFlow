@@ -1,56 +1,85 @@
-import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
 import { ProofFlow } from "./ProofFlow/editor/ProofFlow.ts";
 import {
   AcceptedFileType,
   isCorrectFileType,
 } from "./ProofFlow/parser/accepted-file-types";
-import "./ProofFlow/styles/ProofFlow.css";
-import "./ProofFlow/styles/index.css";
-import "./ProofFlow/styles/minimap.css";
+import "./styles/main.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
+import { reloadColorScheme, updateColors } from "./ProofFlow/settings/updateColors.ts";
 import { LSPMessenger } from "./basicLspFunctions";
+import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
+import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
+import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
 
-// Get the editor and content elements
-const editorElement: HTMLElement = document.querySelector("#editor")!;
-const contentElement: HTMLElement = document.querySelector("#content")!;
+const app = document.createElement("div");
+app.id = "app";
+
+// Append the app to the body
+document.body.appendChild(app);
+
+// Create a container for the editor and content elements
+const container = document.createElement("div");
+container.id = "container";
+app.appendChild(container);
+
+// Create the editor and content elements
+const editor = document.createElement("div");
+editor.id = "editor";
+container.appendChild(editor);
+
+const content = document.createElement("div");
+content.id = "content";
+container.appendChild(content);
 
 // Create a new instance of the ProofFlow class
-let proofFlow: ProofFlow = new ProofFlow(editorElement, contentElement);
-let lspMessenger: LSPMessenger = new LSPMessenger(proofFlow.handleDiagnostics.bind(proofFlow));
+let proofFlow: ProofFlow = new ProofFlow(editor, content);
+let lspMessenger: LSPMessenger = new LSPMessenger(
+  proofFlow.handleDiagnostics.bind(proofFlow),
+);
 
+// Create the settings overlay
+const settingsOverlay = new SettingsOverlay(container);
+
+// Create the settings bar
+createSettings();
+
+// Export the proofFlow instance
 export { proofFlow };
 
-// Do this to get proper user rights.
+// Ensure that the user mode is correctly set
 handleUserModeSwitch();
 
-// Button to create a new instance of the editor and content elements
-const buttonNewInstance = document.getElementById("newtextblock");
-// Add event listener to the button
-buttonNewInstance?.addEventListener("click", (e) => {
-  proofFlow.reset();
-});
-
-let buttonSaveFile = document.getElementById("save-file");
-buttonSaveFile?.addEventListener("click", (e) => {
-  proofFlow.saveFile();
-});
-
-let userModeButton = document.getElementById("user-mode-button");
-userModeButton?.addEventListener("click", (e) => {
-  proofFlow.switchUserMode(userModeButton);
-});
+// Update the color scheme
+reloadColorScheme();
 
 // Input to read file
 document
   .getElementById("file-input")
   ?.addEventListener("change", readSingleFile, false);
 
+// prevent user from leaving the page without saving
+window.onbeforeunload = function(){
+  return 'Are you sure you want to leave? You may have unsaved changes.';
+};
+
+/**
+ * Creates the settings and initializes the settings bar.
+ */
+export function createSettings() {
+  const settingBar = new SettingsBar(
+    content,
+    settingsOverlay,
+    proofFlow.getEditorView(),
+  );
+}
+
 /**
  * Reads a single file from the input event and processes it.
  * @param e - The input event.
  */
 function readSingleFile(e: Event) {
+  console.log("Reading file...");
   // Get the file list from the input event and check if it's empty
   if (!e.target) return;
   const fileList = (<HTMLInputElement>e.target).files;

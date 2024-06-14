@@ -58,11 +58,6 @@ export const ProofFlowSchema: Schema = new Schema({
       parseDOM: [
         {
           tag: "input_content",
-          getAttrs(dom) {
-            return {
-              title: (dom as HTMLElement).getAttribute("title") ?? "input",
-            };
-          },
         },
       ],
       toDOM(node: Node) {

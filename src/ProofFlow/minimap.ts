@@ -8,9 +8,9 @@ export class Minimap {
   private _config = { attributes: true, childList: true, subtree: true };
   private observer: MutationObserver;
 
-  private timeoutIdHTML = 0;
-  private timeoutIdScroll = 0;
-  private timeoutIdResize = 0;
+  private timeoutIdHTML: NodeJS.Timeout | null = null;
+  private timeoutIdScroll: NodeJS.Timeout | null = null;
+  private timeoutIdResize: NodeJS.Timeout | null = null;
   private debounceDelay = 1000; // Adjust delay as needed
   private on = false;
 
@@ -30,7 +30,8 @@ export class Minimap {
       this._minimapViewerDiv,
       this._minimapContentDiv,
     );
-    document.body.appendChild(this._minimapDiv);
+
+    document.getElementById("content")!.appendChild(this._minimapDiv);
 
     this.observer = new MutationObserver(this.callback);
     this.start();
@@ -42,7 +43,7 @@ export class Minimap {
       this._minimapDiv.className,
     );
     for (let element of elements) {
-      document.body.removeChild(element);
+      document.getElementById("content")!.removeChild(element);
     }
   }
 
@@ -60,14 +61,14 @@ export class Minimap {
     const editor = document.getElementById("editor");
     this.observer.observe(editor!, this._config);
     editor!.addEventListener("scroll", () => {
-      if (this.timeoutIdScroll != 0) return;
+      if (this.timeoutIdScroll != null) return;
       this.timeoutIdScroll = setTimeout(
         this.trackScroll.bind(this),
         this.debounceDelay / 24,
       );
     });
     editor!.addEventListener("resize", () => {
-      if (this.timeoutIdResize != 0) return;
+      if (this.timeoutIdResize != null) return;
       this.timeoutIdResize = setTimeout(
         this.getDimensions.bind(this),
         this.debounceDelay / 24,
@@ -78,9 +79,9 @@ export class Minimap {
 
   public stop() {
     this._minimapDiv.setAttribute("visible", "false");
-    this.timeoutIdHTML = 0;
-    this.timeoutIdScroll = 0;
-    this.timeoutIdResize = 0;
+    this.timeoutIdHTML = null;
+    this.timeoutIdScroll = null;
+    this.timeoutIdResize = null;
     const editor = document.getElementById("editor");
     this.observer.disconnect();
     editor!.removeEventListener("scroll", () => this.trackScroll);
@@ -92,7 +93,7 @@ export class Minimap {
     mutationList: MutationRecord[],
     observer: MutationObserver,
   ) => {
-    if (this.timeoutIdHTML != 0) return;
+    if (this.timeoutIdHTML != null) return;
     this.timeoutIdHTML = setTimeout(
       this.updateHTML.bind(this),
       this.debounceDelay,
@@ -101,7 +102,7 @@ export class Minimap {
 
   public updateHTML() {
     // console.log("updateHTML");
-    this.timeoutIdHTML = 0;
+    this.timeoutIdHTML = null;
 
     const editor = document.getElementById("editor");
     const html = editor!.innerHTML;
@@ -124,7 +125,7 @@ export class Minimap {
   }
 
   private getDimensions() {
-    this.timeoutIdResize = 0;
+    this.timeoutIdResize = null;
     const editor = document.getElementById("editor");
 
     let bodyWidth = editor!.clientWidth;
@@ -132,8 +133,7 @@ export class Minimap {
     let bodyRatio = bodyHeight / bodyWidth;
     let winRatio = window.innerHeight / window.innerWidth;
 
-    this._minimapDiv.style.width = "7.5%";
-    this._minimapDiv.style.height = "90%";
+    this._minimapDiv.style.width = "15%";
 
     this._realScale = this._minimapDiv.clientWidth / bodyWidth;
     this._bodyScale = this._minimapDiv.clientWidth / document.body.clientWidth;
@@ -149,7 +149,7 @@ export class Minimap {
   }
 
   private trackScroll() {
-    this.timeoutIdScroll = 0;
+    this.timeoutIdScroll = null;
 
     const editor = document.getElementById("editor");
 

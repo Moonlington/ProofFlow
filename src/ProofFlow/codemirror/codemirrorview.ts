@@ -2,7 +2,7 @@
  *  Adapted from https://github.com/sibiraj-s/prosemirror-codemirror-6
  *--------------------------------------------------------*/
 
-import { Selection, TextSelection, Transaction } from "prosemirror-state";
+import { Selection, TextSelection } from "prosemirror-state";
 import type { EditorView, NodeView } from "prosemirror-view";
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { exitCode } from "prosemirror-commands";
@@ -15,10 +15,12 @@ import type { ComputeChange, CodeMirrorViewOptions } from "./types.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 import { getContainingNode } from "../commands/helpers.ts";
-import { wordHover } from "./extensions/hovertooltip.ts";
-import {codeCompl} from "./extensions/autocomplete.ts";
-import { DiagnosticsMessageData, LSPDiagnostic } from "../../lspMessageTypes.ts";
-import {linter, Diagnostic, setDiagnostics } from "@codemirror/lint"
+import { codeCompl } from "./extensions/autocomplete.ts";
+import {
+  DiagnosticsMessageData,
+  LSPDiagnostic,
+} from "../../lspMessageTypes.ts";
+import { Diagnostic, setDiagnostics } from "@codemirror/lint";
 import { ProofFlow } from "../editor/ProofFlow.ts";
 
 const computeChange = (
@@ -95,6 +97,8 @@ class CodeMirrorView implements NodeView {
     // The editor's outer node is our DOM representation
     this.dom = this.cm.dom;
 
+    this.dom.style.backgroundColor = "#00000002";
+
     // Keymaps for the codemirror editor
     const tabKeymap = keymap.of([
       {
@@ -120,10 +124,9 @@ class CodeMirrorView implements NodeView {
       }
     });
 
-
     const cmState = CMState.create({
       doc: this.node.textContent,
-      
+
       // Defining keymaps for codemirror
       extensions: [
         changeFilter,
@@ -159,7 +162,7 @@ class CodeMirrorView implements NodeView {
         tabKeymap,
         changeExtension,
         // wordHover,
-        codeCompl
+        codeCompl,
       ],
     });
 
@@ -185,7 +188,7 @@ class CodeMirrorView implements NodeView {
       } else {
         this.handelingLSP = false;
       }
-    }, 500)
+    }, 500);
   }
 
   static resortInstances() {
@@ -419,13 +422,15 @@ class CodeMirrorView implements NodeView {
 
   static handleDiagnostics(message: DiagnosticsMessageData) {
     this.handelingLSP = true;
-    message.diagnostics = message.diagnostics.sort((a: LSPDiagnostic, b: LSPDiagnostic) => {
-      if (a.range.start.line < b.range.start.line) return -1;
-      if (a.range.start.line > b.range.start.line) return 1;
-      if (a.range.start.character < b.range.start.character) return -1;
-      if (a.range.start.character > b.range.start.character) return 1;
-      return 0;
-    })
+    message.diagnostics = message.diagnostics.sort(
+      (a: LSPDiagnostic, b: LSPDiagnostic) => {
+        if (a.range.start.line < b.range.start.line) return -1;
+        if (a.range.start.line > b.range.start.line) return 1;
+        if (a.range.start.character < b.range.start.character) return -1;
+        if (a.range.start.character > b.range.start.character) return 1;
+        return 0;
+      },
+    );
     let curLine = 1;
     let index = 0;
     console.log(message.diagnostics);
@@ -452,14 +457,14 @@ class CodeMirrorView implements NodeView {
           to: getPos(range.end.line, range.end.character),
           severity: "error",
           message: message.diagnostics[index].message,
-        }
+        };
         index++;
         diagnostics.push(diagnostic);
       }
       let test = setDiagnostics(instance.cm.state, diagnostics);
       instance.cm.dispatch(test);
       curLine += lineCount;
-    })
+    });
     this.clearLSP();
   }
 }

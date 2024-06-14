@@ -1,0 +1,119 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.popup {
+    width: 90%;
+    min-width: 550px;
+    max-width: 800px;
+    background-color: var(--primary-color);
+    padding: 25px;
+    box-shadow: 0 5px 15px var(--popup-shadow);
+    z-index: 1000;
+    text-align: center;
+    margin-bottom: 20%;
+    position: relative;
+
+}
+
+.popup>* {
+    text-align: left;
+}
+
+.popup h2 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.popup h4 {
+    margin-top: 0;
+    margin-bottom: 3px;
+}
+
+.settings-container {
+    margin-bottom: 10px;
+}
+
+.settings-container:hover {
+    background-color: var(--hover);
+}
+
+.close-button {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    cursor: pointer;
+    height: 20px;
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 0, 0, 0.44);
+    border: 1px black solid;
+    font-size: 16px;
+    /* Adjust this to fit the cross properly */
+}
+
+.close-button:hover {
+    background-color: rgba(255, 0, 0, 0.8);
+}
+
+.dropdown {
+    background-color: var(--secondary-color);
+    color: var(--button-text-color);
+    margin-top: 5px;
+}
+
+.dropdown:hover {
+    background-color: var(--highlight);
+}
+
+.checkbox:hover {
+    cursor: pointer;
+}
+
+.settings-text-input {
+    width: 80%;
+    background-color: var(--hover);
+    color: var(--text-color);
+    border: none;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+.settings-text-input:hover {
+    background-color: var(--secondary-color);
+}
+
+.settings-apply-button {
+    border: 1px solid var(--button-text-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    width: 50px;
+    min-width: 40px;
+    height: 20px;
+    padding: 4px 0;
+    margin: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    background-color: var(--secondary-color);
+    margin-left: 5px;
+}
+
+.settings-apply-button:hover {
+    background-color: var(--hover);
+}

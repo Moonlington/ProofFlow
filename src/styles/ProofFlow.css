@@ -334,3 +334,8 @@
     padding-inline-end: 0px;
     margin: 0px;
   }
+
+  #ProofFlowEditor {
+    border-bottom: 0.5px solid var(--hover);
+    color: var(--text-color);
+  }

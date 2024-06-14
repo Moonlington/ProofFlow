@@ -1,0 +1,8 @@
+/* This file is used to import all the css files in the styles folder */
+@import './ProofFlow.css';
+@import './index.css';
+@import './minimap.css';
+@import './buttonBar.css';
+@import './cells.css';
+@import './settings.css';
+@import './settingButtonBar.css';

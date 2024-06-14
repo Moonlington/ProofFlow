@@ -1,0 +1,52 @@
+collapsible_title {
+  width: 100%;
+  display: block;
+}
+
+collapsible_title:hover {
+  background-color: var(--hover);
+  cursor: pointer;
+}
+
+.collapsible_content, markdown {
+  border: var(--tertiary-color) 2px dashed;
+}
+
+markdown, math-display {
+  display: block;
+  width: 100%;
+}
+
+
+.input-correct {
+  border-left: 5px solid #0FFF50;
+}
+
+.input-incorrect {
+  border-left: 5px solid #ff0f0f;
+}
+
+.input-unattempted {
+  border-left: 5px solid var(--secondary-color);
+}
+
+.locked {
+  pointer-events: none;
+  user-select: text;
+}
+
+.unlocked,
+.unlocked>* {
+  pointer-events: auto;
+  cursor: auto;
+}
+
+.math-node .math-src, .math-node > *, .math-src > *, math-display {
+	color: var(--text-color) !important;
+  background-color: var(--primary-color) !important;
+}
+
+.cm-editor, .cm-editor > *, .ͼ2 .cm-gutters, .cm-activeLineGutter {
+  background-color: var(--primary-color) !important;
+  color: var(--text-color) !important;
+}
