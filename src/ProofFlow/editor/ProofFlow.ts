@@ -1,7 +1,7 @@
-import { Schema, DOMParser, Node } from "prosemirror-model";
+import { Schema, Node } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/index.ts";
 import type { GetPos } from "../codemirror/types.ts";
-import { ProofFlowSchema, proof } from "./proofflowschema.ts";
+import { ProofFlowSchema } from "./proofflowschema.ts";
 import {
   EditorState,
   EditorStateConfig,
@@ -53,6 +53,7 @@ import {
   DiagnosticsMessageData,
 } from "../../lspMessageTypes.ts";
 import { createSettings } from "../../main.ts";
+import { reloadColorScheme, updateColors } from "../settings/updateColors.ts";
 // CSS
 
 export class ProofFlow {
@@ -102,7 +103,11 @@ export class ProofFlow {
     );
   }
 
-  // TODO: Documentation
+  
+  /**
+   * Creates an instance of the EditorView.
+   * @returns {EditorView} The created EditorView instance.
+   */
   private createEditorView(): EditorView {
     // Create the editor state
     const editorState = EditorState.create(this.editorStateConfig);
@@ -229,6 +234,9 @@ export class ProofFlow {
         });
       });
     });
+
+    // Ensure the minimap is updated wiht the correct colorscheme.
+    reloadColorScheme();
   }
 
   public static updateLSP() {

@@ -6,7 +6,7 @@ import {
 import "./styles/main.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
-import { updateColors } from "./ProofFlow/settings/updateColors.ts";
+import { reloadColorScheme, updateColors } from "./ProofFlow/settings/updateColors.ts";
 import { LSPMessenger } from "./basicLspFunctions";
 import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
@@ -23,6 +23,7 @@ const container = document.createElement("div");
 container.id = "container";
 app.appendChild(container);
 
+// Create the editor and content elements
 const editor = document.createElement("div");
 editor.id = "editor";
 container.appendChild(editor);
@@ -37,25 +38,30 @@ let lspMessenger: LSPMessenger = new LSPMessenger(
   proofFlow.handleDiagnostics.bind(proofFlow),
 );
 
+// Create the settings overlay
+const settingsOverlay = new SettingsOverlay(container);
+
+// Create the settings bar
 createSettings();
 
+// Export the proofFlow instance
 export { proofFlow };
 
+// Ensure that the user mode is correctly set
 handleUserModeSwitch();
 
-const darkMode = window.localStorage.getItem("darkMode") == "true";
-const colorScheme =
-  window.localStorage.getItem("colorScheme") || "Ocean Breeze";
-updateColors(colorScheme, darkMode);
+// Update the color scheme
+reloadColorScheme();
 
 // Input to read file
 document
   .getElementById("file-input")
   ?.addEventListener("change", readSingleFile, false);
 
+/**
+ * Creates the settings and initializes the settings bar.
+ */
 export function createSettings() {
-  const settingsOverlay = new SettingsOverlay(container);
-  
   const settingBar = new SettingsBar(
     content,
     settingsOverlay,

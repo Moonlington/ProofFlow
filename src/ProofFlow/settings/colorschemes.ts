@@ -1,7 +1,13 @@
+/**
+ * Represents a collection of color schemes.
+ */
 interface ColorSchemes {
   [key: string]: string[];
 }
 
+/*
+  * Color schemes for the application.
+  */
 export const colorSchemes: ColorSchemes = {
   "Ocean Breeze": [
     "#F0FFFF", // primary-color

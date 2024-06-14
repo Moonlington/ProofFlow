@@ -2,16 +2,28 @@ import { proofFlow } from "../../main";
 import { updateColors } from "./updateColors";
 import { colorSchemesKeys } from "./updateColors";
 
+/**
+ * Represents the settings overlay class.
+ */
 export class SettingsOverlay {
   private _container: HTMLElement;
   private _overlay: HTMLElement;
 
+  /**
+   * Represents the settings class.
+   * @param container - The HTML element that will contain the settings.
+   */
   constructor(container: HTMLElement) {
     this._container = container;
     this._overlay = this.render();
     this.showOverlay(false);
   }
 
+  /**
+   * Renders the settings menu overlay.
+   * 
+   * @returns The rendered overlay element.
+   */
   private render() {
     // Create the overlay
     const overlay = document.createElement("div");
@@ -30,6 +42,7 @@ export class SettingsOverlay {
     const header = document.createElement("h2");
     header.textContent = "Settings Menu";
 
+    // Get the settings from the local storage
     const localStorage = window.localStorage;
     const teacherMode: boolean = Boolean(
       localStorage.getItem("teacherMode") === "true",
@@ -49,13 +62,16 @@ export class SettingsOverlay {
       colorScheme,
     );
 
+    // Add LSP server path settings
     const lspContainer = this.lspContainer(lspPath);
 
+    // Append the elements to the popup
     popup.appendChild(header);
     popup.appendChild(userModeContainer);
     popup.appendChild(colorSchemeContainer);
     popup.appendChild(lspContainer);
 
+    // Append the popup to the overlay
     overlay.appendChild(popup);
     this._container.appendChild(overlay);
 
@@ -174,6 +190,7 @@ export class SettingsOverlay {
       colorSchemeSelect.value = colorScheme;
     }
 
+    // update the colors when the checkbox is clicked
     darkModeCheckbox.addEventListener("click", () => {
       updateColors(colorSchemeSelect.value, darkModeCheckbox.checked);
       window.localStorage.setItem(
@@ -182,6 +199,7 @@ export class SettingsOverlay {
       );
     });
 
+    // update the colors when the select element is changed
     colorSchemeSelect.addEventListener("change", (e) => {
       const target = e.target as HTMLSelectElement;
       updateColors(target.value, darkModeCheckbox.checked);
@@ -214,7 +232,7 @@ export class SettingsOverlay {
     const lspButton = document.createElement("button");
     lspButton.textContent = "Apply";
     lspButton.addEventListener("click", () => {
-      console.log("LSP Path: " + lspPath.value);
+      console.log("LSP Path: " + lspPath.value); //TODO Add lspPath functionality
       // proofFlow.setLspPath(lspPath.value);
       window.localStorage.setItem("lspPath", lspPath.value);
     });
@@ -227,6 +245,4 @@ export class SettingsOverlay {
     lspContainer.classList.add("settings-container");
     return lspContainer;
   }
-
-  //TODO Add a container for the minimap setting?
 }

@@ -1,3 +1,4 @@
+/* This file is used to import all the css files in the styles folder */
 @import './ProofFlow.css';
 @import './index.css';
 @import './minimap.css';
@@ -5,14 +6,3 @@
 @import './cells.css';
 @import './settings.css';
 @import './settingButtonBar.css';
-
-:root {
-    --primary-color: #EAEFF2;
-    --secondary-color: #00E0D4;
-    --tertiary-color: #FF4500;
-    --highlight: #1cf5ea;
-    --hover: #00e0d52c;
-    --text-color: #000000;
-    --button-text-color: #000000;
-    --popup-shadow: rgba(0, 0, 0, 0.3);
-}
