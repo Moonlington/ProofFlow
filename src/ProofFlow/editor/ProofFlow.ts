@@ -76,6 +76,9 @@ export class ProofFlow {
   static handelingLSP = true;
   static handelingLSPTimeout: NodeJS.Timeout;
 
+  static bufferDiagnosticTimeout: NodeJS.Timeout;
+  static diagnosticBuffer: DiagnosticsMessageData;
+
   /**
    * Represents the ProofFlow class.
    * @constructor
@@ -202,8 +205,8 @@ export class ProofFlow {
     }
   }
 
-  public handleDiagnostics(message: DiagnosticsMessageData) {
-    //if (message.diagnostics.length == 0) return;
+  private handleDiagnosticsInBuffer() {
+    let message = ProofFlow.diagnosticBuffer;
     CodeMirrorView.handleDiagnostics(message);
 
     function setInstanceColor(state: EditorState, instance: CodeMirrorView, color: proof) {
@@ -228,6 +231,15 @@ export class ProofFlow {
         setInstanceColor(this.getState(), CodeMirrorView.instances[i - 1], proof.incorrect);
       }
     }
+  }
+
+  public handleDiagnostics(message: DiagnosticsMessageData) {
+    clearTimeout(ProofFlow.bufferDiagnosticTimeout);
+    ProofFlow.diagnosticBuffer = message;
+    ProofFlow.bufferDiagnosticTimeout = setTimeout(() => {
+      this.handleDiagnosticsInBuffer();
+    }, 500)
+    return;
   }
 
   /**
