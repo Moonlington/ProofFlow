@@ -209,6 +209,27 @@ class CodeMirrorView implements NodeView {
   }
 
   /**
+   * Method to force the cursor to move where it should already be.
+   * Very weird that we have to do this but it has to do with changing attributes in the parent node.
+   */
+  forceForwardSelection() {
+    this.cm.focus();
+    const { state } = this._outerView;
+    const selection = this.asProseMirrorSelection(state.doc);
+
+    if (!selection.eq(state.selection)) {
+      this._outerView.dispatch(state.tr.setSelection(selection));
+    }
+
+    // Ensure only one cursor is active
+    if (CodeMirrorView.focused != this && CodeMirrorView.focused != null) {
+      CodeMirrorView.focused.blurInstance();
+    }
+
+    CodeMirrorView.focused = this;
+  }
+
+  /**
    * Method to blur the CodeMirror instance when other instances are focused
    */
   blurInstance() {

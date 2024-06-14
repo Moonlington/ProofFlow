@@ -209,7 +209,12 @@ export class ProofFlow {
     let message = ProofFlow.diagnosticBuffer;
     CodeMirrorView.handleDiagnostics(message);
 
-    function setInstanceColor(state: EditorState, instance: CodeMirrorView, color: proof) {
+    function setInstanceColor(this: ProofFlow, state: EditorState, instance: CodeMirrorView, color: proof) {
+      let instanceHasFocus = instance.cm.hasFocus;
+      if (instanceHasFocus) {
+        console.log(this.getState().selection)
+      }
+
       let resolvedPos = state.doc.resolve(instance.getPos());
       const grandParentDepth = resolvedPos.depth - 1;
       if (grandParentDepth >= 0) {
@@ -219,16 +224,21 @@ export class ProofFlow {
           inputProof(node, color, grandParentPos);
         }
       }
+      if (instanceHasFocus) {
+        console.log(this.getState().selection)
+        instance.forceForwardSelection();
+      }
     }
+    const boundSetInstanceColor = setInstanceColor.bind(this);
     for (let i = 0; i < CodeMirrorView.instances.length; i++) {
       let instance = CodeMirrorView.instances[i];
       if (!instance.error) {
-        setInstanceColor(this.getState(), instance, proof.correct);
+        boundSetInstanceColor(this.getState(), instance, proof.correct);
       } else {
-        setInstanceColor(this.getState(), instance, proof.incorrect);
+        boundSetInstanceColor(this.getState(), instance, proof.incorrect);
       }
       if (instance.QEDerror && i > 0) {
-        setInstanceColor(this.getState(), CodeMirrorView.instances[i - 1], proof.incorrect);
+        boundSetInstanceColor(this.getState(), CodeMirrorView.instances[i - 1], proof.incorrect);
       }
     }
   }
