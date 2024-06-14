@@ -52,12 +52,12 @@ import {
   LSPDiagnostic,
   DiagnosticsMessageData,
 } from "../../lspMessageTypes.ts";
+import { createSettings } from "../../main.ts";
 // CSS
 
 export class ProofFlow {
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
   private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
-
   private _schema: Schema = ProofFlowSchema; // The schema for the editor
   private editorStateConfig: EditorStateConfig = {
     schema: ProofFlowSchema,
@@ -491,6 +491,8 @@ export class ProofFlow {
       this.editorView,
       this.minimap!,
     );
+
+    createSettings();
   }
 
   /**

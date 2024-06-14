@@ -1,4 +1,3 @@
-import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
 import { ProofFlow } from "./ProofFlow/editor/ProofFlow.ts";
 import {
   AcceptedFileType,
@@ -7,10 +6,11 @@ import {
 import "./styles/main.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
-import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
-import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
 import { updateColors } from "./ProofFlow/settings/updateColors.ts";
 import { LSPMessenger } from "./basicLspFunctions";
+import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
+import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
+import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
 
 const app = document.createElement("div");
 app.id = "app";
@@ -37,17 +37,10 @@ let lspMessenger: LSPMessenger = new LSPMessenger(
   proofFlow.handleDiagnostics.bind(proofFlow),
 );
 
+createSettings();
+
 export { proofFlow };
 
-const settingsOverlay = new SettingsOverlay(container);
-
-const settingBar = new SettingsBar(
-  content,
-  settingsOverlay,
-  proofFlow.getEditorView(),
-);
-
-// Do this to get proper user rights.
 handleUserModeSwitch();
 
 const darkMode = window.localStorage.getItem("darkMode") == "true";
@@ -59,6 +52,16 @@ updateColors(colorScheme, darkMode);
 document
   .getElementById("file-input")
   ?.addEventListener("change", readSingleFile, false);
+
+export function createSettings() {
+  const settingsOverlay = new SettingsOverlay(container);
+  
+  const settingBar = new SettingsBar(
+    content,
+    settingsOverlay,
+    proofFlow.getEditorView(),
+  );
+}
 
 /**
  * Reads a single file from the input event and processes it.
