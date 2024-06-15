@@ -13,15 +13,15 @@ export {
 const CoqParser = new SimpleParser({
   text: [/\(\*\*/, /\*\)/],
   math: [/\$\$/, /\$\$/],
-  collapsible: [/<hint(?: title="(.*?)")?>/, /<\/hint>/],
-  input: [/<input-area>/, /<\/input-area>/],
+  collapsible: [/<hint(?: title="(.*?)")?>\n/, /\n<\/hint>/],
+  input: [/<input-area>\n/, /\n<\/input-area>/],
 });
 
 const CoqMDParser = new SimpleParser({
   code: [/```coq\n/, /\n```/],
   math: [/\$\$/, /\$\$/],
-  collapsible: [/<hint(?: title="(.*?)")?>/, /<\/hint>/],
-  input: [/<input-area>/, /<\/input-area>/],
+  collapsible: [/<hint(?: title="(.*?)")?>\n/, /\n<\/hint>/],
+  input: [/<input-area>\n/, /\n<\/input-area>/],
 });
 
 const LeanParser = new SimpleParser({
@@ -36,17 +36,17 @@ const CoqOutput: OutputConfig = {
   code: ["", ""],
   math: ["$$", "$$"],
   collapsible: ["<hint>", "</hint>"],
-  collapsibletitle: ['<hint title="TITLE">', "</hint>"],
-  input: ["<input-area>", "</input-area>"],
+  collapsibletitle: ['<hint title="TITLE">\n', "\n</hint>"],
+  input: ["<input-area>\n", "\n</input-area>"],
 };
 
 const CoqMDOutput: OutputConfig = {
   text: ["", ""],
   code: ["```coq\n", "\n```"],
   math: ["$$", "$$"],
-  collapsible: ["<hint>", "</hint>"],
-  collapsibletitle: ['<hint title="TITLE">', "</hint>"],
-  input: ["<input-area>", "</input-area>"],
+  collapsible: ["<hint>\n", "\n</hint>"],
+  collapsibletitle: ['<hint title="TITLE">\n', "\n</hint>"],
+  input: ["<input-area>\n", "\n</input-area>"],
 };
 
 const LeanOutput: OutputConfig = {
