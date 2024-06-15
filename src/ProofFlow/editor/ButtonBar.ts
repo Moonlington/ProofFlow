@@ -6,7 +6,7 @@ import {
 } from "../commands/commands.ts";
 import { InsertionPlace, getContainingNode } from "../commands/helpers.ts";
 import { EditorView } from "prosemirror-view";
-import { EditorState, NodeSelection, Selection } from "prosemirror-state";
+import { NodeSelection } from "prosemirror-state";
 import { deleteSelection, selectParentNode } from "prosemirror-commands";
 import {
   getCollapsibleInsertCommand,
@@ -151,7 +151,7 @@ export class ButtonBar {
         hoverText: "Place the current node in an input node(Ctrl-i)",
       },
       {
-        name: "Colapse",
+        name: "Collapse",
         command: () => {
           let command = getCollapsibleInsertCommand();
           command(this._editorView.state, this._editorView.dispatch);

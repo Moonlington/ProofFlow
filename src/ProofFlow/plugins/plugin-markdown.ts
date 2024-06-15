@@ -15,7 +15,7 @@ import { UserMode, lockEditing } from "../UserMode/userMode.ts";
 
 export const markdownPlugin = new Plugin({
   props: {
-    handleClickOn(view, pos, node, nodePos, event, direct) {
+    handleClickOn(view, pos, node, nodePos, _event, direct) {
       if (node.type.name === undefined || !direct) return; // If the node being clicked is not a valid node or the click is not a user action, return
 
       let trans = view.state.tr;

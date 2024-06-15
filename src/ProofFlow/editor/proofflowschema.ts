@@ -1,5 +1,4 @@
 import { Node, Schema } from "prosemirror-model";
-import { getNextAreaId } from "./ProofFlowDocument";
 
 /**
  * The cell types available in ProofFlow.
@@ -59,7 +58,7 @@ export const ProofFlowSchema: Schema = new Schema({
           tag: "input_content",
         },
       ],
-      toDOM(node: Node) {
+      toDOM(_node: Node) {
         return ["div", { class: "input_content unlocked", visible: true }, 0];
       },
     },
@@ -71,7 +70,7 @@ export const ProofFlowSchema: Schema = new Schema({
       group: "container",
       content: `(collapsible_title)(collapsible_content)`,
       parseDOM: [{ tag: "collapsible" }],
-      toDOM(node: Node) {
+      toDOM(_node: Node) {
         return ["div", { class: "collapsible" }, 0];
       },
     },
@@ -82,7 +81,7 @@ export const ProofFlowSchema: Schema = new Schema({
         { tag: "collapsible_title unlocked", preserveWhitespace: "full" },
       ],
       code: false,
-      toDOM(node) {
+      toDOM(_node) {
         return ["collapsible_title", { class: "unlocked" }, 0];
       },
     },
@@ -123,7 +122,7 @@ export const ProofFlowSchema: Schema = new Schema({
       group: "area",
       content: "text*",
       code: true,
-      toDOM(node) {
+      toDOM(_node) {
         return ["markdown", { class: "markdown" }, 0];
       },
     },
@@ -141,7 +140,7 @@ export const ProofFlowSchema: Schema = new Schema({
       group: "area",
       parseDOM: [{ tag: "markdown-rendered", preserveWhitespace: true }],
       atom: true,
-      toDOM(node) {
+      toDOM(_node) {
         return ["markdown-rendered", { class: "markdown unlocked" }, 0];
       },
     },

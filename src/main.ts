@@ -8,7 +8,6 @@ import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
 import {
   reloadColorScheme,
-  updateColors,
 } from "./ProofFlow/settings/updateColors.ts";
 import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
@@ -66,7 +65,7 @@ window.onbeforeunload = function(){
  * Creates the settings and initializes the settings bar.
  */
 export function createSettings() {
-  const settingBar = new SettingsBar(
+  new SettingsBar(
     content,
     settingsOverlay,
     proofFlow.getEditorView(),

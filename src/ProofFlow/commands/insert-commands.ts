@@ -14,6 +14,7 @@ import {
 import { EditorView } from "prosemirror-view";
 import { ProofFlowSchema } from "../editor/proofflowschema";
 import { getNextAreaId } from "../editor/ProofFlowDocument";
+import CodeMirrorView from "../codemirror/codemirrorview";
 
 /**
  * Returns a command function for inserting a node of type `mdNodeType`.
@@ -28,7 +29,7 @@ export function getMdInsertCommand(
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     if (!allowedToInsert(state)) return false;
 
@@ -52,7 +53,7 @@ export function getMathInsertCommand(
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     if (!allowedToInsert(state)) return false;
 
@@ -76,7 +77,7 @@ export function getCodeInsertCommand(
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     if (!allowedToInsert(state)) return false;
 
@@ -96,7 +97,7 @@ export function getCollapsibleInsertCommand(): Command {
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     // Check if insertion is allowed
     if (!allowedToInsert(state)) return false;
@@ -160,7 +161,7 @@ export function getInputInsertCommand(): Command {
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     // Check if insertion is allowed
     if (!allowedToInsert(state)) return false;

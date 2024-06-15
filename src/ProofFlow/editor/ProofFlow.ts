@@ -32,7 +32,6 @@ import {
   OutputConfig,
   ProofFlowDocument,
   docToPFDocument,
-  nodeToArea,
 } from "./ProofFlowDocument.ts";
 
 import { Parser, SimpleParser } from "../parser/parser.ts";
@@ -101,7 +100,7 @@ export class ProofFlow {
     // Create the editor
     this.editorView = this.createEditorView();
 
-    window.addEventListener("beforeunload", (e) => {
+    window.addEventListener("beforeunload", (_) => {
       this.lspClient?.shutdown();
     });
     // Apply global key bindings

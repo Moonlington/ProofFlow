@@ -1,4 +1,4 @@
-import { NodeType, Node } from "prosemirror-model";
+import { Node } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/codemirrorview";
 
 export function getContent(node: Node): string {

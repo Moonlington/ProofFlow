@@ -378,7 +378,7 @@ function docToPFDocument(doc: Node): ProofFlowDocument {
     return pfDocument;
   }
   let prevNodeId = nextAreaId;
-  doc.content.forEach((node: Node, offset: number, index: number) => {
+  doc.content.forEach((node: Node, _offset: number, _index: number) => {
     let area = nodeToArea(node);
     if (area) pfDocument.addArea(area);
   });
@@ -406,7 +406,7 @@ function nodeToArea(node: Node): Area | undefined {
       let input = new InputArea();
       node.content
         .child(0)
-        .content.forEach((n: Node, offset: number, index: number) => {
+        .content.forEach((n: Node, _offset: number, _index: number) => {
           let area = nodeToArea(n);
           if (area) input.addArea(area);
         });
@@ -416,7 +416,7 @@ function nodeToArea(node: Node): Area | undefined {
       let collapsible = new CollapsibleArea(node.content.child(0).textContent);
       node.content
         .child(1)
-        .content.forEach((n: Node, offset: number, index: number) => {
+        .content.forEach((n: Node, _offset: number, _index: number) => {
           let area = nodeToArea(n);
           if (area) collapsible.addArea(area);
         });

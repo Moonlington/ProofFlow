@@ -2,8 +2,6 @@ import { ProofFlow } from "../../editor/ProofFlow.ts";
 import {
   autocompletion,
   CompletionContext,
-  Completion,
-  CompletionResult,
 } from "@codemirror/autocomplete";
 import { CompletionTriggerKind } from "vscode-languageserver-protocol";
 import { Text } from "@codemirror/state";
@@ -20,7 +18,7 @@ export function autocomplete(pf: ProofFlow) {
   return autocompletion({
     override: [
       async (context: CompletionContext): Promise<any> => {
-        const { state, pos, explicit } = context;
+        const { state, pos } = context;
         const line = state.doc.lineAt(pos);
 
         const lsp = pf.getLSPClient();

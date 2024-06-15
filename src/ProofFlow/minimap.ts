@@ -90,8 +90,8 @@ export class Minimap {
   }
 
   private callback = (
-    mutationList: MutationRecord[],
-    observer: MutationObserver,
+    _mutationList: MutationRecord[],
+    _bservero: MutationObserver,
   ) => {
     if (this.timeoutIdHTML != null) return;
     this.timeoutIdHTML = setTimeout(
