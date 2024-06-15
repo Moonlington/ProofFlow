@@ -13,13 +13,13 @@ export function handleUserModeSwitch() {
   // switchAllInput();
   const userMode = proofFlow.getUserMode();
   const inputButton = document.getElementById("input-button");
-  const collapsibleButton = document.getElementById("colapse-button");
+  const collapsibleButton = document.getElementById("collapse-button");
 
   if (!inputButton) {
     throw new Error("input-button not found");
   }
   if (!collapsibleButton) {
-    throw new Error("colapse-button not found");
+    throw new Error("collapse-button not found");
   }
   if (userMode === UserMode.Student) {
     inputButton.style.display = "none";
