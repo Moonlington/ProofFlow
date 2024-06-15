@@ -1,4 +1,4 @@
-export { Parser, ParserConfig, SimpleParser };
+export { SimpleParser };
 
 import {
   ProofFlowDocument,
@@ -8,14 +8,14 @@ import {
   InputArea,
 } from "../editor/ProofFlowDocument";
 
-interface Parser {
+export interface Parser {
   parse(document: string): ProofFlowDocument;
 }
 
 // TODO: NEEDS DOCUMENTATION key = AreaType: [begin, end]
 type AreaConfig = [RegExp, RegExp];
 
-type ParserConfig = {
+export type ParserConfig = {
   [key: string]: AreaConfig;
 };
 

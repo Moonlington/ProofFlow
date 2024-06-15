@@ -8,14 +8,12 @@ export {
   ProofFlowDocument,
   docToPFDocument,
   getNextAreaId,
-  OutputConfig,
   NOPConfig,
   nodeToArea,
-  Position,
   Range,
 };
 
-type Position = {
+export type Position = {
   line: number;
   character: number;
 };
@@ -147,7 +145,7 @@ class InputArea extends Area {
   }
 }
 
-type OutputConfig = {
+export type OutputConfig = {
   [key: string]: [string, string];
 };
 

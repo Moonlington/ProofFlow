@@ -19,7 +19,7 @@ export function wordHover(pf: ProofFlow) {
         pos: start,
         end,
         above: true,
-        create(view) {
+        create(_view) {
           let dom = document.createElement("div");
           dom.textContent = text.slice(start - from, end - from);
           lsp.hover({ line: pos, character: start - from }).then((response) => {

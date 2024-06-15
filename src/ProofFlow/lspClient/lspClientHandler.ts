@@ -1,4 +1,3 @@
-export { LSPClientHandler };
 import {
   Position,
   ProofFlowDocument,
@@ -14,7 +13,7 @@ import {
 
 type RangeResponse = Range | Range[];
 
-interface LSPClientHandler {
+export interface LSPClientHandler {
   // Lifecycle Messages
   initialize(): Promise<InitializeResult>;
   initialized(): void;

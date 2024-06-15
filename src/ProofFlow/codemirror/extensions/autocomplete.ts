@@ -3,7 +3,6 @@ import {
   autocompletion,
   CompletionContext,
 } from "@codemirror/autocomplete";
-import { CompletionTriggerKind } from "vscode-languageserver-protocol";
 import { Text } from "@codemirror/state";
 
 function offsetToPos(doc: Text, offset: number) {
@@ -25,9 +24,7 @@ export function autocomplete(pf: ProofFlow) {
 
         if (!lsp) return;
 
-        let trigKind: CompletionTriggerKind = CompletionTriggerKind.Invoked;
         let trigChar: string | undefined;
-        trigKind = CompletionTriggerKind.TriggerCharacter;
         trigChar = line.text[pos - line.from - 1];
 
         const completionItems = await lsp.completion(
