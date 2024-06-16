@@ -76,6 +76,13 @@ class Area {
   toString(config: OutputConfig): string {
     return config[this.type][0] + this.content + config[this.type][1];
   }
+
+  getPosition(offset: number): Position {
+    let localPos = indexToPosition(offset, this.content)
+    if (localPos.line > 0) localPos.character--;
+    if (!this.range) return localPos
+    return {line: this.range.start.line + localPos.line, character: this.range.start.character + localPos.character}
+  }
 }
 
 class CollapsibleArea extends Area {
@@ -199,7 +206,7 @@ class ProofFlowDocument {
           this.outputConfig[area.type][0].length,
         fullstring,
       );
-      if (startPosition.line > 1) startPosition.character--;
+      if (startPosition.line > 0) startPosition.character--;
       let endPosition = indexToPosition(
         fullstring.indexOf(areaString, lastIndex) +
           areaString.length -
