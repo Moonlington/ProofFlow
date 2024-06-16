@@ -1,8 +1,5 @@
 import { ProofFlow } from "../../editor/ProofFlow.ts";
-import {
-  autocompletion,
-  CompletionContext,
-} from "@codemirror/autocomplete";
+import { autocompletion, CompletionContext } from "@codemirror/autocomplete";
 import { Text } from "@codemirror/state";
 
 function offsetToPos(doc: Text, offset: number) {

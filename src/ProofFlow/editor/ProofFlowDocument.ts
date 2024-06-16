@@ -78,10 +78,13 @@ class Area {
   }
 
   getPosition(offset: number): Position {
-    let localPos = indexToPosition(offset, this.content)
+    let localPos = indexToPosition(offset, this.content);
     if (localPos.line > 0) localPos.character--;
-    if (!this.range) return localPos
-    return {line: this.range.start.line + localPos.line, character: this.range.start.character + localPos.character}
+    if (!this.range) return localPos;
+    return {
+      line: this.range.start.line + localPos.line,
+      character: this.range.start.character + localPos.character,
+    };
   }
 }
 

@@ -6,9 +6,7 @@ import {
 import "./styles/main.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
-import {
-  reloadColorScheme,
-} from "./ProofFlow/settings/updateColors.ts";
+import { reloadColorScheme } from "./ProofFlow/settings/updateColors.ts";
 import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
 import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
@@ -57,19 +55,15 @@ document
   ?.addEventListener("change", readSingleFile, false);
 
 // prevent user from leaving the page without saving
-window.onbeforeunload = function(){
-  return 'Are you sure you want to leave? You may have unsaved changes.';
+window.onbeforeunload = function () {
+  return "Are you sure you want to leave? You may have unsaved changes.";
 };
 
 /**
  * Creates the settings and initializes the settings bar.
  */
 export function createSettings() {
-  new SettingsBar(
-    content,
-    settingsOverlay,
-    proofFlow.getEditorView(),
-  );
+  new SettingsBar(content, settingsOverlay, proofFlow.getEditorView());
 }
 
 /**
