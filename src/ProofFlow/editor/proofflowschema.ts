@@ -1,5 +1,6 @@
 import { Node, Schema } from "prosemirror-model";
 import { node as codeMirrorNode } from "../codemirror";
+//import { mathSchema } from "@benrbray/prosemirror-math";
 
 /**
  * The cell types available in ProofFlow.
@@ -58,6 +59,11 @@ export const ProofFlowSchema: Schema = new Schema({
       parseDOM: [
         {
           tag: "input_content",
+          getAttrs(dom) {
+            return {
+              title: (dom as HTMLElement).getAttribute("title") ?? "input",
+            };
+          },
         },
       ],
       toDOM(node: Node) {
@@ -117,10 +123,9 @@ export const ProofFlowSchema: Schema = new Schema({
      */
     markdown: {
       block: true,
-      content: "text*",
-      //parseDOM: [{ tag: "markdown", preserveWhitespace: "full" }],
+      content: "inline*",
       atom: false,
-      code: true,
+      code: false, // MATH INLINE WILL NOT WORK WITHOUT THIS!!
       leaf: false,
       draggable: false,
       toDOM(node) {
@@ -134,10 +139,9 @@ export const ProofFlowSchema: Schema = new Schema({
      */
     markdown_rendered: {
       block: true,
-      content: "block*",
+      content: "inline*",
       parseDOM: [{ tag: "markdown-rendered", preserveWhitespace: true }],
       atom: true,
-      //draggable: false,
       toDOM(node) {
         return ["markdown-rendered", { class: "markdown unlocked" }, 0];
       },
@@ -153,21 +157,25 @@ export const ProofFlowSchema: Schema = new Schema({
       group: "inline",
     },
 
-    /**
-     * The math_display node.
-     * Represents a block of math display.
-     */
-    math_display: {
+    math_inline: {               // important!
+      group: "inline",
+      content: "text*",        // important!
+      inline: true,            // important!
+      atom: true,              // important!
+      toDOM: () => ["math-inline", { class: "math-node" }, 0],
+      parseDOM: [{
+          tag: "math-inline"   // important!
+      }]
+    },
+    math_display: {              // important!
       group: "block",
-      content: "text*",
-      atom: true,
-      code: true,
+      content: "text*",        // important!
+      atom: true,              // important!
+      code: true,              // important!
       toDOM: () => ["math-display", { class: "math-node" }, 0],
-      parseDOM: [
-        {
-          tag: "math-display",
-        },
-      ],
+      parseDOM: [{
+          tag: "math-display"  // important!
+      }]
     },
 
     paragraph: {

@@ -2,7 +2,7 @@ import { deleteSelection, newlineInCode } from "prosemirror-commands";
 import { keymap } from "prosemirror-keymap";
 import { Schema } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
-import { mathPlugin } from "@benrbray/prosemirror-math";
+import { makeInlineMathInputRule, mathPlugin, REGEX_INLINE_MATH_DOLLARS } from "@benrbray/prosemirror-math";
 import { history } from "prosemirror-history";
 import { inputRules } from "prosemirror-inputrules";
 import {
@@ -24,7 +24,12 @@ import { preventDropPlugin } from "../plugins/prevent-drop.ts";
 // Create input rules using default regex
 const blockMathInputRule = makeBlockMathInputRule(
   REGEX_BLOCK_MATH_DOLLARS,
-  ProofFlowSchema.nodes.math_display,
+  ProofFlowSchema.nodes.math_display
+);
+
+const inlineMathInputRule = makeInlineMathInputRule(
+  REGEX_INLINE_MATH_DOLLARS,
+  ProofFlowSchema.nodes.math_inline
 );
 
 // TODO: Documentation
@@ -38,7 +43,7 @@ export const ProofFlowPlugins: Plugin[] = [
   markdownPlugin,
   preventDropPlugin,
   keymapPlugin(ProofFlowSchema),
-  inputRules({ rules: [blockMathInputRule] }),
+  inputRules({ rules: [blockMathInputRule, inlineMathInputRule] }),
   history(),
 ];
 
