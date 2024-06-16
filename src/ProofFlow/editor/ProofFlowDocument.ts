@@ -37,9 +37,11 @@ class Range {
   contains(pos: Position): boolean {
     if (pos.line < this.start.line) return false;
     if (pos.line > this.end.line) return false;
-    if (pos.line === this.start.line && pos.character < this.start.character) return false;
-    if (pos.line === this.end.line && pos.character > this.end.character) return false;
-    return true
+    if (pos.line === this.start.line && pos.character < this.start.character)
+      return false;
+    if (pos.line === this.end.line && pos.character > this.end.character)
+      return false;
+    return true;
   }
 }
 
@@ -87,14 +89,18 @@ class Area {
     };
   }
 
-  getOffset(pos: Position): number|undefined {
-    console.log(this.range, pos)
-    if (!this.range?.contains(pos)) return undefined
-    
-    let lines = this.content.split("\n")
-    let localLine = pos.line - this.range.start.line
+  getOffset(pos: Position): number | undefined {
+    console.log(this.range, pos);
+    if (!this.range?.contains(pos)) return undefined;
+
+    let lines = this.content.split("\n");
+    let localLine = pos.line - this.range.start.line;
     if (localLine > 0) pos.character++;
-    return lines.slice(0, localLine).join("\n").length + pos.character - this.range.start.character
+    return (
+      lines.slice(0, localLine).join("\n").length +
+      pos.character -
+      this.range.start.character
+    );
   }
 }
 
@@ -368,13 +374,15 @@ class ProofFlowDocument {
         case AreaType.Collapsible:
           let collapsible = area as CollapsibleArea;
           for (let otherarea of collapsible.subAreas) {
-            if (otherarea.range?.contains(pos)) return [otherarea, otherarea.getOffset(pos)!];
+            if (otherarea.range?.contains(pos))
+              return [otherarea, otherarea.getOffset(pos)!];
           }
           break;
         case AreaType.Input:
           let input = area as InputArea;
           for (let otherarea of input.subAreas) {
-            if (otherarea.range?.contains(pos)) return [otherarea, otherarea.getOffset(pos)!];
+            if (otherarea.range?.contains(pos))
+              return [otherarea, otherarea.getOffset(pos)!];
           }
           break;
         default:

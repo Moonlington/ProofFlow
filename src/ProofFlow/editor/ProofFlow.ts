@@ -228,24 +228,24 @@ export class ProofFlow {
   }
 
   public handleDiagnostics(message: DiagnosticsMessageData) {
-    CodeMirrorView.resetDiagnostics()
+    CodeMirrorView.resetDiagnostics();
     for (let diag of message.diagnostics) {
-      let res = this.pfDocument.getAreayByPosition(diag.range.start)
+      let res = this.pfDocument.getAreayByPosition(diag.range.start);
       if (!res) continue;
 
       let [area, start] = res;
-      let end = area.getOffset(diag.range.end)
-      let found: [Node, number] | undefined
+      let end = area.getOffset(diag.range.end);
+      let found: [Node, number] | undefined;
       this.editorView.state.doc.descendants((node, pos) => {
-        if (node.attrs.id === area.id) found = [node, pos]
-        if (found) return false
-      })
+        if (node.attrs.id === area.id) found = [node, pos];
+        if (found) return false;
+      });
       if (!found) continue;
 
-      let codemirror = CodeMirrorView.findByPos(found[1])
+      let codemirror = CodeMirrorView.findByPos(found[1]);
       if (!codemirror) continue;
 
-      codemirror.handleDiagnostic(diag, start, end!)
+      codemirror.handleDiagnostic(diag, start, end!);
     }
   }
 
