@@ -146,7 +146,7 @@ class ProofflowLSPClient implements LSPClientHandler {
   }
 
   initialized(): void {
-    this.expectNoResponse("initialize", {});
+    this.expectNoResponse("initialized", {});
   }
 
   shutdown(): void {

@@ -293,7 +293,7 @@ export class ProofFlow {
       lspClientFileType,
     );
     await this.lspClient.initialize();
-    // this.lspClient.initialized();
+    this.lspClient.initialized();
     this.lspClient.didOpen(pfDocument);
   }
 
