@@ -142,8 +142,8 @@ export class ProofFlow {
                 basicSetup,
                 linter(null),
                 javascript(),
-                autocomplete(this),
-                wordHover(this),
+                // autocomplete(this),
+                // wordHover(this),
               ],
             },
           }),
@@ -228,8 +228,25 @@ export class ProofFlow {
   }
 
   public handleDiagnostics(message: DiagnosticsMessageData) {
-    //if (message.diagnostics.length == 0) return;
-    CodeMirrorView.handleDiagnostics(message);
+    CodeMirrorView.resetDiagnostics()
+    for (let diag of message.diagnostics) {
+      let res = this.pfDocument.getAreayByPosition(diag.range.start)
+      if (!res) continue;
+
+      let [area, start] = res;
+      let end = area.getOffset(diag.range.end)
+      let found: [Node, number] | undefined
+      this.editorView.state.doc.descendants((node, pos) => {
+        if (node.attrs.id === area.id) found = [node, pos]
+        if (found) return false
+      })
+      if (!found) continue;
+
+      let codemirror = CodeMirrorView.findByPos(found[1])
+      if (!codemirror) continue;
+
+      codemirror.handleDiagnostic(diag, start, end!)
+    }
   }
 
   /**
@@ -240,7 +257,6 @@ export class ProofFlow {
    */
   public async openFile(text: string, fileType: AcceptedFileType) {
     ProofFlow.fileType = fileType;
-    CodeMirrorView.handelingLSP = true;
     text = text.replace(/\r/gi, ""); // Windows uses Carriage feeds but we don't like that.
 
     // Process the file content
@@ -273,7 +289,7 @@ export class ProofFlow {
     this.lspClient = new ProofflowLSPClient(
       this.fileName,
       "ws://localhost:8080",
-      this.handleDiagnostics,
+      this.handleDiagnostics.bind(this),
       lspClientFileType,
     );
     await this.lspClient.initialize();
