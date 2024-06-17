@@ -385,6 +385,10 @@ export class CodeMirrorView implements NodeView {
 
   static resetDiagnostics() {
     CodeMirrorView.instances.forEach((instance) => (instance.diagnostics = []));
+    CodeMirrorView.instances.forEach((instance) => {
+      let tr = setDiagnostics(instance.cm.state, []);
+      instance.cm.dispatch(tr);
+    })
   }
 
   handleDiagnostic(diag: LSPDiagnostic, start: number, end: number) {
