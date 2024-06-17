@@ -267,6 +267,7 @@ export function inputProof(
     ...inputNode.attrs,
     proof: newProof,
   });
+  transaction.setMeta("addToHistory", false);
 
   dispatch(transaction);
 }

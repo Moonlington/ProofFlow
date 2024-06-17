@@ -1,7 +1,7 @@
 import { Schema, Node } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/codemirrorview.ts";
 import type { GetPos } from "../codemirror/types.ts";
-import { ProofFlowSchema } from "./proofflowschema.ts";
+import { ProofFlowSchema, ProofStatus } from "./proofflowschema.ts";
 import {
   EditorState,
   EditorStateConfig,
@@ -51,6 +51,7 @@ import { autocomplete } from "../codemirror/extensions/autocomplete.ts";
 import { wordHover } from "../codemirror/extensions/hovertooltip.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
 import {basicSetupNoHistory} from "../codemirror/basicSetupNoHistory.ts";
+import { inputProof } from "../commands/helpers.ts";
 // CSS
 
 export class ProofFlow {
@@ -246,6 +247,33 @@ export class ProofFlow {
       if (!codemirror) continue;
 
       codemirror.handleDiagnostic(diag, start, end!);
+    }
+    this.setProofColors();
+  }
+
+  private setProofColors() {
+    function setInstanceColor(state: EditorState, instance: CodeMirrorView, color: ProofStatus) {
+      let resolvedPos = state.doc.resolve(instance.getPos());
+      const grandParentDepth = resolvedPos.depth - 1;
+      if (grandParentDepth >= 0) {
+        const grandParentPos = resolvedPos.before(grandParentDepth);
+        let node = state.doc.nodeAt(grandParentPos);
+        if (node != null) {
+          inputProof(node, color, grandParentPos);
+        }
+      }
+    }
+
+    for (let i = 0; i < CodeMirrorView.instances.length; i++) {
+      let instance = CodeMirrorView.instances[i];
+      if (instance.diagnostics.length == 0) {
+        setInstanceColor(this.getState(), instance, ProofStatus.Correct);
+      } else {
+        setInstanceColor(this.getState(), instance, ProofStatus.Incorrect);
+      }
+      if (instance.isQEDError && i > 0) {
+        setInstanceColor(this.getState(), CodeMirrorView.instances[i - 1], ProofStatus.Incorrect);
+      }
     }
   }
 

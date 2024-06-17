@@ -61,6 +61,7 @@ export class CodeMirrorView implements NodeView {
   getPos: () => number;
   updating = false;
   diagnostics: Diagnostic[] = new Array();
+  isQEDError = false;
 
   static instances: CodeMirrorView[] = [];
   static focused: CodeMirrorView | null = null;
@@ -386,9 +387,16 @@ export class CodeMirrorView implements NodeView {
   static resetDiagnostics() {
     CodeMirrorView.instances.forEach((instance) => (instance.diagnostics = []));
     CodeMirrorView.instances.forEach((instance) => {
+      instance.isQEDError = false;
       let tr = setDiagnostics(instance.cm.state, []);
       instance.cm.dispatch(tr);
     })
+  }
+
+  checkQEDError(start: number) {
+    if (start != 0) return false;
+    if (this.cm.state.doc.line(1).text.substring(0, 4) != 'Qed.') return false;
+    return true;
   }
 
   handleDiagnostic(diag: LSPDiagnostic, start: number, end: number) {
@@ -401,6 +409,10 @@ export class CodeMirrorView implements NodeView {
     this.diagnostics.push(diagnostic);
     console.log(this.diagnostics);
     let tr = setDiagnostics(this.cm.state, this.diagnostics);
+    
+    if (this.checkQEDError(start)) {
+      this.isQEDError = true;
+    }
     this.cm.dispatch(tr);
   }
 }
