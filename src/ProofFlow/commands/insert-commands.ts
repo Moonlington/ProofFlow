@@ -12,16 +12,9 @@ import {
   Transaction,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { GetPos } from "../codemirror/types.ts";
-import { CodeMirrorView } from "../codemirror/index.ts";
-import {
-  collapsibleContentType,
-  collapsibleNodeType,
-  collapsibleTitleNodeType,
-  inputContentType,
-  inputNodeType,
-} from "../editor/nodetypes";
 import { ProofFlowSchema } from "../editor/proofflowschema";
+import { getNextAreaId } from "../editor/ProofFlowDocument";
+import CodeMirrorView from "../codemirror/codemirrorview";
 
 /**
  * Returns a command function for inserting a node of type `mdNodeType`.
@@ -36,7 +29,7 @@ export function getMdInsertCommand(
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     if (!allowedToInsert(state)) return false;
 
@@ -60,7 +53,7 @@ export function getMathInsertCommand(
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     if (!allowedToInsert(state)) return false;
 
@@ -84,10 +77,10 @@ export function getCodeInsertCommand(
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     if (!allowedToInsert(state)) return false;
-    
+
     let trans: Transaction | undefined;
     trans = insertionFunction(state, state.tr, codeblockNodeType);
     if (dispatch && trans) dispatch(trans);
@@ -104,7 +97,7 @@ export function getCollapsibleInsertCommand(): Command {
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     // Check if insertion is allowed
     if (!allowedToInsert(state)) return false;
@@ -130,18 +123,21 @@ export function getCollapsibleInsertCommand(): Command {
       return false;
 
     // Create the title node for the collapsible node
-    let textNode: Node = collapsibleTitleNodeType.create(null, [
+    let textNode: Node = ProofFlowSchema.node("collapsible_title", null, [
       ProofFlowSchema.text("Collapsible: "),
     ]);
     // Create the content node for the collapsible node
-    let contentNode: Node = collapsibleContentType.create({ visible: true }, [
-      oldNode,
-    ]);
+    let contentNode: Node = ProofFlowSchema.node(
+      "collapsible_content",
+      { visible: true },
+      [oldNode],
+    );
     // Create the collapsible node
-    let collapsibleNode: Node = collapsibleNodeType.create({}, [
-      textNode,
-      contentNode,
-    ]);
+    let collapsibleNode: Node = ProofFlowSchema.node(
+      "collapsible",
+      { id: getNextAreaId() },
+      [textNode, contentNode],
+    );
     let trans: Transaction = state.tr;
     // Replace the selection with the collapsible node
     if (selectionType.isTextSelection) {
@@ -165,7 +161,7 @@ export function getInputInsertCommand(): Command {
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
-    view?: EditorView,
+    _view?: EditorView,
   ): boolean => {
     // Check if insertion is allowed
     if (!allowedToInsert(state)) return false;
@@ -192,10 +188,16 @@ export function getInputInsertCommand(): Command {
       return false;
 
     // Create the content node and the collapsible node
-    let contentNode: Node = inputContentType.create({ visible: true }, [
-      oldNode,
-    ]);
-    let collapsibleNode: Node = inputNodeType.create({}, [contentNode]);
+    let contentNode: Node = ProofFlowSchema.node(
+      "input_content",
+      { visible: true },
+      [oldNode],
+    );
+    let collapsibleNode: Node = ProofFlowSchema.node(
+      "input",
+      { id: getNextAreaId() },
+      [contentNode],
+    );
     let trans: Transaction = state.tr;
 
     // Replace the selection with the collapsible node

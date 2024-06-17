@@ -21,7 +21,7 @@ export class SettingsOverlay {
 
   /**
    * Renders the settings menu overlay.
-   * 
+   *
    * @returns The rendered overlay element.
    */
   private render() {

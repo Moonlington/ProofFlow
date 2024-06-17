@@ -1,18 +1,14 @@
 import { Node, Schema } from "prosemirror-model";
-import { node as codeMirrorNode } from "../codemirror";
 
 /**
  * The cell types available in ProofFlow.
  * Can be markdown, math_display, or codecell.
  */
-const cell =
-  "(markdown | collapsible | math_display | code_mirror | markdown_rendered | input)";
-const containercontent =
-  "(markdown | math_display | code_mirror | markdown_rendered)";
-export enum proof {
-  correct,
-  incorrect,
-  unattempted,
+
+export enum ProofStatus {
+  Correct,
+  Incorrect,
+  Unattempted,
 }
 
 /**
@@ -25,13 +21,15 @@ export const ProofFlowSchema: Schema = new Schema({
      * Contains zero or more cell nodes.
      */
     doc: {
-      content: `${cell}*`,
+      content: `(area | container)*`,
     },
 
     input: {
       attrs: {
-        proof: { default: proof.unattempted },
+        id: {},
+        proof: { default: ProofStatus.Unattempted },
       },
+      group: "container",
       content: `input_content`,
       parseDOM: [{ tag: "input" }],
       toDOM(node: Node) {
@@ -39,13 +37,13 @@ export const ProofFlowSchema: Schema = new Schema({
         let proofClass = "";
 
         switch (proofValue) {
-          case proof.correct:
+          case ProofStatus.Correct:
             proofClass = "input-correct";
             break;
-          case proof.incorrect:
+          case ProofStatus.Incorrect:
             proofClass = "input-incorrect";
             break;
-          case proof.unattempted:
+          case ProofStatus.Unattempted:
             proofClass = "input-unattempted";
         }
 
@@ -54,40 +52,42 @@ export const ProofFlowSchema: Schema = new Schema({
     },
 
     input_content: {
-      content: `${containercontent}+`,
+      content: `area+`,
       parseDOM: [
         {
           tag: "input_content",
         },
       ],
-      toDOM(node: Node) {
+      toDOM(_node: Node) {
         return ["div", { class: "input_content unlocked", visible: true }, 0];
       },
     },
 
     collapsible: {
+      attrs: {
+        id: {},
+      },
+      group: "container",
       content: `(collapsible_title)(collapsible_content)`,
       parseDOM: [{ tag: "collapsible" }],
-      toDOM(node: Node) {
+      toDOM(_node: Node) {
         return ["div", { class: "collapsible" }, 0];
       },
     },
 
     collapsible_title: {
-      block: true,
       content: "text*",
       parseDOM: [
         { tag: "collapsible_title unlocked", preserveWhitespace: "full" },
       ],
-      atom: false,
       code: false,
-      toDOM(node) {
+      toDOM(_node) {
         return ["collapsible_title", { class: "unlocked" }, 0];
       },
     },
 
     collapsible_content: {
-      content: `${containercontent}+`,
+      content: `area+`,
       attrs: {
         visible: { default: false },
       },
@@ -116,14 +116,13 @@ export const ProofFlowSchema: Schema = new Schema({
      * Represents a block of markdown text.
      */
     markdown: {
-      block: true,
+      attrs: {
+        id: {},
+      },
+      group: "area",
       content: "text*",
-      //parseDOM: [{ tag: "markdown", preserveWhitespace: "full" }],
-      atom: false,
       code: true,
-      leaf: false,
-      draggable: false,
-      toDOM(node) {
+      toDOM(_node) {
         return ["markdown", { class: "markdown" }, 0];
       },
     },
@@ -133,17 +132,39 @@ export const ProofFlowSchema: Schema = new Schema({
      * Represents a block of markdown text that has been rendered.
      */
     markdown_rendered: {
-      block: true,
+      attrs: {
+        id: {},
+        original_text: { default: "" },
+      },
       content: "block*",
+      group: "area",
       parseDOM: [{ tag: "markdown-rendered", preserveWhitespace: true }],
       atom: true,
-      //draggable: false,
-      toDOM(node) {
+      toDOM(_node) {
         return ["markdown-rendered", { class: "markdown unlocked" }, 0];
       },
     },
 
-    code_mirror: codeMirrorNode,
+    code_mirror: {
+      attrs: {
+        id: { default: null },
+      },
+      content: "text*",
+      marks: "",
+      group: "area",
+      code: true,
+      defining: true,
+      isolating: true,
+      parseDOM: [
+        {
+          tag: "pre",
+          preserveWhitespace: "full",
+        },
+      ],
+      toDOM() {
+        return ["pre", ["code", 0]];
+      },
+    },
 
     /**
      * The text node.
@@ -158,7 +179,10 @@ export const ProofFlowSchema: Schema = new Schema({
      * Represents a block of math display.
      */
     math_display: {
-      group: "block",
+      attrs: {
+        id: {},
+      },
+      group: "area",
       content: "text*",
       atom: true,
       code: true,
@@ -220,7 +244,10 @@ export const ProofFlowSchema: Schema = new Schema({
       code: true,
       defining: true,
       marks: "",
-      attrs: { params: { default: "" } },
+      attrs: {
+        id: {},
+        params: { default: "" },
+      },
       parseDOM: [
         {
           tag: "pre",
@@ -384,6 +411,7 @@ export const ProofFlowSchema: Schema = new Schema({
      * Represents inline code.
      */
     code: {
+      group: "area",
       parseDOM: [{ tag: "code" }],
       toDOM() {
         return ["code"];

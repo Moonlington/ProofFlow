@@ -15,7 +15,7 @@ export const arrowKeyHandler = (
 ) => {
   return (
     state: EditorState,
-    dispatch?: (tr: Transaction) => void,
+    _dispatch?: (tr: Transaction) => void,
     view?: EditorView,
   ): boolean => {
     const { selection } = state;

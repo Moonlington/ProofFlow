@@ -7,13 +7,11 @@ import {
   Transaction,
 } from "prosemirror-state";
 import { closeHistory } from "prosemirror-history";
-import {
-  defaultMarkdownParser,
-  defaultMarkdownSerializer,
-} from "prosemirror-markdown";
+import { defaultMarkdownParser } from "prosemirror-markdown";
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
-import { proof } from "../editor/proofflowschema";
+import { ProofStatus } from "../editor/proofflowschema";
+import { getNextAreaId } from "../editor/ProofFlowDocument";
 
 /**
  * Represents the possible places where an insertion can occur.
@@ -81,7 +79,7 @@ export function insertAbove(
     let counter = pos;
 
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   } else if (isTextSelection) {
@@ -90,7 +88,7 @@ export function insertAbove(
     let counter = parentPos;
 
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   } else {
@@ -99,7 +97,7 @@ export function insertAbove(
     let counter = pos;
 
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   }
@@ -136,7 +134,7 @@ export function insertUnder(
     let counter = pos;
 
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   } else if (isTextSelection) {
@@ -152,7 +150,7 @@ export function insertUnder(
     let counter = to;
 
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   } else {
@@ -160,7 +158,7 @@ export function insertUnder(
     const pos = state.doc.content.size;
     let counter = pos;
     nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create());
+      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
       counter++;
     });
   }
@@ -231,26 +229,35 @@ export function markdownToRendered(node: Node, schema: Schema) {
 
   if (parsedContent) {
     const markdownRenderedNodeType = schema.nodes["markdown_rendered"];
-    renderedNode = markdownRenderedNodeType.create(null, parsedContent.content);
+    renderedNode = markdownRenderedNodeType.create(
+      { id: node.attrs.id, original_text: node.textContent },
+      parsedContent.content,
+    );
   }
 
   return renderedNode;
 }
 
 export function renderedToMarkdown(node: Node, schema: Schema) {
-  const serializedContent = defaultMarkdownSerializer.serialize(node);
+  // const serializedContent = defaultMarkdownSerializer.serialize(node);
 
   // Create a new markdown node with the serialized content (a.k.a the raw text)
   // Make sure the text is not empty, since creating an empty text cell is not allowed
 
-  let text = serializedContent == "" ? null : schema.text(serializedContent);
-  const markdownNodeType = schema.nodes["markdown"];
-  let markdownNode: Node = markdownNodeType.create(null, text);
+  let text =
+    node.attrs.original_text == ""
+      ? undefined
+      : schema.text(node.attrs.original_text);
+  let markdownNode: Node = schema.node("markdown", { id: node.attrs.id }, text);
 
   return markdownNode;
 }
 
-export function inputProof(inputNode: Node, newProof: proof, pos: number) {
+export function inputProof(
+  inputNode: Node,
+  newProof: ProofStatus,
+  pos: number,
+) {
   if (inputNode.type.name !== "input") return;
   let view = proofFlow.getEditorView();
   const { state, dispatch } = view;

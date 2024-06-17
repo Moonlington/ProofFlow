@@ -2,7 +2,7 @@ import { Plugin } from "prosemirror-state";
 
 export let preventDropPlugin = new Plugin({
   props: {
-    handleDrop(view, from, to, slice) {
+    handleDrop(_view, _from, _to, _slice) {
       return true;
     },
   },

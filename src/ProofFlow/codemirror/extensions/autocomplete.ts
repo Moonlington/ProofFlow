@@ -1,14 +1,6 @@
 import { ProofFlow } from "../../editor/ProofFlow.ts";
-import {
-  autocompletion,
-  CompletionContext,
-  Completion,
-  CompletionResult,
-} from "@codemirror/autocomplete";
-import { CompletionTriggerKind } from "vscode-languageserver-protocol";
-import { EditorState as CMState } from "@codemirror/state";
+import { autocompletion, CompletionContext } from "@codemirror/autocomplete";
 import { Text } from "@codemirror/state";
-import { LSPMessenger } from "../../../basicLspFunctions.ts";
 
 function offsetToPos(doc: Text, offset: number) {
   const line = doc.lineAt(offset);
@@ -18,36 +10,32 @@ function offsetToPos(doc: Text, offset: number) {
   return { line: line.number, character };
 }
 
-export const codeCompl = autocompletion({
-  override: [
-    async (context: CompletionContext): Promise<any> => {
-      const { state, pos, explicit } = context;
-      const line = state.doc.lineAt(pos);
+export function autocomplete(pf: ProofFlow) {
+  return autocompletion({
+    override: [
+      async (context: CompletionContext): Promise<any> => {
+        const { state, pos } = context;
+        const line = state.doc.lineAt(pos);
 
-      let trigKind: CompletionTriggerKind = CompletionTriggerKind.Invoked;
-      let trigChar: string | undefined;
-      trigKind = CompletionTriggerKind.TriggerCharacter;
-      trigChar = line.text[pos - line.from - 1];
+        const lsp = pf.getLSPClient();
 
-      const completionItems = await LSPMessenger.requestCompletion(
-        ProofFlow.fileName,
-        context,
-        offsetToPos(state.doc, pos),
-        {
-          triggerKind: trigKind,
-          triggerCharacter: trigChar,
-        },
-      );
+        if (!lsp) return;
 
-      return {
-        from: context.pos,
-        options: completionItems.items.map(
-          (item: { label: any; kind: any }) => ({
-            label: item.label,
-            type: item.kind,
-          }),
-        ),
-      };
-    },
-  ],
-});
+        let trigChar: string | undefined;
+        trigChar = line.text[pos - line.from - 1];
+
+        const completionItems = await lsp.completion(
+          offsetToPos(state.doc, pos),
+          trigChar,
+        );
+
+        if (!completionItems) return;
+
+        return {
+          from: context.pos,
+          options: completionItems,
+        };
+      },
+    ],
+  });
+}

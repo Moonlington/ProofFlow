@@ -61,7 +61,7 @@ export function updateColors(newSchema: string, darkMode: boolean): void {
 
 /**
  * Inverts a hex color.
- * 
+ *
  * @param hex - The hex color to invert.
  * @returns The inverted color in hex format.
  */
@@ -82,7 +82,6 @@ function invertHexColor(hex: string): string {
   return `#${invertedR}${invertedG}${invertedB}`;
 }
 
-
 /**
  * Reloads the color scheme based on the user's preferences stored in the local storage.
  * If the user has enabled dark mode, it retrieves the color scheme and applies it.
@@ -90,6 +89,7 @@ function invertHexColor(hex: string): string {
  */
 export function reloadColorScheme() {
   const darkMode = window.localStorage.getItem("darkMode") == "true";
-  const colorScheme = window.localStorage.getItem("colorScheme") || "Ocean Breeze";
+  const colorScheme =
+    window.localStorage.getItem("colorScheme") || "Ocean Breeze";
   updateColors(colorScheme, darkMode);
 }

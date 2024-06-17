@@ -6,8 +6,7 @@ import {
 import "./styles/main.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
-import { reloadColorScheme, updateColors } from "./ProofFlow/settings/updateColors.ts";
-import { LSPMessenger } from "./basicLspFunctions";
+import { reloadColorScheme } from "./ProofFlow/settings/updateColors.ts";
 import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
 import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
@@ -34,9 +33,6 @@ container.appendChild(content);
 
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow(editor, content);
-let lspMessenger: LSPMessenger = new LSPMessenger(
-  proofFlow.handleDiagnostics.bind(proofFlow),
-);
 
 // Create the settings overlay
 const settingsOverlay = new SettingsOverlay(container);
@@ -59,19 +55,15 @@ document
   ?.addEventListener("change", readSingleFile, false);
 
 // prevent user from leaving the page without saving
-window.onbeforeunload = function(){
-  return 'Are you sure you want to leave? You may have unsaved changes.';
+window.onbeforeunload = function () {
+  return "Are you sure you want to leave? You may have unsaved changes.";
 };
 
 /**
  * Creates the settings and initializes the settings bar.
  */
 export function createSettings() {
-  const settingBar = new SettingsBar(
-    content,
-    settingsOverlay,
-    proofFlow.getEditorView(),
-  );
+  new SettingsBar(content, settingsOverlay, proofFlow.getEditorView());
 }
 
 /**

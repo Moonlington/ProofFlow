@@ -1,11 +1,5 @@
 import { Plugin } from "prosemirror-state";
 import { Node } from "prosemirror-model";
-import {
-  collapsibleContentType,
-  collapsibleNodeType,
-  inputContentType,
-  inputNodeType,
-} from "../editor/nodetypes";
 import { TextSelection } from "prosemirror-state";
 
 import {
@@ -21,7 +15,7 @@ import { UserMode, lockEditing } from "../UserMode/userMode.ts";
 
 export const markdownPlugin = new Plugin({
   props: {
-    handleClickOn(view, pos, node, nodePos, event, direct) {
+    handleClickOn(view, pos, node, nodePos, _event, direct) {
       if (node.type.name === undefined || !direct) return; // If the node being clicked is not a valid node or the click is not a user action, return
 
       let trans = view.state.tr;
@@ -115,16 +109,18 @@ export const markdownPlugin = new Plugin({
           });
 
           // Create the new collapsible content node with the new child nodes
-          let newCollapsibleContentNode = collapsibleContentType.create(
+          let newCollapsibleContentNode = ProofFlowSchema.node(
+            "collapsible_content",
             { visible: collapsibleContentNode.attrs.visible },
             newCollapsibleChildNodes,
           );
 
           // Replace the old colllapsible content child node of the collapsible parent node with the new one
-          let newCollapsibleNode = collapsibleNodeType.create({}, [
-            collapsibleTitleNode,
-            newCollapsibleContentNode,
-          ]);
+          let newCollapsibleNode = ProofFlowSchema.node(
+            "collapsible",
+            { id: collapsibleParentNode.attrs.id },
+            [collapsibleTitleNode, newCollapsibleContentNode],
+          );
           newNode = newCollapsibleNode;
         } else if (node.type.name === "input") {
           let inputParentNode: Node = node;
@@ -159,12 +155,17 @@ export const markdownPlugin = new Plugin({
             newInputChildNodes.push(newChildNode);
           });
 
-          let newInputContentNode = inputContentType.create(
+          let newInputContentNode = ProofFlowSchema.node(
+            "input_content",
             { visible: true },
             newInputChildNodes,
           );
 
-          let newInputNode = inputNodeType.create({}, newInputContentNode);
+          let newInputNode = ProofFlowSchema.node(
+            "input",
+            { id: node.attrs.id },
+            newInputContentNode,
+          );
 
           newNode = newInputNode;
         }
