@@ -608,12 +608,17 @@ export class ProofFlow {
     handleUserModeSwitch();
   }
 
+  /**
+   * Inserts the given string at the selection/cursor position.
+   *
+   * @param string - The string to insert.
+   */
   public insertAtCursor(string: string) {
     // Create a new transaction
     let trans: Transaction = this.getState().tr;
 
     // Insert the text at the selection/cursor-position and update the editor state
-    trans = trans.insertText(string)
+    trans = trans.insertText(string);
     this.editorView.state = this.editorView.state.apply(trans);
     this.editorView.updateState(this.editorView.state);
   }
