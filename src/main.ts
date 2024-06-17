@@ -46,8 +46,8 @@ window.onbeforeunload = function () {
   return "Are you sure you want to leave? You may have unsaved changes.";
 };
 
-export function showOverlay() {
-  settingsOverlay.showOverlay(true);
+export function showOverlay(bool: boolean) {
+  settingsOverlay.showOverlay(bool);
 }
 
 export function adjustLeftDivWidth() {

@@ -5,7 +5,7 @@ import {
   getCollapsibleInsertCommand,
   getInputInsertCommand,
 } from "./insert-commands";
-import { proofFlow } from "../../main";
+import { proofFlow, showOverlay } from "../../main";
 import { UserMode } from "../UserMode/userMode";
 
 /**
@@ -45,6 +45,9 @@ export function applyGlobalKeyBindings(editorView: EditorView): () => void {
     ) {
       event.preventDefault();
       proofFlow.saveFile();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      showOverlay(false);
     }
 
     // Add comments here to describe the purpose of each key binding

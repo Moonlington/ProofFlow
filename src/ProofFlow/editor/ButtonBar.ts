@@ -183,7 +183,7 @@ export class ButtonBar {
     const commands = [
       {
         symbol: "&#9881;",
-        cmd: () => showOverlay(),
+        cmd: () => showOverlay(true),
         hoverText: "Show Settings Menu",
       },
       {
