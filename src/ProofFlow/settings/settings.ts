@@ -31,47 +31,13 @@ export class SettingsOverlay {
     overlay.className = "overlay";
     overlay.id = "settings";
 
-    // Create the popup
-    const popup = document.createElement("div");
-    popup.className = "popup";
-
-    // Add close button
-    const closeButton = this.closeButton();
-    popup.appendChild(closeButton);
-
-    // Add content
-    const header = document.createElement("h2");
-    header.textContent = "Settings Menu";
-
-    // Get the settings from the local storage
-    const localStorage = window.localStorage;
-    const teacherMode: boolean = Boolean(
-      localStorage.getItem("teacherMode") === "true",
-    );
-    const darkMode: boolean = Boolean(
-      localStorage.getItem("darkMode") === "true",
-    );
-    const colorScheme = localStorage.getItem("colorScheme") || "";
-    const lspPath = localStorage.getItem("lspPath") || "";
-    const minimap = localStorage.getItem("minimap") === "true";
-
-    // Add user mode settings
-    const userModeContainer = this.userModeContainer(teacherMode);
-
-    // Add color scheme settings
-    const colorSchemeContainer = this.colorSchemeContainer(
-      darkMode,
-      colorScheme,
-    );
-
-    // Add mini map settings
-    const miniMapContainer = this.miniMapContainer(minimap);
-
-    // Add LSP server path settings
-    const lspContainer = this.lspContainer(lspPath);
+    const popup = this.settingsMenu();
+    const userModeContainer = this.userModeContainer();
+    const colorSchemeContainer = this.colorSchemeContainer();
+    const miniMapContainer = this.miniMapContainer();
+    const lspContainer = this.lspContainer();
 
     // Append the elements to the popup
-    popup.appendChild(header);
     popup.appendChild(userModeContainer);
     popup.appendChild(miniMapContainer);
     popup.appendChild(colorSchemeContainer);
@@ -91,6 +57,23 @@ export class SettingsOverlay {
    */
   public showOverlay(visible: boolean) {
     this._overlay.style.display = visible ? "flex" : "none";
+  }
+
+  private settingsMenu(): HTMLElement {
+    // Create the popup
+    const popup = document.createElement("div");
+    popup.className = "popup";
+
+    // Add close button
+    const closeButton = this.closeButton();
+    popup.appendChild(closeButton);
+
+    // Add text header
+    const header = document.createElement("h2");
+    header.textContent = "Settings Menu";
+    popup.appendChild(header);
+
+    return popup;
   }
 
   /**
@@ -117,7 +100,11 @@ export class SettingsOverlay {
    *
    * @returns {HTMLElement} The user mode container element.
    */
-  private userModeContainer(modeSet: boolean): HTMLElement {
+  private userModeContainer(): HTMLElement {
+    // Get the current user mode from local storage
+    const modeSet: boolean = Boolean(
+      localStorage.getItem("teacherMode") === "true",
+    );
     const userModeContainer = document.createElement("div");
     userModeContainer.className = "settings-container";
 
@@ -157,10 +144,14 @@ export class SettingsOverlay {
    *
    * @returns The color scheme container element.
    */
-  private colorSchemeContainer(
-    darkMode: boolean,
-    colorScheme: string,
-  ): HTMLElement {
+  private colorSchemeContainer(): HTMLElement {
+    // Get the current color scheme from local storage
+    const darkMode: boolean = Boolean(
+      localStorage.getItem("darkMode") === "true",
+    );
+    const colorScheme = localStorage.getItem("colorScheme") || "";
+
+
     const colorSchemeContainer = document.createElement("div");
     colorSchemeContainer.className = "settings-container";
 
@@ -223,7 +214,10 @@ export class SettingsOverlay {
     return colorSchemeContainer;
   }
 
-  private lspContainer(currentPath: string): HTMLElement {
+  private lspContainer(): HTMLElement {
+    // Get the current LSP path from local storage
+    const currentPath = localStorage.getItem("lspPath") || "";
+
     const lspContainer = document.createElement("div");
     const lspLabel = document.createElement("h4");
     lspLabel.textContent = "LSP Server Path";
@@ -252,7 +246,13 @@ export class SettingsOverlay {
     return lspContainer;
   }
 
-  private miniMapContainer(on: boolean): HTMLElement {
+  /**
+   * Creates and returns an HTML element representing the mini map container.
+   * @param {boolean} on - Indicates whether the mini map is enabled or not.
+   * @returns {HTMLElement} - The mini map container element.
+   */
+  private miniMapContainer(): HTMLElement {
+    const on = localStorage.getItem("minimap") === "true";
     const miniMapContainer = document.createElement("div");
     const miniMapLabel = document.createElement("h4");
     miniMapLabel.textContent = "Minimap";
