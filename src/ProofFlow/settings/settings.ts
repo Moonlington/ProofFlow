@@ -1,7 +1,6 @@
 import { proofFlow } from "../../main";
 import { updateColors } from "./updateColors";
 import { colorSchemesKeys } from "./updateColors";
-import { ProofFlow } from "../editor/ProofFlow";
 
 /**
  * Represents the settings overlay class.

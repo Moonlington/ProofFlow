@@ -56,6 +56,8 @@ export function applyGlobalKeyBindings(editorView: EditorView): () => void {
     // "Ctrl + P" or "Cmd + P" for selecting parent node
     // "Ctrl + B" or "Cmd + B" for collapsible insert command
     // "Ctrl + I" or "Cmd + I" for input insert command (only for teacher mode)
+    // "Ctrl + S" or "Cmd + S" for saving the file (only for teacher mode)
+    // "Escape" for closing the settings overlay
   };
   document.addEventListener("keydown", globalKeyBindings);
 
