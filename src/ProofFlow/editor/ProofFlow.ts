@@ -1,4 +1,4 @@
-import { Schema, Node, ResolvedPos } from "prosemirror-model";
+import { Schema, Node, ResolvedPos, Slice, Fragment } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/codemirrorview.ts";
 import type { GetPos } from "../codemirror/types.ts";
 import { ProofFlowSchema } from "./proofflowschema.ts";
@@ -7,6 +7,7 @@ import {
   EditorStateConfig,
   Transaction,
   Selection,
+  NodeSelection,
 } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { ProofFlowPlugins } from "./plugins.ts";
@@ -613,13 +614,17 @@ export class ProofFlow {
    *
    * @param string - The string to insert.
    */
-  public insertAtCursor(string: string) {
+  async insertAtCursor(string: string) {
     // Create a new transaction
     let trans: Transaction = this.getState().tr;
-
-    // Insert the text at the selection/cursor-position and update the editor state
-    trans = trans.insertText(string);
-    this.editorView.state = this.editorView.state.apply(trans);
-    this.editorView.updateState(this.editorView.state);
+    // This does not work for math nodes
+    if (this.editorView.state.selection instanceof NodeSelection) {
+      return;
+    } else {
+      // Insert the text at the selection/cursor-position and update the editor state
+      trans = trans.insertText(string);
+      this.editorView.state = this.editorView.state.apply(trans);
+      this.editorView.updateState(this.editorView.state);
+    }
   }
 }
