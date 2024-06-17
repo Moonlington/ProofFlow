@@ -141,7 +141,7 @@ export class ProofFlow {
                 // will be changed, and later code from basic setup will be added to the codebase
                 basicSetup,
                 linter(null),
-                javascript(),
+                // javascript(),
                 // autocomplete(this),
                 // wordHover(this),
               ],
