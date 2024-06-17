@@ -74,12 +74,12 @@ export class ButtonBar {
     </svg>`;
 
     const commands = [
-      { name: "Text", cmd: cmdInsertMarkdown },
-      { name: "Code", cmd: cmdInsertCode },
-      { name: latex, cmd: cmdInsertMath },
+      { name: "Text", cmd: cmdInsertMarkdown, hoverName: "Text"},
+      { name: "Code", cmd: cmdInsertCode, hoverName: "Code"},
+      { name: latex, cmd: cmdInsertMath, hoverName: "LaTeX"},
     ];
 
-    commands.forEach(({ name, cmd }) => {
+    commands.forEach(({ name, cmd, hoverName }) => {
       const above = name + " ↑";
       const below = name + " ↓";
       this.addButton(
@@ -89,7 +89,7 @@ export class ButtonBar {
             this._editorView.state,
             this._editorView.dispatch,
           ),
-        `Insert ${name} cell above the current cell.(Ctrl-Shift-${name === "Text" ? "m" : name === "Code" ? "c" : "b"})`,
+        `Insert ${hoverName} cell above the current cell.(Ctrl-Shift-${name === "Text" ? "m" : name === "Code" ? "c" : "b"})`,
       );
       this.addButton(
         below,
@@ -98,7 +98,7 @@ export class ButtonBar {
             this._editorView.state,
             this._editorView.dispatch,
           ),
-        `Insert ${name} cell bellow the current cell.(Ctrl-${name === "Text" ? "m" : name === "Code" ? "c" : "b"})`,
+        `Insert ${hoverName} cell bellow the current cell.(Ctrl-${name === "Text" ? "m" : name === "Code" ? "c" : "b"})`,
       );
     });
   }
