@@ -13,8 +13,6 @@ import { ProofFlowPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 // import { AreaType } from "../parser/area.ts";
 import { ButtonBar } from "./ButtonBar.ts";
-
-import { basicSetup } from "codemirror";
 import { linter } from "@codemirror/lint";
 import { javascript } from "@codemirror/lang-javascript";
 
@@ -52,6 +50,7 @@ import {
 import { autocomplete } from "../codemirror/extensions/autocomplete.ts";
 import { wordHover } from "../codemirror/extensions/hovertooltip.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
+import {basicSetupNoHistory} from "../codemirror/basicSetupNoHistory.ts";
 // CSS
 
 export class ProofFlow {
@@ -140,7 +139,7 @@ export class ProofFlow {
             cmOptions: {
               extensions: [
                 // will be changed, and later code from basic setup will be added to the codebase
-                basicSetup,
+                basicSetupNoHistory,
                 linter(null),
                 // javascript(),
                 // autocomplete(this),
