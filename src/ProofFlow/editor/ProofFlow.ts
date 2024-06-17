@@ -222,7 +222,6 @@ export class ProofFlow {
 
       // Check for not null (TypeScript mandates)
       if (currentCodeMirror) {
-        console.log("Moving from codemirror");
         currentCodeMirror.blurInstance();
       }
     }
@@ -392,7 +391,6 @@ export class ProofFlow {
     let inputNode: Node = this._schema.node("input", { id: area.id }, [
       inputContentNode,
     ]);
-    console.log(inputNode);
     this.insertAtEnd(inputNode);
   }
 

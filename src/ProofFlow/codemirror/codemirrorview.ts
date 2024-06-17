@@ -404,7 +404,6 @@ export class CodeMirrorView implements NodeView {
       message: diag.message,
     };
     this.diagnostics.push(diagnostic);
-    console.log(this.diagnostics);
     let tr = setDiagnostics(this.cm.state, this.diagnostics);
     this.cm.dispatch(tr);
   }
