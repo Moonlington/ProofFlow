@@ -1,6 +1,7 @@
 import { proofFlow } from "../../main";
 import { updateColors } from "./updateColors";
 import { colorSchemesKeys } from "./updateColors";
+import { ProofFlow } from "../editor/ProofFlow";
 
 /**
  * Represents the settings overlay class.
@@ -52,6 +53,7 @@ export class SettingsOverlay {
     );
     const colorScheme = localStorage.getItem("colorScheme") || "";
     const lspPath = localStorage.getItem("lspPath") || "";
+    const minimap = localStorage.getItem("minimap") === "true";
 
     // Add user mode settings
     const userModeContainer = this.userModeContainer(teacherMode);
@@ -62,6 +64,9 @@ export class SettingsOverlay {
       colorScheme,
     );
 
+    // Add mini map settings
+    const miniMapContainer = this.miniMapContainer(minimap);
+
     // Add LSP server path settings
     const lspContainer = this.lspContainer(lspPath);
 
@@ -70,6 +75,7 @@ export class SettingsOverlay {
     popup.appendChild(userModeContainer);
     popup.appendChild(colorSchemeContainer);
     popup.appendChild(lspContainer);
+    popup.appendChild(miniMapContainer);
 
     // Append the popup to the overlay
     overlay.appendChild(popup);
@@ -244,5 +250,43 @@ export class SettingsOverlay {
 
     lspContainer.classList.add("settings-container");
     return lspContainer;
+  }
+
+  private miniMapContainer(on: boolean): HTMLElement {
+    const miniMapContainer = document.createElement("div");
+    const miniMapLabel = document.createElement("h4");
+    miniMapLabel.textContent = "Minimap";
+
+    const miniMapCheckbox = document.createElement("input");
+    miniMapCheckbox.type = "checkbox";
+    miniMapCheckbox.id = "mini-map-checkbox";
+    miniMapCheckbox.classList.add("checkbox");
+
+    const miniMapDescription = document.createElement("label");
+    miniMapDescription.htmlFor = "mini-map-checkbox";
+    miniMapDescription.textContent = "Enable minimap";
+    miniMapDescription.classList.add("checkbox");
+
+    miniMapContainer.appendChild(miniMapLabel);
+    miniMapContainer.appendChild(miniMapCheckbox);
+    miniMapContainer.appendChild(miniMapDescription);
+
+    miniMapContainer.classList.add("settings-container");
+
+    miniMapCheckbox.addEventListener("click", () => {
+      proofFlow.switchMinimap();
+      window.localStorage.setItem(
+        "minimap",
+        miniMapCheckbox.checked.toString(),
+      );
+    });
+
+    miniMapCheckbox.checked = on;
+
+    if (!on) {
+      proofFlow.switchMinimap();
+    }
+
+    return miniMapContainer;
   }
 }

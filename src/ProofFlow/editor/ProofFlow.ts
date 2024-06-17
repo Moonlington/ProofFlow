@@ -107,10 +107,7 @@ export class ProofFlow {
       this.lspClient?.shutdown();
     });
     // Apply global key bindings
-    this.removeGlobalKeyBindings = applyGlobalKeyBindings(
-      this.editorView,
-      this.minimap!,
-    );
+    this.removeGlobalKeyBindings = applyGlobalKeyBindings(this.editorView);
   }
 
   /**
@@ -164,7 +161,6 @@ export class ProofFlow {
     });
 
     this.minimap = new Minimap();
-
 
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, editorView);
@@ -615,10 +611,7 @@ export class ProofFlow {
 
     // Create a new editor view
     this.editorView = this.createEditorView();
-    this.removeGlobalKeyBindings = applyGlobalKeyBindings(
-      this.editorView,
-      this.minimap!,
-    );
+    this.removeGlobalKeyBindings = applyGlobalKeyBindings(this.editorView);
 
     // Ensure that the usermode and color scheme and size are loaded correctly.
     handleUserModeSwitch();
@@ -676,5 +669,9 @@ export class ProofFlow {
       this.editorView.state = this.editorView.state.apply(trans);
       this.editorView.updateState(this.editorView.state);
     }
+  }
+
+  public switchMinimap() {
+    this.minimap?.switch();
   }
 }

@@ -30,7 +30,6 @@ export class ButtonBar {
   public _bar: HTMLElement;
   private _cellBar: HTMLElement;
 
-
   /**
    * Creates an instance of ButtonBar.
    * @param {Schema} schema - The schema used by the editor.
@@ -74,9 +73,9 @@ export class ButtonBar {
     </svg>`;
 
     const commands = [
-      { name: "Text", cmd: cmdInsertMarkdown, hoverName: "Text"},
-      { name: "Code", cmd: cmdInsertCode, hoverName: "Code"},
-      { name: latex, cmd: cmdInsertMath, hoverName: "LaTeX"},
+      { name: "Text", cmd: cmdInsertMarkdown, hoverName: "Text" },
+      { name: "Code", cmd: cmdInsertCode, hoverName: "Code" },
+      { name: latex, cmd: cmdInsertMath, hoverName: "LaTeX" },
     ];
 
     commands.forEach(({ name, cmd, hoverName }) => {
@@ -215,7 +214,7 @@ export class ButtonBar {
       settingsBar.appendChild(button);
     });
 
-    this._bar.appendChild(settingsBar); 
+    this._bar.appendChild(settingsBar);
   }
 
   private CreateButton(symbol: string, cmd: () => void, hoverText: string) {

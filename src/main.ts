@@ -51,15 +51,15 @@ export function showOverlay() {
 }
 
 export function adjustLeftDivWidth() {
-  const rightDiv = document.getElementById('miniMapContainer')!;
-  const leftDiv = document.getElementById('ProofFlowEditor')!;
+  const rightDiv = document.getElementById("miniMapContainer")!;
+  const leftDiv = document.getElementById("ProofFlowEditor")!;
   const windowWidth = window.innerWidth;
   const rightDivWidth = rightDiv.offsetWidth;
-  leftDiv.style.width = (windowWidth - rightDivWidth - 12) + 'px';
+  leftDiv.style.width = windowWidth - rightDivWidth - 12 + "px";
 }
 
-window.addEventListener('resize', adjustLeftDivWidth);
-window.addEventListener('load', adjustLeftDivWidth);
+window.addEventListener("resize", adjustLeftDivWidth);
+window.addEventListener("load", adjustLeftDivWidth);
 
 /**
  * Reads a single file from the input event and processes it.
