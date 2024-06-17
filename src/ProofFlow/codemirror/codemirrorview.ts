@@ -17,6 +17,8 @@ import { UserMode } from "../UserMode/userMode.ts";
 import { getContainingNode } from "../commands/helpers.ts";
 import { Diagnostic, setDiagnostics } from "@codemirror/lint";
 import { DiagnosticsMessageData, LSPDiagnostic } from "../lspClient/models.ts";
+import { autocomplete } from "./extensions/autocomplete.ts";
+import { ProofFlow } from "../editor/ProofFlow.ts";
 
 const computeChange = (
   oldVal: string,
@@ -61,11 +63,13 @@ export class CodeMirrorView implements NodeView {
   getPos: () => number;
   updating = false;
   diagnostics: Diagnostic[] = new Array();
+  proofflow: ProofFlow;
 
   static instances: CodeMirrorView[] = [];
   static focused: CodeMirrorView | null = null;
 
-  constructor(options: CodeMirrorViewOptions) {
+  constructor(proofflow: ProofFlow, options: CodeMirrorViewOptions) {
+    this.proofflow = proofflow;
     // Store for later
     this.node = options.node;
     this._outerView = options.view;
@@ -139,6 +143,7 @@ export class CodeMirrorView implements NodeView {
         ]),
         cmExtensions,
         tabKeymap,
+        autocomplete(this),
       ],
     });
 
@@ -388,7 +393,7 @@ export class CodeMirrorView implements NodeView {
     CodeMirrorView.instances.forEach((instance) => {
       let tr = setDiagnostics(instance.cm.state, []);
       instance.cm.dispatch(tr);
-    })
+    });
   }
 
   handleDiagnostic(diag: LSPDiagnostic, start: number, end: number) {

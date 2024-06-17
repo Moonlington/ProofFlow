@@ -1,40 +1,48 @@
-import { ProofFlow } from "../../editor/ProofFlow.ts";
-import { autocompletion, CompletionContext } from "@codemirror/autocomplete";
-import { Text } from "@codemirror/state";
+import {
+  autocompletion,
+  CompletionContext,
+  CompletionResult,
+} from "@codemirror/autocomplete";
+import { CompletionItem } from "../../lspClient/models.ts";
+import CodeMirrorView from "../codemirrorview.ts";
 
-function offsetToPos(doc: Text, offset: number) {
-  const line = doc.lineAt(offset);
-  const character = offset - line.from;
-  console.log("Line:", line, "Character:", character);
-
-  return { line: line.number, character };
-}
-
-export function autocomplete(pf: ProofFlow) {
+export function autocomplete(view: CodeMirrorView) {
   return autocompletion({
     override: [
-      async (context: CompletionContext): Promise<any> => {
-        const { state, pos } = context;
-        const line = state.doc.lineAt(pos);
+      async (context: CompletionContext): Promise<CompletionResult | null> => {
+        return new Promise(async (resolve, _) => {
+          const { state, pos } = context;
 
-        const lsp = pf.getLSPClient();
+          const lsp = view.proofflow.getLSPClient();
+          if (!lsp) return resolve(null);
 
-        if (!lsp) return;
+          let found = view.proofflow.findNode(
+            (_, pos) => pos === view.getPos(),
+          );
+          if (!found) {
+            console.error("What the frick", found, context);
+            return;
+          }
 
-        let trigChar: string | undefined;
-        trigChar = line.text[pos - line.from - 1];
+          let area = view.proofflow.pfDocument.getAreaById(found[0].attrs.id);
+          if (!area) {
+            console.error("WHAT", found, context);
+            return;
+          }
 
-        const completionItems = await lsp.completion(
-          offsetToPos(state.doc, pos),
-          trigChar,
-        );
+          let line = state.doc.lineAt(pos);
+          let trigChar = line.text[pos - line.from - 1];
+          let position = area.getPosition(pos);
 
-        if (!completionItems) return;
+          const result = await lsp.completion(position, trigChar);
+          if (!result) return resolve(null);
 
-        return {
-          from: context.pos,
-          options: completionItems,
-        };
+          const completionItems = result as CompletionItem[];
+
+          if (!completionItems) return;
+
+          resolve({ from: pos, options: completionItems });
+        });
       },
     ],
   });
