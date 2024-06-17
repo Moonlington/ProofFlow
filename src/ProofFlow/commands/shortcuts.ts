@@ -38,6 +38,13 @@ export function applyGlobalKeyBindings(editorView: EditorView): () => void {
       event.preventDefault();
       let command = getInputInsertCommand();
       command(editorView.state, editorView.dispatch);
+    } else if (
+      event.key === "s" &&
+      (event.ctrlKey || event.metaKey) &&
+      proofFlow.getUserMode() === UserMode.Teacher
+    ) {
+      event.preventDefault();
+      proofFlow.saveFile();
     }
 
     // Add comments here to describe the purpose of each key binding
