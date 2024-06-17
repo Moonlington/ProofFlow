@@ -1,4 +1,4 @@
-import { NodeType, Node, Schema } from "prosemirror-model";
+import { NodeType, Node, Schema, Fragment } from "prosemirror-model";
 import {
   EditorState,
   NodeSelection,
@@ -12,6 +12,7 @@ import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
 import { ProofStatus } from "../editor/proofflowschema";
 import { getNextAreaId } from "../editor/ProofFlowDocument";
+import { mathSerializer } from "@benrbray/prosemirror-math";
 
 /**
  * Represents the possible places where an insertion can occur.
@@ -225,15 +226,39 @@ export function isClickedNode(node: Node, nodePos: number, clickedPos: number) {
 
 export function markdownToRendered(node: Node, schema: Schema) {
   const parsedContent = defaultMarkdownParser.parse(node.textContent);
+  const mathInlineBlockNodeType = schema.nodes["math_inline_block"];
+  const mathInlineNodeType = schema.nodes["math_inline"];
+  const markdownRenderedNodeType = schema.nodes["markdown_rendered"];
+  const markdownRenderedChildNodeType = schema.nodes["markdown_rendered_child"];
+
   let renderedNode: Node = node; // Default to the original node if parsing fails
+  let parsedChildren: Node[] = Array<Node>();
+
+  const regex = /\$(.*?)\$/g; // The regex string for getting the math content
+  const result = node.textContent.split(regex);
+  for (let i = 0; i < result.length; i++) {
+    // Since the regex is capturing the math content, the odd indexes will contain the math content
+    if (i % 2 == 1) {
+      // Make a math_inline node with the math content
+      let mathNode = mathInlineNodeType.create(null, schema.text(result[i]));
+      let wrappedMathNode = mathInlineBlockNodeType.create(null, mathNode);
+      parsedChildren.push(wrappedMathNode);
+    } else {
+      // Make a markdown child node with the text content
+      if (result[i] == '') continue;
+      let parsedChildContent = defaultMarkdownParser.parse(result[i]);
+      if (parsedChildContent) parsedChildren.push(markdownRenderedChildNodeType.create(null, parsedChildContent.content));
+    }
+  }
 
   if (parsedContent) {
-    const markdownRenderedNodeType = schema.nodes["markdown_rendered"];
     renderedNode = markdownRenderedNodeType.create(
       { id: node.attrs.id, original_text: node.textContent },
-      parsedContent.content,
+      // If the original node had children use the parsed children, otherwise use the parsed content
+      parsedChildren.length != 0 ? parsedChildren : parsedContent.content,
     );
   }
+  console.log(renderedNode)
 
   return renderedNode;
 }
