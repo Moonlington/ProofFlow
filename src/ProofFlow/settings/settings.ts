@@ -73,9 +73,9 @@ export class SettingsOverlay {
     // Append the elements to the popup
     popup.appendChild(header);
     popup.appendChild(userModeContainer);
+    popup.appendChild(miniMapContainer);
     popup.appendChild(colorSchemeContainer);
     popup.appendChild(lspContainer);
-    popup.appendChild(miniMapContainer);
 
     // Append the popup to the overlay
     overlay.appendChild(popup);

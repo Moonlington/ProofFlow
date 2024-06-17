@@ -1,3 +1,5 @@
+import { adjustLeftDivWidth } from "../main";
+
 export class Minimap {
   private _minimapDiv: HTMLDivElement;
   private _minimapSizeDiv: HTMLDivElement;
@@ -53,6 +55,8 @@ export class Minimap {
   public switch() {
     if (this.on) this.stop();
     else this.start();
+    // ensure the left div is resized
+    adjustLeftDivWidth();
   }
 
   public start() {
