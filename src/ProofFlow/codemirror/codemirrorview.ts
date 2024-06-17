@@ -19,6 +19,7 @@ import { Diagnostic, setDiagnostics } from "@codemirror/lint";
 import { DiagnosticsMessageData, LSPDiagnostic } from "../lspClient/models.ts";
 import { autocomplete } from "./extensions/autocomplete.ts";
 import { ProofFlow } from "../editor/ProofFlow.ts";
+import { wordHover } from "./extensions/hovertooltip.ts";
 
 const computeChange = (
   oldVal: string,
@@ -143,7 +144,8 @@ export class CodeMirrorView implements NodeView {
         ]),
         cmExtensions,
         tabKeymap,
-        autocomplete(this),
+        // autocomplete(this),
+        wordHover(this),
       ],
     });
 

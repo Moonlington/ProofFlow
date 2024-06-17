@@ -3,7 +3,7 @@ import {
   CompletionContext,
   CompletionResult,
 } from "@codemirror/autocomplete";
-import { CompletionItem } from "../../lspClient/models.ts";
+import { CompletionList } from "../../lspClient/models.ts";
 import CodeMirrorView from "../codemirrorview.ts";
 
 export function autocomplete(view: CodeMirrorView) {
@@ -20,13 +20,11 @@ export function autocomplete(view: CodeMirrorView) {
             (_, pos) => pos === view.getPos(),
           );
           if (!found) {
-            console.error("What the frick", found, context);
             return;
           }
 
           let area = view.proofflow.pfDocument.getAreaById(found[0].attrs.id);
           if (!area) {
-            console.error("WHAT", found, context);
             return;
           }
 
@@ -37,11 +35,11 @@ export function autocomplete(view: CodeMirrorView) {
           const result = await lsp.completion(position, trigChar);
           if (!result) return resolve(null);
 
-          const completionItems = result as CompletionItem[];
+          const completionItems = result as CompletionList;
 
           if (!completionItems) return;
 
-          resolve({ from: pos, options: completionItems });
+          resolve({ from: pos, options: completionItems.items });
         });
       },
     ],
