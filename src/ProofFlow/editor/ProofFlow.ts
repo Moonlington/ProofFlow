@@ -1,4 +1,4 @@
-import { Schema, Node } from "prosemirror-model";
+import { Schema, Node, ResolvedPos } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/codemirrorview.ts";
 import type { GetPos } from "../codemirror/types.ts";
 import { ProofFlowSchema } from "./proofflowschema.ts";
@@ -606,5 +606,15 @@ export class ProofFlow {
       newUserMode === UserMode.Teacher ? "true" : "false",
     );
     handleUserModeSwitch();
+  }
+
+  public insertAtCursor(string: string) {
+    // Create a new transaction
+    let trans: Transaction = this.getState().tr;
+
+    // Insert the text at the selection/cursor-position and update the editor state
+    trans = trans.insertText(string)
+    this.editorView.state = this.editorView.state.apply(trans);
+    this.editorView.updateState(this.editorView.state);
   }
 }
