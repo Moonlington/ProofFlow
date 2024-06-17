@@ -8,6 +8,7 @@ import {
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
 import { Minimap } from "../minimap";
+import {toggleLineNumbers} from "./helpers.ts";
 
 /**
  * Applies global key bindings to the editor view.
@@ -45,6 +46,9 @@ export function applyGlobalKeyBindings(
     } else if (event.key === "h" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       minimap.switch();
+    } else if (event.key === "l" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      toggleLineNumbers();
     }
     // Add comments here to describe the purpose of each key binding
     // "Ctrl + Z" or "Cmd + Z" for undo
