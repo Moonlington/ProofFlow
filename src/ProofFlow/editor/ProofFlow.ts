@@ -51,6 +51,7 @@ import {
 } from "../lspClient/ProofflowLSPClient.ts";
 import { autocomplete } from "../codemirror/extensions/autocomplete.ts";
 import { wordHover } from "../codemirror/extensions/hovertooltip.ts";
+import { reloadColorScheme } from "../settings/updateColors.ts";
 // CSS
 
 export class ProofFlow {
@@ -569,7 +570,9 @@ export class ProofFlow {
 
     createSettings();
 
+    // Ensure that the usermode and color scheme are loaded correctly.
     handleUserModeSwitch();
+    reloadColorScheme();
   }
 
   /**
