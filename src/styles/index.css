@@ -27,18 +27,7 @@ body {
   margin-right: 2px;
 }
 
-#editor, #content {
-  width: 50%;
-  min-width: 275px;
-  height: 100vh;
-  background-clip: padding-box;
-  border: none;
-  overflow-y: auto;
-  overflow-x: hidden;
-  position: relative;
-}
-
-#editor > *, #content > * {
+#editor > * {
   max-width: 100%;
   overflow: hidden;
 }
@@ -49,11 +38,14 @@ body {
   border-right: 1px solid var(--secondary-color);
   scrollbar-width: thin;
   scrollbar-color: var(--secondary-color) var(--primary-color);
-}
-
-#content {
-  background-color: var(--primary-color);
-  float: right;
+  width: 100%;
+  min-width: 275px;
+  height: 100vh;
+  background-clip: padding-box;
+  border: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
 }
 
 .ProseMirror > * {
@@ -68,4 +60,8 @@ div[visible="false"] {
 button {
   color: var(--button-text-color);
   fill: var(--button-text-color);
+}
+
+#container {
+  min-width: 500px;
 }

@@ -25,13 +25,15 @@ export class Minimap {
     this._minimapViewerDiv.className = "minimap__viewer";
     this._minimapContentDiv.className = "minimap__content";
 
+    this._minimapDiv.id = "miniMapContainer";
+
     this._minimapDiv.append(
       this._minimapSizeDiv,
       this._minimapViewerDiv,
       this._minimapContentDiv,
     );
 
-    document.getElementById("content")!.appendChild(this._minimapDiv);
+    document.getElementById("container")!.appendChild(this._minimapDiv);
 
     this.observer = new MutationObserver(this.callback);
     this.start();
@@ -43,7 +45,8 @@ export class Minimap {
       this._minimapDiv.className,
     );
     for (let element of elements) {
-      document.getElementById("content")!.removeChild(element);
+      console.log(element);
+      document.getElementById("container")!.removeChild(element);
     }
   }
 

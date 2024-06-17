@@ -22,7 +22,6 @@ import { applyGlobalKeyBindings } from "../commands/shortcuts";
 import { UserMode, handleUserModeSwitch } from "../UserMode/userMode.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
-import { createSettings } from "../../main.ts";
 import {
   Area,
   AreaType,
@@ -54,11 +53,12 @@ import { reloadColorScheme } from "../settings/updateColors.ts";
 import { markdownToRendered } from "../commands/helpers.ts";
 import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
 import { inputProof } from "../commands/helpers.ts";
+import { adjustLeftDivWidth } from "../../main.ts";
 // CSS
 
 export class ProofFlow {
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
-  private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
+  private _containerElem: HTMLElement; // The HTML element that contains the initial content for the editor
   private _schema: Schema = ProofFlowSchema; // The schema for the editor
   private editorStateConfig: EditorStateConfig = {
     schema: ProofFlowSchema,
@@ -95,11 +95,11 @@ export class ProofFlow {
    * Represents the ProofFlow class.
    * @constructor
    * @param {HTMLElement} editorElem - The HTML element that serves as the editor container.
-   * @param {HTMLElement} contentElem - The HTML element that contains the initial content for the editor.
+   * @param {HTMLElement} containerElem - The HTML element that contains the initial content for the editor.
    */
-  constructor(editorElem: HTMLElement, contentElem: HTMLElement) {
+  constructor(editorElem: HTMLElement, containerElem: HTMLElement) {
     this._editorElem = editorElem; // Set the editor element
-    this._contentElem = contentElem; // Set the content element
+    this._containerElem = containerElem; // Set the container element
     // Create the editor
     this.editorView = this.createEditorView();
 
@@ -165,9 +165,10 @@ export class ProofFlow {
 
     this.minimap = new Minimap();
 
+
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, editorView);
-    buttonBar.render(this._editorElem);
+    buttonBar.render(this._containerElem);
 
     return editorView;
   }
@@ -609,10 +610,8 @@ export class ProofFlow {
       this._editorElem.removeChild(this._editorElem.firstChild);
     }
 
-    // Remove all children from the content element
-    while (this._contentElem.firstChild != null) {
-      this._contentElem.removeChild(this._contentElem.firstChild);
-    }
+    // remove the buttonBar
+    this._containerElem.removeChild(document.getElementById("button-bar")!);
 
     // Create a new editor view
     this.editorView = this.createEditorView();
@@ -621,11 +620,10 @@ export class ProofFlow {
       this.minimap!,
     );
 
-    createSettings();
-
-    // Ensure that the usermode and color scheme are loaded correctly.
+    // Ensure that the usermode and color scheme and size are loaded correctly.
     handleUserModeSwitch();
     reloadColorScheme();
+    adjustLeftDivWidth();
   }
 
   /**
