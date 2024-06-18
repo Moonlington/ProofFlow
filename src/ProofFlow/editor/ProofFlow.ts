@@ -422,7 +422,7 @@ export class ProofFlow {
     // Create the content node
     let contentNode: Node = this._schema.node(
       "collapsible_content",
-      { visible: true },
+      { visible: false },
       contentNodes,
     );
 
