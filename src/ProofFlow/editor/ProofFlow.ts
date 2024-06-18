@@ -264,17 +264,23 @@ export class ProofFlow {
       }
     }
 
-    for (let i = 0; i < CodeMirrorView.instances.length; i++) {
-      let instance = CodeMirrorView.instances[i];
+    let prevInstance: CodeMirrorView | null = null;
+    this.getState().doc.descendants((node: Node, offset: number) => {
+      if (node.type.name != "code_mirror") return true;
+      let instance = CodeMirrorView.findByPos(offset);
+      if (instance == null) return true;
+
       if (instance.diagnostics.length == 0) {
         setInstanceColor(this.getState(), instance, ProofStatus.Correct);
       } else {
         setInstanceColor(this.getState(), instance, ProofStatus.Incorrect);
       }
-      if (instance.isQEDError && i > 0) {
-        setInstanceColor(this.getState(), CodeMirrorView.instances[i - 1], ProofStatus.Incorrect);
+      if (instance.isQEDError && prevInstance != null) {
+        setInstanceColor(this.getState(), prevInstance, ProofStatus.Incorrect);
       }
-    }
+
+      prevInstance = instance;
+    })
   }
 
   /**
