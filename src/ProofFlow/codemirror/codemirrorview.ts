@@ -146,7 +146,7 @@ export class CodeMirrorView implements NodeView {
 
     // Add the newest instance to the list of instances
     CodeMirrorView.instances.push(this);
-    CodeMirrorView.resortInstances();
+    // CodeMirrorView.resortInstances();
 
     // Ensure the selection is synchronized from ProseMirror to codemirror
     this._outerView.dom.addEventListener("focus", () =>
@@ -154,6 +154,8 @@ export class CodeMirrorView implements NodeView {
     );
   }
 
+  // TODO remove?
+  // at least do not use, breaks stuff
   static resortInstances() {
     CodeMirrorView.instances.sort((a, b) => {
       if (a.getPos() < b.getPos()) return -1;
@@ -380,7 +382,7 @@ export class CodeMirrorView implements NodeView {
     CodeMirrorView.instances = CodeMirrorView.instances.filter(
       (instance) => instance !== this,
     );
-    CodeMirrorView.resortInstances();
+    // CodeMirrorView.resortInstances();
   }
 
   static resetDiagnostics() {
