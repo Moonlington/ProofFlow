@@ -15,17 +15,16 @@ import {
 import { EditorView } from "prosemirror-view";
 import { ProofFlowSchema } from "../editor/proofflowschema";
 import { getNextAreaId } from "../editor/ProofFlowDocument";
-import CodeMirrorView from "../codemirror/codemirrorview";
 
 /**
- * Returns a command function for inserting a node of type `mdNodeType`.
+ * Returns a command function for inserting a node of the specified type.
  * @param insertionFunction - The function responsible for inserting the node.
- * @param mdNodeType - The node type to be inserted.
+ * @param nodeType - The node type to be inserted.
  * @returns The command function.
  */
-export function getMdInsertCommand(
+function getInsertCommand(
   insertionFunction: InsertionFunction,
-  mdNodeType: NodeType,
+  nodeType: NodeType,
 ): Command {
   return (
     state: EditorState,
@@ -34,60 +33,47 @@ export function getMdInsertCommand(
   ): boolean => {
     if (!allowedToInsert(state)) return false;
 
-    let trans: Transaction | undefined;
-    trans = insertionFunction(state, state.tr, mdNodeType);
+    const trans = insertionFunction(state, state.tr, nodeType);
     if (dispatch && trans) dispatch(trans);
     return true;
   };
 }
 
-/**
- * Returns a command function for inserting a node of type `latexNodeType`.
- * @param insertionFunction - The function responsible for inserting the node.
- * @param latexNodeType - The node type to be inserted.
- * @returns The command function.
- */
-export function getMathInsertCommand(
-  insertionFunction: InsertionFunction,
-  latexNodeType: NodeType,
-): Command {
-  return (
-    state: EditorState,
-    dispatch?: (tr: Transaction) => void,
-    _view?: EditorView,
-  ): boolean => {
-    if (!allowedToInsert(state)) return false;
+export const getMdInsertCommand = (insertionFunction: InsertionFunction, nodeType: NodeType) =>
+  getInsertCommand(insertionFunction, nodeType);
 
-    let trans: Transaction | undefined;
-    trans = insertionFunction(state, state.tr, latexNodeType);
-    if (dispatch && trans) dispatch(trans);
-    return true;
-  };
-}
+export const getMathInsertCommand = (insertionFunction: InsertionFunction, nodeType: NodeType) =>
+  getInsertCommand(insertionFunction, nodeType);
+
+export const getCodeInsertCommand = (insertionFunction: InsertionFunction, nodeType: NodeType) =>
+  getInsertCommand(insertionFunction, nodeType);
+
 
 /**
- * Returns a command function for inserting a node of type `codeblockNodeType`.
- * @param insertionFunction - The function responsible for inserting the node.
- * @param codeblockNodeType - The node type to be inserted.
- * @returns The command function.
+ * Combines some common operations for inserting wrapper nodes.
+ * 
+ * @param state - The editor state to be wrapped.
+ * @returns An array containing the result of the wrapping operation.
+ *          The first element indicates whether the wrapping was successful.
+ *          The second element is the old node.
+ *          The third element is the selection.
+ *          The fourth element is the selection type.
  */
-export function getCodeInsertCommand(
-  insertionFunction: InsertionFunction,
-  codeblockNodeType: NodeType,
-): Command {
-  return (
-    state: EditorState,
-    dispatch?: (tr: Transaction) => void,
-    _view?: EditorView,
-  ): boolean => {
-    if (!allowedToInsert(state)) return false;
+function wrapperCombined(state: EditorState): [boolean, Node?, any?, any?] {
+  if (!allowedToInsert(state)) return [false];
 
-    let trans: Transaction | undefined;
-    trans = insertionFunction(state, state.tr, codeblockNodeType);
-    if (dispatch && trans) dispatch(trans);
-    CodeMirrorView.resortInstances();
-    return true;
-  };
+  const selection = state.selection;
+  const parent = getContainingNode(selection);
+  if (parent == undefined || parent.type.name != "doc") return [false];
+
+  const selectionType = getSelectionType(selection);
+  const oldNode = selectionType.isTextSelection
+    ? selection.$from.node()
+    : (selection as NodeSelection).node;
+
+  if (oldNode == null || ["input", "collapsible"].includes(oldNode.type.name)) return [false];
+
+  return [true, oldNode, selection, selectionType];
 }
 
 /**
@@ -100,55 +86,27 @@ export function getCollapsibleInsertCommand(): Command {
     dispatch?: (tr: Transaction) => void,
     _view?: EditorView,
   ): boolean => {
-    // Check if insertion is allowed
-    if (!allowedToInsert(state)) return false;
+    const [allowedToGo, oldNode, selection, selectionType] = wrapperCombined(state);
+    if (!allowedToGo || !oldNode || !selection || !selectionType) return false;
 
-    let selection = state.selection;
-    let parent = getContainingNode(selection);
-
-    // Check if parent node is valid
-    if (parent == undefined || parent.type.name != "doc") return false;
-    let oldNode = null;
-    let selectionType = getSelectionType(selection);
-
-    // Get the old node based on the selection type
-    if (selectionType.isTextSelection) {
-      oldNode = selection.$from.node();
-    } else if (selectionType.isNodeSelection) {
-      oldNode = (selection as NodeSelection).node;
-    }
-
-    // Check if old node exists and not already a wrapper node
-    if (oldNode == null) return false;
-    if (oldNode.type.name == "input" || oldNode.type.name == "collapsible")
-      return false;
-
-    // Create the title node for the collapsible node
-    let textNode: Node = ProofFlowSchema.node("collapsible_title", null, [
+    const textNode: Node = ProofFlowSchema.node("collapsible_title", null, [
       ProofFlowSchema.text("Collapsible: "),
     ]);
-    // Create the content node for the collapsible node
-    let contentNode: Node = ProofFlowSchema.node(
+    const contentNode: Node = ProofFlowSchema.node(
       "collapsible_content",
       { visible: true },
       [oldNode],
     );
-    // Create the collapsible node
-    let collapsibleNode: Node = ProofFlowSchema.node(
+    const collapsibleNode: Node = ProofFlowSchema.node(
       "collapsible",
       { id: getNextAreaId() },
       [textNode, contentNode],
     );
-    let trans: Transaction = state.tr;
-    // Replace the selection with the collapsible node
-    if (selectionType.isTextSelection) {
-      let resolved = selection.$from;
-      console.log(resolved.start(), resolved.end());
-      trans.replaceWith(resolved.start() - 1, resolved.end(), collapsibleNode);
-    } else if (selectionType.isNodeSelection) {
-      trans.replaceSelectionWith(collapsibleNode);
-    }
-    // Dispatch the transaction if provided
+
+    let { posStart, posEnd } = getSelectionPositions(selection, selectionType);
+
+    const trans: Transaction = state.tr.replaceWith(posStart, posEnd, collapsibleNode);
+
     if (dispatch && trans) dispatch(trans);
     return true;
   };
@@ -164,103 +122,65 @@ export function getInputInsertCommand(): Command {
     dispatch?: (tr: Transaction) => void,
     _view?: EditorView,
   ): boolean => {
-    // Check if insertion is allowed
-    if (!allowedToInsert(state)) return false;
+    const [allowedToGo, oldNode, selection, selectionType] = wrapperCombined(state);
+    if (!allowedToGo || !oldNode || !selection || !selectionType) return false;
 
-    let selection = state.selection;
-    let parent = getContainingNode(selection);
-
-    // Check if parent node is valid
-    if (parent == undefined || parent.type.name != "doc") return false;
-
-    let oldNode = null;
-    let selectionType = getSelectionType(selection);
-
-    // Get the old node based on the selection type
-    if (selectionType.isTextSelection) {
-      oldNode = selection.$from.node();
-    } else if (selectionType.isNodeSelection) {
-      oldNode = (selection as NodeSelection).node;
-    }
-
-    // Check if old node exists and not already a wrapper node
-    if (oldNode == null) return false;
-    if (oldNode.type.name == "input" || oldNode.type.name == "collapsible")
-      return false;
-
-    // TODO Check for neighbouring input nodes
-    let posStart;
-    let posEnd;
-    if (selectionType.isNodeSelection) {
-      posStart = selection.from; // Get the position of the selection
-      posEnd = selection.to;
-    } else { // text selection
-      posStart = selection.$from.depth ? selection.$from.before(selection.$from.depth) : 0; // Get the position of the parent node or 0 if it doesn't exist
-      const textSel = selection as TextSelection;
-      posEnd = selection.to + (selection.$from.parent.nodeSize - textSel.$from.parentOffset) - 1;
-    }
+    let { posStart, posEnd } = getSelectionPositions(selection, selectionType);
 
     const doc = state.doc;
-    console.log("doc: ", doc)
+    let oldNodes = [];
+
     const nodeBefore = doc.resolve(posStart).nodeBefore;
     const nodeAfter = doc.resolve(posEnd).nodeAfter;
-    let oldNodes = [];
-    if (nodeBefore && nodeBefore.type.name == "input" && nodeAfter && nodeAfter.type.name == "input") {
-      // Node before and after are input nodes, merge them and add current node to the merged node
-      nodeBefore.firstChild!.content.forEach((node) => {
-        oldNodes.push(node);
-      });
-      oldNodes.push(oldNode);
-      nodeAfter.firstChild!.content.forEach((node) => {
-        oldNodes.push(node);
-      });
-      posStart = posStart - nodeBefore.nodeSize;
-      posEnd = posEnd + nodeAfter.nodeSize;
-    } else if (nodeAfter && nodeAfter.type.name == "input") {
-      // Node after is an input node, add current node to that input node
-      console.log("After");
-      oldNodes.push(oldNode);
-      nodeAfter.firstChild!.content.forEach((node) => {
-        oldNodes.push(node);
-      });
-      posEnd = posEnd + nodeAfter.nodeSize;
-    } else if (nodeBefore && nodeBefore.type.name == "input") {
-      // Node before is an input node, add current node to that input node
-      console.log("Before");
-      nodeBefore.firstChild!.content.forEach((node) => {
-        oldNodes.push(node);
-      });
-      console.log("nodeBefore: ", nodeBefore);
-      console.log("nodeBefore.nodeSize: ", nodeBefore.nodeSize);
-      console.log("oldNode: ", oldNode);
-      console.log("oldNode.nodeSize: ", oldNode.nodeSize);
-      console.log("start and end pos of old node: ", posStart, posEnd);
-      oldNodes.push(oldNode);
-      posStart = posStart - nodeBefore.nodeSize;
-    } else {
-      // No neighbouring input nodes, create a new input node
-      console.log("No neighbours");
-      oldNodes.push(oldNode);
+
+    if (nodeBefore && nodeBefore.type.name == "input") {
+      nodeBefore.firstChild!.content.forEach((node) => oldNodes.push(node));
+      posStart -= nodeBefore.nodeSize;
     }
 
-    let contentNode: Node = ProofFlowSchema.node(
+    oldNodes.push(oldNode);
+
+    if (nodeAfter && nodeAfter.type.name == "input") {
+      nodeAfter.firstChild!.content.forEach((node) => oldNodes.push(node));
+      posEnd += nodeAfter.nodeSize;
+    }
+
+    const contentNode: Node = ProofFlowSchema.node(
       "input_content",
       { visible: true },
       oldNodes,
     );
-    let inputNode: Node = ProofFlowSchema.node(
+    const inputNode: Node = ProofFlowSchema.node(
       "input",
       { id: getNextAreaId() },
       [contentNode],
     );
-    let trans: Transaction = state.tr;
 
-    console.log("newNode: ", inputNode);
+    const trans: Transaction = state.tr.replaceWith(posStart, posEnd, inputNode);
 
-    trans.replaceWith(posStart, posEnd, inputNode);
-
-    // Dispatch the transaction if provided
     if (dispatch && trans) dispatch(trans);
     return true;
   };
+}
+
+/**
+ * Helper function to get the start and end positions of the selection.
+ * @param selection - The current selection.
+ * @param selectionType - The type of the selection.
+ * @param oldNode - The old node being replaced.
+ * @returns The start and end positions.
+ */
+function getSelectionPositions(selection: any, selectionType: any) {
+  let posStart: number, posEnd: number;
+  
+  if (selectionType.isNodeSelection) {
+    posStart = selection.from;
+    posEnd = selection.to;
+  } else {
+    posStart = selection.$from.depth ? selection.$from.before(selection.$from.depth) : 0;
+    const textSel = selection as TextSelection;
+    posEnd = selection.to + (selection.$from.parent.nodeSize - textSel.$from.parentOffset) - 1;
+  }
+  
+  return { posStart, posEnd };
 }
