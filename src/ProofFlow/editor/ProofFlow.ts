@@ -194,7 +194,6 @@ export class ProofFlow {
     let parsed = docToPFDocument(doc);
     if (this.outputConfig) parsed.outputConfig = this.outputConfig;
     if (parsed.toString() === this.pfDocument.toString()) return;
-    console.log(parsed);
     this.pfDocument = parsed;
     this.lastUpdate = new Date();
 

@@ -9,6 +9,7 @@ import {
   Command,
   EditorState,
   NodeSelection,
+  TextSelection,
   Transaction,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -187,27 +188,76 @@ export function getInputInsertCommand(): Command {
     if (oldNode.type.name == "input" || oldNode.type.name == "collapsible")
       return false;
 
-    // Create the content node and the collapsible node
+    // TODO Check for neighbouring input nodes
+    let posStart;
+    let posEnd;
+    if (selectionType.isNodeSelection) {
+      posStart = selection.from; // Get the position of the selection
+      posEnd = selection.to;
+    } else { // text selection
+      posStart = selection.$from.depth ? selection.$from.before(selection.$from.depth) : 0; // Get the position of the parent node or 0 if it doesn't exist
+      const textSel = selection as TextSelection;
+      posEnd = selection.to + (selection.$from.parent.nodeSize - textSel.$from.parentOffset) - 1;
+    }
+
+    const doc = state.doc;
+    console.log("doc: ", doc)
+    const nodeBefore = doc.resolve(posStart).nodeBefore;
+    const nodeAfter = doc.resolve(posEnd).nodeAfter;
+    let oldNodes = [];
+    if (nodeBefore && nodeBefore.type.name == "input" && nodeAfter && nodeAfter.type.name == "input") {
+      // Node before and after are input nodes, merge them and add current node to the merged node
+      nodeBefore.firstChild!.content.forEach((node) => {
+        oldNodes.push(node);
+      });
+      oldNodes.push(oldNode);
+      nodeAfter.firstChild!.content.forEach((node) => {
+        oldNodes.push(node);
+      });
+      posStart = posStart - nodeBefore.nodeSize;
+      posEnd = posEnd + nodeAfter.nodeSize;
+    } else if (nodeAfter && nodeAfter.type.name == "input") {
+      // Node after is an input node, add current node to that input node
+      console.log("After");
+      oldNodes.push(oldNode);
+      nodeAfter.firstChild!.content.forEach((node) => {
+        oldNodes.push(node);
+      });
+      posEnd = posEnd + nodeAfter.nodeSize;
+    } else if (nodeBefore && nodeBefore.type.name == "input") {
+      // Node before is an input node, add current node to that input node
+      console.log("Before");
+      nodeBefore.firstChild!.content.forEach((node) => {
+        oldNodes.push(node);
+      });
+      console.log("nodeBefore: ", nodeBefore);
+      console.log("nodeBefore.nodeSize: ", nodeBefore.nodeSize);
+      console.log("oldNode: ", oldNode);
+      console.log("oldNode.nodeSize: ", oldNode.nodeSize);
+      console.log("start and end pos of old node: ", posStart, posEnd);
+      oldNodes.push(oldNode);
+      posStart = posStart - nodeBefore.nodeSize;
+    } else {
+      // No neighbouring input nodes, create a new input node
+      console.log("No neighbours");
+      oldNodes.push(oldNode);
+    }
+
     let contentNode: Node = ProofFlowSchema.node(
       "input_content",
       { visible: true },
-      [oldNode],
+      oldNodes,
     );
-    let collapsibleNode: Node = ProofFlowSchema.node(
+    let inputNode: Node = ProofFlowSchema.node(
       "input",
       { id: getNextAreaId() },
       [contentNode],
     );
     let trans: Transaction = state.tr;
 
-    // Replace the selection with the collapsible node
-    if (selectionType.isTextSelection) {
-      let resolved = selection.$from;
-      console.log(resolved.start(), resolved.end());
-      trans.replaceWith(resolved.start() - 1, resolved.end(), collapsibleNode);
-    } else if (selectionType.isNodeSelection) {
-      trans.replaceSelectionWith(collapsibleNode);
-    }
+    console.log("newNode: ", inputNode);
+
+    trans.replaceWith(posStart, posEnd, inputNode);
 
     // Dispatch the transaction if provided
     if (dispatch && trans) dispatch(trans);
