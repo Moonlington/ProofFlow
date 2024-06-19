@@ -16,7 +16,7 @@ import {
   getCollapsibleInsertCommand,
   getInputInsertCommand,
 } from "../commands/insert-commands.ts";
-import { proofFlow } from "../../main.ts";
+import { proofFlow, readSingleFile } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 import { undo, redo } from "prosemirror-history";
 import { showOverlay } from "../../main.ts";
@@ -51,12 +51,22 @@ export class ButtonBar {
     this._bar.id = "button-bar";
     this._cellBar.className = "cell-bar";
 
+    // Remove listener to read file if it exists
+    document
+    .getElementById("file-input")
+    ?.removeEventListener("change", readSingleFile, false);
+    
     this.addCellButtons();
     this.addOtherButtons();
     this.addSettingsButtons();
     this._bar.appendChild(this._cellBar);
 
     parentElement.insertBefore(this._bar, parentElement.firstChild);
+
+    // Add listener to read file
+    document
+    .getElementById("file-input")
+    ?.addEventListener("change", readSingleFile, false);
   }
 
   /**

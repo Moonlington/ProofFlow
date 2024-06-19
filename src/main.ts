@@ -41,11 +41,6 @@ handleUserModeSwitch();
 // Update the color scheme
 reloadColorScheme();
 
-// Input to read file
-document
-  .getElementById("file-input")
-  ?.addEventListener("change", readSingleFile, false);
-
 // prevent user from leaving the page without saving
 window.onbeforeunload = function () {
   return "Are you sure you want to leave? You may have unsaved changes.";
@@ -70,7 +65,7 @@ window.addEventListener("load", adjustLeftDivWidth);
  * Reads a single file from the input event and processes it.
  * @param e - The input event.
  */
-function readSingleFile(e: Event) {
+export function readSingleFile(e: Event) {
   console.log("Reading file...");
   // Get the file list from the input event and check if it's empty
   if (!e.target) return;
