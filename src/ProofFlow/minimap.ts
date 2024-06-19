@@ -141,7 +141,7 @@ export class Minimap {
     this._minimapSizeDiv.style.paddingTop = `${bodyRatio * 100}%`;
     this._minimapViewerDiv.style.paddingTop = `${winRatio * 100}%`;
 
-    this._minimapViewerDiv.style.height = `${editor!.clientHeight * this._bodyScale}px`;
+    this._minimapViewerDiv.style.height = `${editor!.clientHeight * this._bodyScale * 2}px`;
 
     this._minimapContentDiv.style.transform = `scale(${this._realScale})`;
     this._minimapContentDiv.style.width = `${100 / this._realScale}%`;
