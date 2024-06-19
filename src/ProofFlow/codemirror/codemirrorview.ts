@@ -160,7 +160,6 @@ export class CodeMirrorView implements NodeView {
     );
   }
 
-
   /**
    *  Method to find a CodeMirrorView instance by its position in the ProseMirror document
    */

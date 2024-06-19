@@ -1,4 +1,4 @@
-export { ProofflowLSPClient, ProofflowLSPClientFileType };
+export { ProofFlowLSPClient as ProofflowLSPClient, ProofflowLSPClientFileType };
 
 import {
   ProofFlowDocument,
@@ -39,7 +39,7 @@ enum ProofflowLSPClientFileType {
   Lean = "lean",
 }
 
-class ProofflowLSPClient implements LSPClientHandler {
+class ProofFlowLSPClient implements LSPClientHandler {
   private uri: string; // uri of the document
   private wsUrl: string; // URL of the websocket
 

@@ -1,7 +1,7 @@
 import { Schema, Node, ResolvedPos, Slice, Fragment } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/codemirrorview.ts";
 import type { GetPos } from "../codemirror/types.ts";
-import { ProofFlowSchema, ProofStatus } from "./proofflowschema.ts";
+import { ProofFlowSchema, ProofStatus } from "./proofFlowSchema.ts";
 import {
   EditorState,
   EditorStateConfig,
@@ -47,14 +47,22 @@ import { DiagnosticsMessageData } from "../lspClient/models.ts";
 import {
   ProofflowLSPClient,
   ProofflowLSPClientFileType,
-} from "../lspClient/ProofflowLSPClient.ts";
+} from "../lspClient/ProofFlowLSPClient.ts";
 import { autocomplete } from "../codemirror/extensions/autocomplete.ts";
 import { wordHover } from "../codemirror/extensions/hovertooltip.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
 import { markdownToRendered } from "../commands/helpers.ts";
 import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
 import { inputProof } from "../commands/helpers.ts";
+import { ProofFlowSaver } from "../fileHandlers/proofFlowSaver.ts";
 // CSS
+
+export type ProofFlowOptions = {
+  editorElem: HTMLElement;
+  contentElem: HTMLElement;
+
+  fileSaver?: ProofFlowSaver;
+};
 
 export class ProofFlow {
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
@@ -67,11 +75,13 @@ export class ProofFlow {
 
   private editorView: EditorView; // The view of the editor
 
+  private fileSaver?: ProofFlowSaver;
+
   private userMode: UserMode = UserMode.Student; // The teacher mode of the editor
-  private fileName: string = "file.txt";
+  public fileName: string = "file.txt";
 
   // static filePath: string = "file.text";
-  static fileType: AcceptedFileType = AcceptedFileType.Unknown;
+  private fileType: AcceptedFileType = AcceptedFileType.Unknown;
 
   private minimap: Minimap | null = null;
 
@@ -97,9 +107,10 @@ export class ProofFlow {
    * @param {HTMLElement} editorElem - The HTML element that serves as the editor container.
    * @param {HTMLElement} contentElem - The HTML element that contains the initial content for the editor.
    */
-  constructor(editorElem: HTMLElement, contentElem: HTMLElement) {
-    this._editorElem = editorElem; // Set the editor element
-    this._contentElem = contentElem; // Set the content element
+  constructor(options: ProofFlowOptions) {
+    this._editorElem = options.editorElem; // Set the editor element
+    this._contentElem = options.contentElem; // Set the content element
+    this.fileSaver = options.fileSaver;
     // Create the editor
     this.editorView = this.createEditorView();
 
@@ -269,8 +280,9 @@ export class ProofFlow {
 
     // Iterate over all nodes in doc
     this.getState().doc.descendants((node: Node, offset: number) => {
-      if (node.type.name != "code_mirror" && node.type.name != "input") return true;
-      
+      if (node.type.name != "code_mirror" && node.type.name != "input")
+        return true;
+
       if (node.type.name == "input") {
         // Save the node and offset
         prevInput = node;
@@ -283,7 +295,7 @@ export class ProofFlow {
           let instance = CodeMirrorView.findByPos(offset);
           if (instance == null) return false;
           diagnosticCount += instance.diagnostics.length;
-        })
+        });
 
         // If it is zero then set it to correct otherwise incorrect
         if (diagnosticCount == 0) {
@@ -293,15 +305,14 @@ export class ProofFlow {
         }
         return false;
       }
-      
+
       // If instance has QED error then set previous input to incorrect
       let instance = CodeMirrorView.findByPos(offset);
       if (instance == null) return true;
       if (instance.isQEDError && prevInput != null) {
         inputProof(prevInput, ProofStatus.Incorrect, prevOffset);
       }
-
-    })
+    });
   }
 
   /**
@@ -311,13 +322,13 @@ export class ProofFlow {
    * @param fileType - The type of the file.
    */
   public async openFile(text: string, fileType: AcceptedFileType) {
-    ProofFlow.fileType = fileType;
+    this.fileType = fileType;
     text = text.replace(/\r/gi, ""); // Windows uses Carriage feeds but we don't like that.
 
     // Process the file content
     let parser: Parser;
     let lspClientFileType: ProofflowLSPClientFileType;
-    switch (fileType) {
+    switch (this.fileType) {
       case AcceptedFileType.Coq:
         parser = CoqParser;
         this.outputConfig = CoqOutput;
@@ -578,18 +589,7 @@ export class ProofFlow {
    * Saves the file by creating a download link for the content and triggering a click event on it.
    */
   public saveFile() {
-    const result = this._pfDocument.toString();
-    const blob = new Blob([result], { type: "text" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = this.fileName;
-    document.body.appendChild(a);
-    a.click();
-
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    this.fileSaver?.save(this);
   }
 
   /**

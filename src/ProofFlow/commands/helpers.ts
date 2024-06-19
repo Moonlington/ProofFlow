@@ -10,7 +10,7 @@ import { closeHistory } from "prosemirror-history";
 import { defaultMarkdownParser } from "prosemirror-markdown";
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
-import { ProofStatus } from "../editor/proofflowschema";
+import { ProofStatus } from "../editor/proofFlowSchema";
 import { getNextAreaId } from "../editor/ProofFlowDocument";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 

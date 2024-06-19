@@ -10,6 +10,7 @@ import { reloadColorScheme } from "./ProofFlow/settings/updateColors.ts";
 import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
 import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
+import { WebApplicationSaver } from "./ProofFlow/fileHandlers/webApplicationSaver.ts";
 
 const app = document.createElement("div");
 app.id = "app";
@@ -32,7 +33,11 @@ content.id = "content";
 container.appendChild(content);
 
 // Create a new instance of the ProofFlow class
-let proofFlow: ProofFlow = new ProofFlow(editor, content);
+let proofFlow: ProofFlow = new ProofFlow({
+  editorElem: editor,
+  contentElem: content,
+  fileSaver: new WebApplicationSaver(),
+});
 
 // Create the settings overlay
 const settingsOverlay = new SettingsOverlay(container);
@@ -58,10 +63,14 @@ window.onbeforeunload = function () {
  * Creates the settings and initializes the settings bar.
  */
 export function createSettings() {
-  document.getElementById("file-input")?.removeEventListener("change", readSingleFile, false);
+  document
+    .getElementById("file-input")
+    ?.removeEventListener("change", readSingleFile, false);
   new SettingsBar(content, settingsOverlay, proofFlow.getEditorView());
   // Input to read file
-  document.getElementById("file-input")?.addEventListener("change", readSingleFile, false);
+  document
+    .getElementById("file-input")
+    ?.addEventListener("change", readSingleFile, false);
 }
 
 /**
