@@ -224,6 +224,12 @@ export function isClickedNode(node: Node, nodePos: number, clickedPos: number) {
   return nodePos <= clickedPos && clickedPos <= nodePos + node.nodeSize - 1;
 }
 
+/**
+ * Turns a markdown node into a rendered markdown node.
+ * @param node The node to transform.
+ * @param schema The schema that the node belongs to.
+ * @returns The transformed node.
+ */
 export function markdownToRendered(node: Node, schema: Schema) {
   const parsedContent = defaultMarkdownParser.parse(node.textContent);
   const mathInlineBlockNodeType = schema.nodes["math_inline_block"];
@@ -232,7 +238,7 @@ export function markdownToRendered(node: Node, schema: Schema) {
   const markdownRenderedChildNodeType = schema.nodes["markdown_rendered_child"];
 
   let renderedNode: Node = node; // Default to the original node if parsing fails
-  let parsedChildren: Node[] = Array<Node>();
+  let parsedParts: Node[] = Array<Node>();
 
   const regex = /\$(.*?)\$/g; // The regex string for getting the math content
   const result = node.textContent.split(regex);
@@ -242,27 +248,32 @@ export function markdownToRendered(node: Node, schema: Schema) {
       // Make a math_inline node with the math content
       let mathNode = mathInlineNodeType.create(null, schema.text(result[i]));
       let wrappedMathNode = mathInlineBlockNodeType.create(null, mathNode);
-      parsedChildren.push(wrappedMathNode);
+      parsedParts.push(wrappedMathNode);
     } else {
       // Make a markdown child node with the text content
-      if (result[i] == '') continue;
+      if (result[i] == '') continue; // If the content is empty, skip it (the last element of result[] is always empty)
       let parsedChildContent = defaultMarkdownParser.parse(result[i]);
-      if (parsedChildContent) parsedChildren.push(markdownRenderedChildNodeType.create(null, parsedChildContent.content));
+      if (parsedChildContent) parsedParts.push(markdownRenderedChildNodeType.create(null, parsedChildContent.content));
     }
   }
 
   if (parsedContent) {
     renderedNode = markdownRenderedNodeType.create(
       { id: node.attrs.id, original_text: node.textContent },
-      // If the original node had children use the parsed children, otherwise use the parsed content
-      parsedChildren.length != 0 ? parsedChildren : parsedContent.content,
+      // If the content was splittable into parts, used the parsed parts, otherwise use the original content
+      parsedParts.length != 0 ? parsedParts : parsedContent.content,
     );
   }
-  console.log(renderedNode)
 
   return renderedNode;
 }
 
+/**
+ * Turns a rendered markdown node into a markdown (plain text) node.
+ * @param node The node to transform.
+ * @param schema The schema that the node belongs to.
+ * @returns The transformed node.
+ */
 export function renderedToMarkdown(node: Node, schema: Schema) {
   // const serializedContent = defaultMarkdownSerializer.serialize(node);
 

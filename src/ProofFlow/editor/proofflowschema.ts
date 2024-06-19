@@ -209,14 +209,18 @@ export const ProofFlowSchema: Schema = new Schema({
       ],
     },
 
-    math_inline: {               // important!
+    /**
+     * The math_inline node.
+     * Represents inline math.
+     */
+    math_inline: {               
       group: "inline",
-      content: "text*",        // important!
-      inline: true,            // important!
-      atom: true,              // important!
+      content: "text*",        
+      inline: true,            
+      atom: true,              
       toDOM: () => ["math-inline", { class: "math-node" }, 0],
       parseDOM: [{
-          tag: "math-inline"   // important!
+          tag: "math-inline"   
       }]
     },
 
