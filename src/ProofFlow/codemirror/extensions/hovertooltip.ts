@@ -1,33 +1,45 @@
 import { hoverTooltip, Tooltip, EditorView } from "@codemirror/view";
-import { MarkupContent } from "vscode-languageserver-protocol";
-import { ProofFlow } from "../../editor/ProofFlow";
+import CodeMirrorView from "../codemirrorview";
+import { MarkupContent } from "../../lspClient/models";
+import { marked } from "marked"
 
-export function wordHover(pf: ProofFlow) {
+export function wordHover(cmview: CodeMirrorView) {
   return hoverTooltip(
-    (view: EditorView, pos: number, side: 1 | -1): Tooltip | null => {
-      let { from, to, text } = view.state.doc.lineAt(pos);
-      let start = pos,
-        end = pos;
-      while (start > from && /\w/.test(text[start - from - 1])) start--;
-      while (end < to && /\w/.test(text[end - from])) end++;
-      if ((start == pos && side < 0) || (end == pos && side > 0)) return null;
+    async (
+      _view: EditorView,
+      pos: number,
+      _side: 1 | -1,
+    ): Promise<Tooltip | null> => {
+      return new Promise(async (resolve, _) => {
+        const lsp = cmview.proofflow.getLSPClient();
+        if (!lsp) return resolve(null);
 
-      let lsp = pf.getLSPClient();
-      if (!lsp) return null;
+        let found = cmview.proofflow.findNode(
+          (_, pos) => pos === cmview.getPos(),
+        );
+        if (!found) return resolve(null);
 
-      return {
-        pos: start,
-        end,
-        above: true,
-        create(_view) {
-          let dom = document.createElement("div");
-          dom.textContent = text.slice(start - from, end - from);
-          lsp.hover({ line: pos, character: start - from }).then((response) => {
-            dom.textContent = (response?.contents as MarkupContent).value;
-          });
-          return { dom };
-        },
-      };
+        let area = cmview.proofflow.pfDocument.getAreaById(found[0].attrs.id);
+        if (!area) return resolve(null);
+
+        let position = area.getPosition(pos);
+
+        const result = await lsp.hover(position);
+
+        if (!result) return resolve(null);
+
+        return resolve({
+          pos: pos,
+          above: true,
+          create(_view: EditorView) {
+            let markdown = marked.parse((result?.contents as MarkupContent).value, {async:false})
+            let dom = document.createElement("div");
+            dom.className = "cm-tooltip-section hovertooltip"
+            dom.innerHTML = markdown as string;
+            return { dom };
+          },
+        });
+      });
     },
   );
 }

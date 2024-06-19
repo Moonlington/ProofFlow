@@ -5,9 +5,7 @@ export function getContent(node: Node): string {
   let result: string = "";
 
   const nodeType = node.type;
-  console.log(nodeType);
   if (nodeType.isBlock) {
-    console.log(nodeType);
     if (nodeType.name == "math_display") {
       result += "$$\n" + node.textContent + "\n$$\n";
       return result;

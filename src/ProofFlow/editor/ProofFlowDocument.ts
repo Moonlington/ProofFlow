@@ -90,7 +90,6 @@ class Area {
   }
 
   getOffset(pos: Position): number | undefined {
-    console.log(this.range, pos);
     if (!this.range?.contains(pos)) return undefined;
 
     let lines = this.content.split("\n");

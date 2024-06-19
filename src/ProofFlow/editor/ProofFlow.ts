@@ -76,7 +76,7 @@ export class ProofFlow {
 
   private removeGlobalKeyBindings: () => void;
 
-  private pfDocument: ProofFlowDocument = new ProofFlowDocument([]);
+  private _pfDocument: ProofFlowDocument = new ProofFlowDocument([]);
 
   private outputConfig: OutputConfig | undefined = undefined;
 
@@ -134,7 +134,7 @@ export class ProofFlow {
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
-          new CodeMirrorView({
+          new CodeMirrorView(this, {
             node,
             view,
             getPos,
@@ -193,8 +193,8 @@ export class ProofFlow {
     clearTimeout(this.updateTimeoutID);
     let parsed = docToPFDocument(doc);
     if (this.outputConfig) parsed.outputConfig = this.outputConfig;
-    if (parsed.toString() === this.pfDocument.toString()) return;
-    this.pfDocument = parsed;
+    if (parsed.toString() === this._pfDocument.toString()) return;
+    this._pfDocument = parsed;
     this.lastUpdate = new Date();
 
     this.lspClient?.didChange(parsed);
@@ -222,27 +222,37 @@ export class ProofFlow {
 
       // Check for not null (TypeScript mandates)
       if (currentCodeMirror) {
-        console.log("Moving from codemirror");
         currentCodeMirror.blurInstance();
       }
     }
   }
 
+  public get pfDocument(): ProofFlowDocument {
+    this.updateProofFlowDocument(this.editorView.state.doc);
+    return this._pfDocument;
+  }
+
+  public findNode(
+    predicate: (node: Node, pos: number) => boolean,
+  ): [Node, number] | undefined {
+    let found: [Node, number] | undefined;
+    this.editorView.state.doc.descendants((node, pos) => {
+      if (predicate(node, pos)) found = [node, pos];
+      if (found) return false;
+    });
+    return found;
+  }
+
   public handleDiagnostics(message: DiagnosticsMessageData) {
     CodeMirrorView.resetDiagnostics();
     for (let diag of message.diagnostics) {
-      let res = this.pfDocument.getAreayByPosition(diag.range.start);
+      let res = this._pfDocument.getAreayByPosition(diag.range.start);
       if (!res) continue;
 
       let [area, start] = res;
       let end = area.getOffset(diag.range.end);
-      let found: [Node, number] | undefined;
-      this.editorView.state.doc.descendants((node, pos) => {
-        if (node.attrs.id === area.id) found = [node, pos];
-        if (found) return false;
-      });
+      let found = this.findNode((node, _) => node.attrs.id === area.id);
       if (!found) continue;
-
       let codemirror = CodeMirrorView.findByPos(found[1]);
       if (!codemirror) continue;
 
@@ -299,11 +309,11 @@ export class ProofFlow {
   }
 
   public setProofFlowDocument(pfDocument: ProofFlowDocument) {
-    this.pfDocument = pfDocument;
-    if (this.outputConfig) this.pfDocument.outputConfig = this.outputConfig;
+    this._pfDocument = pfDocument;
+    if (this.outputConfig) this._pfDocument.outputConfig = this.outputConfig;
     console.log("PF DOCUMENT IS BEING SET");
     console.log(pfDocument);
-    for (let area of this.pfDocument.areas) {
+    for (let area of this._pfDocument.areas) {
       switch (area.type) {
         case AreaType.Text:
           this.createTextArea(area);
@@ -381,7 +391,6 @@ export class ProofFlow {
     let inputNode: Node = this._schema.node("input", { id: area.id }, [
       inputContentNode,
     ]);
-    console.log(inputNode);
     this.insertAtEnd(inputNode);
   }
 
@@ -525,7 +534,7 @@ export class ProofFlow {
    * Saves the file by creating a download link for the content and triggering a click event on it.
    */
   public saveFile() {
-    const result = this.pfDocument.toString();
+    const result = this._pfDocument.toString();
     const blob = new Blob([result], { type: "text" });
     const url = URL.createObjectURL(blob);
 

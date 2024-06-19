@@ -105,9 +105,9 @@ class ProofflowLSPClient implements LSPClientHandler {
         const message: LSPServerResponse<ResultType> = JSON.parse(event.data);
         if (message.type === type) {
           console.log("Received message back", message);
+          this.socket.removeEventListener("message", waitForResponse);
           resolve(message.data);
         }
-        this.socket.removeEventListener("message", waitForResponse);
       };
       this.socket.addEventListener("message", waitForResponse);
       setTimeout(() => {

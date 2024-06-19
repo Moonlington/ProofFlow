@@ -339,3 +339,7 @@
     border-bottom: 0.5px solid var(--hover);
     color: var(--text-color);
   }
+
+  .hovertooltip {
+    /* Hi lars can u make this nice smiley face :) */
+  }
