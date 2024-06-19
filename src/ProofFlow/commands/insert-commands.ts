@@ -11,6 +11,7 @@ import {
   NodeSelection,
   TextSelection,
   Transaction,
+  Selection,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { ProofFlowSchema } from "../editor/proofflowschema";
@@ -39,19 +40,24 @@ function getInsertCommand(
   };
 }
 
-export const getMdInsertCommand = (insertionFunction: InsertionFunction, nodeType: NodeType) =>
-  getInsertCommand(insertionFunction, nodeType);
+export const getMdInsertCommand = (
+  insertionFunction: InsertionFunction,
+  nodeType: NodeType,
+) => getInsertCommand(insertionFunction, nodeType);
 
-export const getMathInsertCommand = (insertionFunction: InsertionFunction, nodeType: NodeType) =>
-  getInsertCommand(insertionFunction, nodeType);
+export const getMathInsertCommand = (
+  insertionFunction: InsertionFunction,
+  nodeType: NodeType,
+) => getInsertCommand(insertionFunction, nodeType);
 
-export const getCodeInsertCommand = (insertionFunction: InsertionFunction, nodeType: NodeType) =>
-  getInsertCommand(insertionFunction, nodeType);
-
+export const getCodeInsertCommand = (
+  insertionFunction: InsertionFunction,
+  nodeType: NodeType,
+) => getInsertCommand(insertionFunction, nodeType);
 
 /**
  * Combines some common operations for inserting wrapper nodes.
- * 
+ *
  * @param state - The editor state to be wrapped.
  * @returns An array containing the result of the wrapping operation.
  *          The first element indicates whether the wrapping was successful.
@@ -71,7 +77,8 @@ function wrapperCombined(state: EditorState): [boolean, Node?, any?, any?] {
     ? selection.$from.node()
     : (selection as NodeSelection).node;
 
-  if (oldNode == null || ["input", "collapsible"].includes(oldNode.type.name)) return [false];
+  if (oldNode == null || ["input", "collapsible"].includes(oldNode.type.name))
+    return [false];
 
   return [true, oldNode, selection, selectionType];
 }
@@ -86,7 +93,8 @@ export function getCollapsibleInsertCommand(): Command {
     dispatch?: (tr: Transaction) => void,
     _view?: EditorView,
   ): boolean => {
-    const [allowedToGo, oldNode, selection, selectionType] = wrapperCombined(state);
+    const [allowedToGo, oldNode, selection, selectionType] =
+      wrapperCombined(state);
     if (!allowedToGo || !oldNode || !selection || !selectionType) return false;
 
     const textNode: Node = ProofFlowSchema.node("collapsible_title", null, [
@@ -103,9 +111,13 @@ export function getCollapsibleInsertCommand(): Command {
       [textNode, contentNode],
     );
 
-    let { posStart, posEnd } = getSelectionPositions(selection, selectionType);
+    let { posStart, posEnd } = getSelectionPositions(selection);
 
-    const trans: Transaction = state.tr.replaceWith(posStart, posEnd, collapsibleNode);
+    const trans: Transaction = state.tr.replaceWith(
+      posStart,
+      posEnd,
+      collapsibleNode,
+    );
 
     if (dispatch && trans) dispatch(trans);
     return true;
@@ -122,10 +134,11 @@ export function getInputInsertCommand(): Command {
     dispatch?: (tr: Transaction) => void,
     _view?: EditorView,
   ): boolean => {
-    const [allowedToGo, oldNode, selection, selectionType] = wrapperCombined(state);
+    const [allowedToGo, oldNode, selection, selectionType] =
+      wrapperCombined(state);
     if (!allowedToGo || !oldNode || !selection || !selectionType) return false;
 
-    let { posStart, posEnd } = getSelectionPositions(selection, selectionType);
+    let { posStart, posEnd } = getSelectionPositions(selection);
 
     const doc = state.doc;
     let oldNodes = [];
@@ -156,7 +169,11 @@ export function getInputInsertCommand(): Command {
       [contentNode],
     );
 
-    const trans: Transaction = state.tr.replaceWith(posStart, posEnd, inputNode);
+    const trans: Transaction = state.tr.replaceWith(
+      posStart,
+      posEnd,
+      inputNode,
+    );
 
     if (dispatch && trans) dispatch(trans);
     return true;
@@ -170,17 +187,22 @@ export function getInputInsertCommand(): Command {
  * @param oldNode - The old node being replaced.
  * @returns The start and end positions.
  */
-function getSelectionPositions(selection: any, selectionType: any) {
+function getSelectionPositions(selection: Selection) {
   let posStart: number, posEnd: number;
-  
-  if (selectionType.isNodeSelection) {
+
+  if (Selection instanceof NodeSelection) {
     posStart = selection.from;
     posEnd = selection.to;
   } else {
-    posStart = selection.$from.depth ? selection.$from.before(selection.$from.depth) : 0;
+    posStart = selection.$from.depth
+      ? selection.$from.before(selection.$from.depth)
+      : 0;
     const textSel = selection as TextSelection;
-    posEnd = selection.to + (selection.$from.parent.nodeSize - textSel.$from.parentOffset) - 1;
+    posEnd =
+      selection.to +
+      (selection.$from.parent.nodeSize - textSel.$from.parentOffset) -
+      1;
   }
-  
+
   return { posStart, posEnd };
 }
