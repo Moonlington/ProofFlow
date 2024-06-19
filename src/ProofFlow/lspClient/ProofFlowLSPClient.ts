@@ -49,15 +49,19 @@ class ProofFlowLSPClient implements LSPClientHandler {
 
   private fileType: ProofflowLSPClientFileType;
 
+  private lspPath: string;
+
   constructor(
     uri: string,
     wsUrl: string,
     diagnosticsFunc: (diag: DiagnosticsMessageData) => void,
     fileType: ProofflowLSPClientFileType,
+    path: string,
   ) {
     this.uri = uri;
     this.wsUrl = wsUrl;
     this.fileType = fileType;
+    this.lspPath = path;
 
     this.socket = new WebSocket(this.wsUrl);
     this.socket.addEventListener("open", () => {
@@ -129,6 +133,7 @@ class ProofFlowLSPClient implements LSPClientHandler {
   async initialize(): Promise<InitializeResult> {
     let startParams = {
       server: this.fileType,
+      path: this.lspPath,
     };
 
     await this.waitForResponse("startServer", startParams);

@@ -77,6 +77,8 @@ export class ProofFlow {
   private userMode: UserMode = UserMode.Student; // The teacher mode of the editor
   public fileName: string = "file.txt";
 
+  private lspPath: string = "";
+
   // static filePath: string = "file.text";
   private fileType: AcceptedFileType = AcceptedFileType.Unknown;
 
@@ -333,6 +335,7 @@ export class ProofFlow {
     let lspClientFileType: ProofflowLSPClientFileType;
     switch (this.fileType) {
       case AcceptedFileType.Coq:
+        window.localStorage.setItem("currentLspType", "Coq");
         parser = CoqParser;
         this.outputConfig = CoqOutput;
         let proxy = parser as SimpleParser;
@@ -360,6 +363,7 @@ export class ProofFlow {
       "ws://localhost:8080",
       this.handleDiagnostics.bind(this),
       lspClientFileType,
+      this.lspPath,
     );
     await this.lspClient.initialize();
     this.lspClient.initialized();
@@ -656,6 +660,10 @@ export class ProofFlow {
       newUserMode === UserMode.Teacher ? "true" : "false",
     );
     handleUserModeSwitch();
+  }
+
+  public setLsp(path: string) {
+    this.lspPath = path; 
   }
 
   /**
