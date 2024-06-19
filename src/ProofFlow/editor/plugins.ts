@@ -9,7 +9,7 @@ import {
   makeBlockMathInputRule,
   REGEX_BLOCK_MATH_DOLLARS,
 } from "@benrbray/prosemirror-math";
-import { ProofFlowSchema } from "./proofflowschema.ts";
+import { ProofFlowSchema } from "./proofFlowSchema.ts";
 import {
   cmdInsertCode,
   cmdInsertMarkdown,

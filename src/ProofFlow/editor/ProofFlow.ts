@@ -1,7 +1,7 @@
 import { Schema, Node } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/codemirrorview.ts";
 import type { GetPos } from "../codemirror/types.ts";
-import { ProofFlowSchema, ProofStatus } from "./proofflowschema.ts";
+import { ProofFlowSchema, ProofStatus } from "./proofFlowSchema.ts";
 import {
   EditorState,
   EditorStateConfig,
@@ -21,7 +21,6 @@ import { applyGlobalKeyBindings } from "../commands/shortcuts";
 import { UserMode, handleUserModeSwitch } from "../UserMode/userMode.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
-import { createSettings } from "../../main.ts";
 import {
   Area,
   AreaType,
@@ -46,16 +45,25 @@ import { DiagnosticsMessageData } from "../lspClient/models.ts";
 import {
   ProofflowLSPClient,
   ProofflowLSPClientFileType,
-} from "../lspClient/ProofflowLSPClient.ts";
+} from "../lspClient/ProofFlowLSPClient.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
 import { markdownToRendered } from "../commands/helpers.ts";
 import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
 import { inputProof } from "../commands/helpers.ts";
+import { ProofFlowSaver } from "../fileHandlers/proofFlowSaver.ts";
+import { adjustLeftDivWidth } from "../../main.ts";
 // CSS
+
+export type ProofFlowOptions = {
+  editorElem: HTMLElement;
+  containerElem: HTMLElement;
+
+  fileSaver?: ProofFlowSaver;
+};
 
 export class ProofFlow {
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
-  private _contentElem: HTMLElement; // The HTML element that contains the initial content for the editor
+  private _containerElem: HTMLElement; // The HTML element that contains the initial content for the editor
   private _schema: Schema = ProofFlowSchema; // The schema for the editor
   private editorStateConfig: EditorStateConfig = {
     schema: ProofFlowSchema,
@@ -64,11 +72,13 @@ export class ProofFlow {
 
   private editorView: EditorView; // The view of the editor
 
+  private fileSaver?: ProofFlowSaver;
+
   private userMode: UserMode = UserMode.Student; // The teacher mode of the editor
-  private fileName: string = "file.txt";
+  public fileName: string = "file.txt";
 
   // static filePath: string = "file.text";
-  static fileType: AcceptedFileType = AcceptedFileType.Unknown;
+  private fileType: AcceptedFileType = AcceptedFileType.Unknown;
 
   private minimap: Minimap | null = null;
 
@@ -92,11 +102,13 @@ export class ProofFlow {
    * Represents the ProofFlow class.
    * @constructor
    * @param {HTMLElement} editorElem - The HTML element that serves as the editor container.
-   * @param {HTMLElement} contentElem - The HTML element that contains the initial content for the editor.
+   * @param {HTMLElement} containerElem - The HTML element that contains the initial content for the editor.
    */
-  constructor(editorElem: HTMLElement, contentElem: HTMLElement) {
-    this._editorElem = editorElem; // Set the editor element
-    this._contentElem = contentElem; // Set the content element
+  constructor(options: ProofFlowOptions) {
+    this._editorElem = options.editorElem; // Set the editor element
+    this._containerElem = options.containerElem; // Set the container element
+    this.fileSaver = options.fileSaver;
+    
     // Create the editor
     this.editorView = this.createEditorView();
 
@@ -104,10 +116,7 @@ export class ProofFlow {
       this.lspClient?.shutdown();
     });
     // Apply global key bindings
-    this.removeGlobalKeyBindings = applyGlobalKeyBindings(
-      this.editorView,
-      this.minimap!,
-    );
+    this.removeGlobalKeyBindings = applyGlobalKeyBindings(this.editorView);
   }
 
   /**
@@ -165,7 +174,7 @@ export class ProofFlow {
 
     // Create the button bar and render it
     const buttonBar = new ButtonBar(this._schema, editorView);
-    buttonBar.render(this._editorElem);
+    buttonBar.render(this._containerElem);
 
     return editorView;
   }
@@ -316,13 +325,13 @@ export class ProofFlow {
    * @param fileType - The type of the file.
    */
   public async openFile(text: string, fileType: AcceptedFileType) {
-    ProofFlow.fileType = fileType;
+    this.fileType = fileType;
     text = text.replace(/\r/gi, ""); // Windows uses Carriage feeds but we don't like that.
 
     // Process the file content
     let parser: Parser;
     let lspClientFileType: ProofflowLSPClientFileType;
-    switch (fileType) {
+    switch (this.fileType) {
       case AcceptedFileType.Coq:
         parser = CoqParser;
         this.outputConfig = CoqOutput;
@@ -583,18 +592,7 @@ export class ProofFlow {
    * Saves the file by creating a download link for the content and triggering a click event on it.
    */
   public saveFile() {
-    const result = this._pfDocument.toString();
-    const blob = new Blob([result], { type: "text" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = this.fileName;
-    document.body.appendChild(a);
-    a.click();
-
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    this.fileSaver?.save(this);
   }
 
   /**
@@ -614,23 +612,17 @@ export class ProofFlow {
       this._editorElem.removeChild(this._editorElem.firstChild);
     }
 
-    // Remove all children from the content element
-    while (this._contentElem.firstChild != null) {
-      this._contentElem.removeChild(this._contentElem.firstChild);
-    }
+    // remove the buttonBar
+    this._containerElem.removeChild(document.getElementById("button-bar")!);
 
     // Create a new editor view
     this.editorView = this.createEditorView();
-    this.removeGlobalKeyBindings = applyGlobalKeyBindings(
-      this.editorView,
-      this.minimap!,
-    );
+    this.removeGlobalKeyBindings = applyGlobalKeyBindings(this.editorView);
 
-    createSettings();
-
-    // Ensure that the usermode and color scheme are loaded correctly.
+    // Ensure that the usermode and color scheme and size are loaded correctly.
     handleUserModeSwitch();
     reloadColorScheme();
+    adjustLeftDivWidth();
   }
 
   /**
@@ -683,5 +675,9 @@ export class ProofFlow {
       this.editorView.state = this.editorView.state.apply(trans);
       this.editorView.updateState(this.editorView.state);
     }
+  }
+
+  public switchMinimap() {
+    this.minimap?.switch();
   }
 }

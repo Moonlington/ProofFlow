@@ -9,10 +9,24 @@ import {
   highLevelCells,
   getContainingNode,
 } from "../commands/helpers.ts";
-import { ProofFlowSchema } from "../editor/proofflowschema.ts";
+import { ProofFlowSchema } from "../editor/proofFlowSchema.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode, lockEditing } from "../UserMode/userMode.ts";
 
+/**
+ * Plugin that handles the conversion between markdown and rendered markdown nodes.
+ * Overall idea of the logic:
+ * 1. Get the clicked node and its position
+ * 2. Go through all the nodes in the document
+ * 3. If the node is a markdown node and it is not the clicked node, replace it with a rendered markdown node
+ * 4. If the node is a rendered markdown node and it is the clicked node, replace it with a markdown node
+ * 5. If the node is a collapsible node, go through all its children and apply the same logic
+ * 6. If the node is an input node, go through all its children and apply the same logic
+ * 7. Replace the old document with the new one
+ * 8. Set the cursor to the correct position (calculated with some magic)
+ *    Although it is not perfect, since going from a markdown rendered to markdown will change internal offsets
+ *    and thus calculating the exact character the user clicks at is not possible
+ */
 export const markdownPlugin = new Plugin({
   props: {
     handleClickOn(view, pos, node, nodePos, _event, direct) {

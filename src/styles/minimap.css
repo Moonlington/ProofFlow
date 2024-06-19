@@ -1,6 +1,6 @@
 .minimap__container{
-    position: absolute;
-    left: 0;
+    position: fixed;
+    right: 0;
     top: 0;
     min-width: 20px;
     /* min-height: 100px; */
@@ -8,6 +8,9 @@
     border-right: 2px solid var(--hover);
     overflow: hidden;
     height: 100%;
+    max-width: 120px !important;
+    margin-top: 25px;
+    margin-right: 11px;
 }
 
 .minimap__size{

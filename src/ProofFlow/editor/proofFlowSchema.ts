@@ -120,7 +120,7 @@ export const ProofFlowSchema: Schema = new Schema({
         id: {},
       },
       group: "area",
-      content: "text*",
+      content: "inline*", // aka text and math_inline
       code: true,
       toDOM(_node) {
         return ["markdown", { class: "markdown" }, 0];
@@ -142,6 +142,25 @@ export const ProofFlowSchema: Schema = new Schema({
       atom: true,
       toDOM(_node) {
         return ["markdown-rendered", { class: "markdown unlocked" }, 0];
+      },
+    },
+
+    /**
+     * Markdown rendered child node
+     * Represents the actual markdown in a markdown_rendered node
+     * Can be used next to math_inline_block to show latex in a rendered markdown node
+     */
+    markdown_rendered_child: {
+      content: "block*",
+      group: "block",
+      parseDOM: [{ tag: "markdown-rendered-child", preserveWhitespace: true }],
+      atom: true,
+      toDOM(_node) {
+        return [
+          "markdown-rendered-child",
+          { class: "markdown-rendered-child" },
+          0,
+        ];
       },
     },
 
@@ -194,6 +213,38 @@ export const ProofFlowSchema: Schema = new Schema({
       ],
     },
 
+    /**
+     * The math_inline node.
+     * Represents inline math.
+     */
+    math_inline: {
+      group: "inline",
+      content: "text*",
+      inline: true,
+      atom: true,
+      toDOM: () => ["math-inline", { class: "math-node" }, 0],
+      parseDOM: [
+        {
+          tag: "math-inline",
+        },
+      ],
+    },
+
+    /**
+     * A wrapper node to be able to insert inline math into a markdown_rendered node which only accepts block content
+     */
+    math_inline_block: {
+      group: "block",
+      content: "math_inline*",
+      parseDOM: [{ tag: "math-inline-block" }],
+      toDOM(_node) {
+        return ["math-inline-block", { class: "math-inline-block" }, 0];
+      },
+    },
+
+    /**
+     * ============== Markdown specific nodes ===============
+     */
     paragraph: {
       content: "inline*",
       group: "block",

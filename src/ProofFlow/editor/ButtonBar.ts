@@ -16,8 +16,10 @@ import {
   getCollapsibleInsertCommand,
   getInputInsertCommand,
 } from "../commands/insert-commands.ts";
-import { proofFlow } from "../../main.ts";
+import { proofFlow, readSingleFile } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
+import { undo, redo } from "prosemirror-history";
+import { showOverlay } from "../../main.ts";
 
 /**
  * Represents a button bar for interacting with an editor.
@@ -25,7 +27,8 @@ import { UserMode } from "../UserMode/userMode.ts";
 export class ButtonBar {
   private _schema: Schema;
   private _editorView: EditorView;
-  private _bar: HTMLElement;
+  public _bar: HTMLElement;
+  private _cellBar: HTMLElement;
 
   /**
    * Creates an instance of ButtonBar.
@@ -36,6 +39,7 @@ export class ButtonBar {
     this._schema = schema;
     this._editorView = editorView;
     this._bar = document.createElement("div");
+    this._cellBar = document.createElement("div");
   }
 
   /**
@@ -45,11 +49,24 @@ export class ButtonBar {
   render(parentElement: HTMLElement) {
     this._bar.className = "button-bar";
     this._bar.id = "button-bar";
+    this._cellBar.className = "cell-bar";
 
+    // Remove listener to read file if it exists
+    document
+    .getElementById("file-input")
+    ?.removeEventListener("change", readSingleFile, false);
+    
     this.addCellButtons();
     this.addOtherButtons();
+    this.addSettingsButtons();
+    this._bar.appendChild(this._cellBar);
 
     parentElement.insertBefore(this._bar, parentElement.firstChild);
+
+    // Add listener to read file
+    document
+    .getElementById("file-input")
+    ?.addEventListener("change", readSingleFile, false);
   }
 
   /**
@@ -66,12 +83,12 @@ export class ButtonBar {
     </svg>`;
 
     const commands = [
-      { name: "Text", cmd: cmdInsertMarkdown },
-      { name: "Code", cmd: cmdInsertCode },
-      { name: latex, cmd: cmdInsertMath },
+      { name: "Text", cmd: cmdInsertMarkdown, hoverName: "Text" },
+      { name: "Code", cmd: cmdInsertCode, hoverName: "Code" },
+      { name: latex, cmd: cmdInsertMath, hoverName: "LaTeX" },
     ];
 
-    commands.forEach(({ name, cmd }) => {
+    commands.forEach(({ name, cmd, hoverName }) => {
       const above = name + " ↑";
       const below = name + " ↓";
       this.addButton(
@@ -81,7 +98,7 @@ export class ButtonBar {
             this._editorView.state,
             this._editorView.dispatch,
           ),
-        `Insert ${name} cell above the current cell.(Ctrl-Shift-${name === "Text" ? "m" : name === "Code" ? "c" : "b"})`,
+        `Insert ${hoverName} cell above the current cell.(Ctrl-Shift-${name === "Text" ? "m" : name === "Code" ? "c" : "b"})`,
       );
       this.addButton(
         below,
@@ -90,7 +107,7 @@ export class ButtonBar {
             this._editorView.state,
             this._editorView.dispatch,
           ),
-        `Insert ${name} cell bellow the current cell.(Ctrl-${name === "Text" ? "m" : name === "Code" ? "c" : "b"})`,
+        `Insert ${hoverName} cell bellow the current cell.(Ctrl-${name === "Text" ? "m" : name === "Code" ? "c" : "b"})`,
       );
     });
   }
@@ -169,6 +186,82 @@ export class ButtonBar {
     });
   }
 
+  private addSettingsButtons() {
+    const settingsBar = document.createElement("div");
+    settingsBar.classList.add("settings-bar");
+
+    const commands = [
+      {
+        symbol: "&#9881;",
+        cmd: () => showOverlay(true),
+        hoverText: "Show Settings Menu",
+      },
+      {
+        symbol: "&#x21bb;",
+        cmd: () => proofFlow.reset(),
+        hoverText: "Clear File",
+      },
+      {
+        symbol: "&#x1F5AB;",
+        cmd: () => proofFlow.saveFile(),
+        hoverText: "Save File",
+      },
+      { symbol: "&#x1f5c1;", cmd: () => NaN, hoverText: "Open File" },
+      {
+        symbol: "&#8617;",
+        cmd: () => undo(this._editorView.state, this._editorView.dispatch),
+        hoverText: "Undo Last Action(Ctrl-z)",
+      },
+      {
+        symbol: "&#8618;",
+        cmd: () => redo(this._editorView.state, this._editorView.dispatch),
+        hoverText: "Redo Last Action(Ctrl-y)",
+      },
+    ];
+
+    commands.forEach(({ symbol, cmd, hoverText }) => {
+      const button = this.CreateButton(symbol, cmd, hoverText);
+      settingsBar.appendChild(button);
+    });
+
+    this._bar.appendChild(settingsBar);
+  }
+
+  private CreateButton(symbol: string, cmd: () => void, hoverText: string) {
+    let button;
+    if (symbol === "&#x1f5c1;") {
+      button = document.createElement("div");
+      const input = document.createElement("input");
+      input.type = "file";
+      input.id = "file-input";
+      input.style.display = "none";
+
+      const label = document.createElement("label");
+      label.innerHTML = symbol;
+      label.htmlFor = "file-input";
+      label.style.paddingTop = "0.5px";
+      button.appendChild(input);
+      button.appendChild(label);
+      label.classList.add("settings-button");
+      button.style.border = "none";
+    } else {
+      button = document.createElement("button");
+      button.innerHTML = symbol;
+      button.onclick = () => cmd();
+      if (
+        symbol === "&#8617;" ||
+        symbol === "&#8618;" ||
+        symbol === "&#x21bb;"
+      ) {
+        button.style.paddingTop = "2.5px";
+      }
+      button.classList.add("settings-button");
+    }
+    button.title = hoverText;
+
+    return button;
+  }
+
   /**
    * Adds a button to the button bar.
    * @param {string} label - The label/text of the button.
@@ -185,6 +278,7 @@ export class ButtonBar {
     }
     button.addEventListener("click", callback);
     button.title = hoverText;
-    this._bar.appendChild(button);
+    button.classList.add("editor-button");
+    this._cellBar.appendChild(button);
   }
 }
