@@ -121,7 +121,7 @@ export const ProofFlowSchema: Schema = new Schema({
       },
       group: "area",
       content: "inline*", // aka text and math_inline
-      code: false, // InputRules do not work when code = true, so needs to be false for Math_Inline
+      code: true, 
       toDOM(_node) {
         return ["markdown", { class: "markdown" }, 0];
       },
