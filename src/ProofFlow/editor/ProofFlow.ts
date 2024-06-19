@@ -86,12 +86,12 @@ export class ProofFlow {
 
   private _pfDocument: ProofFlowDocument = new ProofFlowDocument([]);
 
-  private outputConfig: OutputConfig | undefined = undefined;
+  private outputConfig?: OutputConfig;
 
-  private lastUpdate: Date = new Date();
-  private lastTransaction: Date = new Date();
+  private lastUpdate?: number;
+  private lastTransaction?: number;
 
-  private updateTimeoutID: NodeJS.Timeout = undefined!;
+  private updateTimeoutID?: NodeJS.Timeout;
   private msTypingBuffer = 250;
 
   private msMaxUpdateTime = 1000;
@@ -135,6 +135,7 @@ export class ProofFlow {
         this.editorView.updateState(this.editorView.state.apply(tr));
         if (tr.docChanged) {
           this.updateWithBuffer(tr.doc);
+          this.lastTransaction = Date.now();
         }
       },
 
@@ -179,21 +180,27 @@ export class ProofFlow {
   }
 
   updateWithBuffer(doc: Node) {
-    let now = new Date();
-    if (now.getTime() - this.lastTransaction.getTime() >= this.msTypingBuffer) {
-      clearTimeout(this.updateTimeoutID);
-      this.updateProofFlowDocument(doc);
-    } else if (
-      now.getTime() - this.lastUpdate.getTime() <
-      this.msMaxUpdateTime
-    ) {
+    let now = Date.now();
+    if (!this.lastUpdate) this.lastUpdate = now;
+    if (!this.lastTransaction) this.lastTransaction = now;
+
+    if (now - this.lastUpdate > this.msMaxUpdateTime) {
+      if (!this.updateTimeoutID)
+        this.updateTimeoutID = setTimeout(
+          () => this.updateProofFlowDocument(doc),
+          this.msMaxUpdateTime,
+        );
+      return;
+    }
+
+    if (now - this.lastTransaction <= this.msTypingBuffer) {
       clearTimeout(this.updateTimeoutID);
       this.updateTimeoutID = setTimeout(
         () => this.updateProofFlowDocument(doc),
         this.msMaxUpdateTime,
       );
+      return;
     }
-    this.lastTransaction = now;
   }
 
   updateProofFlowDocument(doc: Node) {
@@ -202,7 +209,8 @@ export class ProofFlow {
     if (this.outputConfig) parsed.outputConfig = this.outputConfig;
     if (parsed.toString() === this._pfDocument.toString()) return;
     this._pfDocument = parsed;
-    this.lastUpdate = new Date();
+    this.lastUpdate = undefined;
+    this.lastTransaction = undefined;
 
     this.lspClient?.didChange(parsed);
   }
