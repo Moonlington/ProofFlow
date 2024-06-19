@@ -16,8 +16,7 @@ import { proofFlow } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 import { getContainingNode } from "../commands/helpers.ts";
 import { Diagnostic, setDiagnostics } from "@codemirror/lint";
-import { DiagnosticsMessageData, LSPDiagnostic } from "../lspClient/models.ts";
-import { autocomplete } from "./extensions/autocomplete.ts";
+import { LSPDiagnostic } from "../lspClient/models.ts";
 import { ProofFlow } from "../editor/ProofFlow.ts";
 import { wordHover } from "./extensions/hovertooltip.ts";
 

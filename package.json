@@ -22,6 +22,7 @@
     "axios": "^1.7.2",
     "codemirror": "^6.0.1",
     "express": "^4.19.2",
+    "marked": "^13.0.0",
     "prettier": "^3.2.5",
     "prosemirror-commands": "^1.5.2",
     "prosemirror-example-setup": "^1.2.2",

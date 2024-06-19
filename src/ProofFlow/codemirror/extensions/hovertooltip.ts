@@ -1,6 +1,7 @@
 import { hoverTooltip, Tooltip, EditorView } from "@codemirror/view";
 import CodeMirrorView from "../codemirrorview";
 import { MarkupContent } from "../../lspClient/models";
+import { marked } from "marked"
 
 export function wordHover(cmview: CodeMirrorView) {
   return hoverTooltip(
@@ -25,14 +26,16 @@ export function wordHover(cmview: CodeMirrorView) {
 
         const result = await lsp.hover(position);
 
-        if (!result) resolve(null);
+        if (!result) return resolve(null);
 
         return resolve({
           pos: pos,
           above: true,
           create(_view: EditorView) {
+            let markdown = marked.parse((result?.contents as MarkupContent).value, {async:false})
             let dom = document.createElement("div");
-            dom.textContent = (result?.contents as MarkupContent).value;
+            dom.className = "cm-tooltip-section hovertooltip"
+            dom.innerHTML = markdown as string;
             return { dom };
           },
         });
