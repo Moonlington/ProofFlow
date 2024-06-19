@@ -50,7 +50,7 @@ import {
 import { autocomplete } from "../codemirror/extensions/autocomplete.ts";
 import { wordHover } from "../codemirror/extensions/hovertooltip.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
-import {basicSetupNoHistory} from "../codemirror/basicSetupNoHistory.ts";
+import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
 import { inputProof } from "../commands/helpers.ts";
 // CSS
 
@@ -237,13 +237,15 @@ export class ProofFlow {
       let [area, start] = res;
       let end = area.getOffset(diag.range.end);
       let found: [Node, number] | undefined;
-      this.editorView.state.doc.descendants((node, pos) => {
+      this.editorView.state.doc.descendants((node: Node, pos: number) => {
         if (node.attrs.id === area.id) found = [node, pos];
         if (found) return false;
       });
       if (!found) continue;
 
-      let codemirror = CodeMirrorView.findByPos(found[1]);
+      let codemirror: CodeMirrorView | null = CodeMirrorView.findByPos(
+        found[1],
+      );
       if (!codemirror) continue;
 
       codemirror.handleDiagnostic(diag, start, end!);
@@ -252,7 +254,11 @@ export class ProofFlow {
   }
 
   private setProofColors() {
-    function setInstanceColor(state: EditorState, instance: CodeMirrorView, color: ProofStatus) {
+    function setInstanceColor(
+      state: EditorState,
+      instance: CodeMirrorView,
+      color: ProofStatus,
+    ) {
       let resolvedPos = state.doc.resolve(instance.getPos());
       const grandParentDepth = resolvedPos.depth - 1;
       if (grandParentDepth >= 0) {
@@ -280,7 +286,7 @@ export class ProofFlow {
       }
 
       prevInstance = instance;
-    })
+    });
   }
 
   /**

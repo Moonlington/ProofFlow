@@ -8,7 +8,7 @@ import {
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
 import { Minimap } from "../minimap";
-import {toggleLineNumbers} from "./helpers.ts";
+import { toggleLineNumbers } from "./helpers.ts";
 
 /**
  * Applies global key bindings to the editor view.

@@ -1,13 +1,32 @@
-import {keymap, highlightSpecialChars, drawSelection, highlightActiveLine, dropCursor,
-    rectangularSelection, crosshairCursor,
-    lineNumbers, highlightActiveLineGutter} from "@codemirror/view"
-import {Extension, EditorState} from "@codemirror/state"
-import {defaultHighlightStyle, syntaxHighlighting, indentOnInput, bracketMatching,
-    foldGutter, foldKeymap} from "@codemirror/language"
-import {defaultKeymap, historyKeymap} from "@codemirror/commands"
-import {searchKeymap, highlightSelectionMatches} from "@codemirror/search"
-import {autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap} from "@codemirror/autocomplete"
-import {lintKeymap} from "@codemirror/lint"
+import {
+  keymap,
+  highlightSpecialChars,
+  drawSelection,
+  highlightActiveLine,
+  dropCursor,
+  rectangularSelection,
+  crosshairCursor,
+  lineNumbers,
+  highlightActiveLineGutter,
+} from "@codemirror/view";
+import { Extension, EditorState } from "@codemirror/state";
+import {
+  defaultHighlightStyle,
+  syntaxHighlighting,
+  indentOnInput,
+  bracketMatching,
+  foldGutter,
+  foldKeymap,
+} from "@codemirror/language";
+import { defaultKeymap, historyKeymap } from "@codemirror/commands";
+import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
+import {
+  autocompletion,
+  completionKeymap,
+  closeBrackets,
+  closeBracketsKeymap,
+} from "@codemirror/autocomplete";
+import { lintKeymap } from "@codemirror/lint";
 
 /**
  * Directly copied from: https://github.com/codemirror/basic-setup/blob/main/src/codemirror.ts
@@ -52,30 +71,30 @@ import {lintKeymap} from "@codemirror/lint"
 /// and an array literal), copy it into your own code, and adjust it
 /// as desired.
 export const basicSetupNoHistory: Extension = (() => [
-    lineNumbers(),
-    highlightActiveLineGutter(),
-    highlightSpecialChars(),
-// history(),
-    foldGutter(),
-    drawSelection(),
-    dropCursor(),
-    EditorState.allowMultipleSelections.of(true),
-    indentOnInput(),
-    syntaxHighlighting(defaultHighlightStyle, {fallback: true}),
-    bracketMatching(),
-    closeBrackets(),
-    autocompletion(),
-    rectangularSelection(),
-    crosshairCursor(),
-    highlightActiveLine(),
-    highlightSelectionMatches(),
-    keymap.of([
-        ...closeBracketsKeymap,
-        ...defaultKeymap,
-        ...searchKeymap,
-        ...historyKeymap,
-        ...foldKeymap,
-        ...completionKeymap,
-        ...lintKeymap
-    ])
-])()
+  lineNumbers(),
+  highlightActiveLineGutter(),
+  highlightSpecialChars(),
+  // history(),
+  foldGutter(),
+  drawSelection(),
+  dropCursor(),
+  EditorState.allowMultipleSelections.of(true),
+  indentOnInput(),
+  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+  bracketMatching(),
+  closeBrackets(),
+  autocompletion(),
+  rectangularSelection(),
+  crosshairCursor(),
+  highlightActiveLine(),
+  highlightSelectionMatches(),
+  keymap.of([
+    ...closeBracketsKeymap,
+    ...defaultKeymap,
+    ...searchKeymap,
+    ...historyKeymap,
+    ...foldKeymap,
+    ...completionKeymap,
+    ...lintKeymap,
+  ]),
+])();

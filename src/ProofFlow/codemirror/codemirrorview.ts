@@ -390,12 +390,12 @@ export class CodeMirrorView implements NodeView {
       instance.isQEDError = false;
       let tr = setDiagnostics(instance.cm.state, []);
       instance.cm.dispatch(tr);
-    })
+    });
   }
 
   checkQEDError(start: number) {
     if (start != 0) return false;
-    if (this.cm.state.doc.line(1).text.substring(0, 4) != 'Qed.') return false;
+    if (this.cm.state.doc.line(1).text.substring(0, 4) != "Qed.") return false;
     return true;
   }
 
@@ -409,7 +409,7 @@ export class CodeMirrorView implements NodeView {
     this.diagnostics.push(diagnostic);
     console.log(this.diagnostics);
     let tr = setDiagnostics(this.cm.state, this.diagnostics);
-    
+
     if (this.checkQEDError(start)) {
       this.isQEDError = true;
     }
