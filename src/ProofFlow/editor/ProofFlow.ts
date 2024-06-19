@@ -52,6 +52,7 @@ import {
 import { autocomplete } from "../codemirror/extensions/autocomplete.ts";
 import { wordHover } from "../codemirror/extensions/hovertooltip.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
+import { markdownToRendered } from "../commands/helpers.ts";
 // CSS
 
 export class ProofFlow {
@@ -306,7 +307,7 @@ export class ProofFlow {
     for (let area of this.pfDocument.areas) {
       switch (area.type) {
         case AreaType.Text:
-          this.createTextArea(area);
+          this.createTextArea(area, true);
           break;
         case AreaType.Code:
           this.createCodeArea(area);
@@ -360,7 +361,7 @@ export class ProofFlow {
       let node: Node;
       switch (innerArea.type) {
         case AreaType.Text:
-          node = this.createTextNode(innerArea);
+          node = this.createTextNode(innerArea, true);
           break;
         case AreaType.Code:
           node = this.createCodeNode(innerArea);
@@ -405,7 +406,7 @@ export class ProofFlow {
       let node: Node;
       switch (innerArea.type) {
         case AreaType.Text:
-          node = this.createTextNode(innerArea);
+          node = this.createTextNode(innerArea, true);
           break;
         case AreaType.Code:
           node = this.createCodeNode(innerArea);
@@ -443,13 +444,13 @@ export class ProofFlow {
    * @param text - The text content of the node.
    * @returns The created text node.
    */
-  private createTextNode(area: Area): Node {
+  private createTextNode(area: Area, render: boolean): Node {
     let textNode: Node = this._schema.node(
       "markdown",
       { id: area.id },
       area.content ? ProofFlowSchema.text(area.content) : undefined,
     );
-    return textNode;
+    return render ? markdownToRendered(textNode, this._schema) : textNode;
   }
 
   /**
@@ -487,8 +488,8 @@ export class ProofFlow {
    *
    * @param text - The text to be inserted in the text area.
    */
-  public createTextArea(area: Area): void {
-    let textNode = this.createTextNode(area);
+  public createTextArea(area: Area, render: boolean): void {
+    let textNode = this.createTextNode(area, render);
     this.insertAtEnd(textNode);
   }
 
