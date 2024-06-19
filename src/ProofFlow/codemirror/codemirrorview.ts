@@ -16,7 +16,9 @@ import { proofFlow } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 import { getContainingNode } from "../commands/helpers.ts";
 import { Diagnostic, setDiagnostics } from "@codemirror/lint";
-import { DiagnosticsMessageData, LSPDiagnostic } from "../lspClient/models.ts";
+import { LSPDiagnostic } from "../lspClient/models.ts";
+import { ProofFlow } from "../editor/ProofFlow.ts";
+import { wordHover } from "./extensions/hovertooltip.ts";
 
 const computeChange = (
   oldVal: string,
@@ -62,11 +64,13 @@ export class CodeMirrorView implements NodeView {
   updating = false;
   diagnostics: Diagnostic[] = new Array();
   isQEDError = false;
+  proofflow: ProofFlow;
 
   static instances: CodeMirrorView[] = [];
   static focused: CodeMirrorView | null = null;
 
-  constructor(options: CodeMirrorViewOptions) {
+  constructor(proofflow: ProofFlow, options: CodeMirrorViewOptions) {
+    this.proofflow = proofflow;
     // Store for later
     this.node = options.node;
     this._outerView = options.view;
@@ -140,6 +144,8 @@ export class CodeMirrorView implements NodeView {
         ]),
         cmExtensions,
         tabKeymap,
+        // autocomplete(this),
+        wordHover(this),
       ],
     });
 
@@ -147,7 +153,6 @@ export class CodeMirrorView implements NodeView {
 
     // Add the newest instance to the list of instances
     CodeMirrorView.instances.push(this);
-    CodeMirrorView.resortInstances();
 
     // Ensure the selection is synchronized from ProseMirror to codemirror
     this._outerView.dom.addEventListener("focus", () =>
@@ -155,13 +160,6 @@ export class CodeMirrorView implements NodeView {
     );
   }
 
-  static resortInstances() {
-    CodeMirrorView.instances.sort((a, b) => {
-      if (a.getPos() < b.getPos()) return -1;
-      else if (a.getPos() == b.getPos()) return 0;
-      else return 1;
-    });
-  }
 
   /**
    *  Method to find a CodeMirrorView instance by its position in the ProseMirror document
@@ -381,7 +379,6 @@ export class CodeMirrorView implements NodeView {
     CodeMirrorView.instances = CodeMirrorView.instances.filter(
       (instance) => instance !== this,
     );
-    CodeMirrorView.resortInstances();
   }
 
   static resetDiagnostics() {
@@ -406,7 +403,6 @@ export class CodeMirrorView implements NodeView {
       message: diag.message,
     };
     this.diagnostics.push(diagnostic);
-    console.log(this.diagnostics);
     let tr = setDiagnostics(this.cm.state, this.diagnostics);
 
     if (this.checkQEDError(start)) {

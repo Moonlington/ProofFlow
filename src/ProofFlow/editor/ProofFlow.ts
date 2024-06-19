@@ -1,4 +1,4 @@
-import { Schema, Node } from "prosemirror-model";
+import { Schema, Node, ResolvedPos, Slice, Fragment } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/codemirrorview.ts";
 import type { GetPos } from "../codemirror/types.ts";
 import { ProofFlowSchema, ProofStatus } from "./proofflowschema.ts";
@@ -7,6 +7,7 @@ import {
   EditorStateConfig,
   Transaction,
   Selection,
+  NodeSelection,
 } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { ProofFlowPlugins } from "./plugins.ts";
@@ -50,6 +51,7 @@ import {
 import { autocomplete } from "../codemirror/extensions/autocomplete.ts";
 import { wordHover } from "../codemirror/extensions/hovertooltip.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
+import { markdownToRendered } from "../commands/helpers.ts";
 import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
 import { inputProof } from "../commands/helpers.ts";
 // CSS
@@ -75,7 +77,7 @@ export class ProofFlow {
 
   private removeGlobalKeyBindings: () => void;
 
-  private pfDocument: ProofFlowDocument = new ProofFlowDocument([]);
+  private _pfDocument: ProofFlowDocument = new ProofFlowDocument([]);
 
   private outputConfig: OutputConfig | undefined = undefined;
 
@@ -133,7 +135,7 @@ export class ProofFlow {
       // Define a node view for the custom code mirror node as a prop
       nodeViews: {
         code_mirror: (node: Node, view: EditorView, getPos: GetPos) =>
-          new CodeMirrorView({
+          new CodeMirrorView(this, {
             node,
             view,
             getPos,
@@ -192,9 +194,8 @@ export class ProofFlow {
     clearTimeout(this.updateTimeoutID);
     let parsed = docToPFDocument(doc);
     if (this.outputConfig) parsed.outputConfig = this.outputConfig;
-    if (parsed.toString() === this.pfDocument.toString()) return;
-    console.log(parsed);
-    this.pfDocument = parsed;
+    if (parsed.toString() === this._pfDocument.toString()) return;
+    this._pfDocument = parsed;
     this.lastUpdate = new Date();
 
     this.lspClient?.didChange(parsed);
@@ -222,30 +223,38 @@ export class ProofFlow {
 
       // Check for not null (TypeScript mandates)
       if (currentCodeMirror) {
-        console.log("Moving from codemirror");
         currentCodeMirror.blurInstance();
       }
     }
   }
 
+  public get pfDocument(): ProofFlowDocument {
+    this.updateProofFlowDocument(this.editorView.state.doc);
+    return this._pfDocument;
+  }
+
+  public findNode(
+    predicate: (node: Node, pos: number) => boolean,
+  ): [Node, number] | undefined {
+    let found: [Node, number] | undefined;
+    this.editorView.state.doc.descendants((node, pos) => {
+      if (predicate(node, pos)) found = [node, pos];
+      if (found) return false;
+    });
+    return found;
+  }
+
   public handleDiagnostics(message: DiagnosticsMessageData) {
     CodeMirrorView.resetDiagnostics();
     for (let diag of message.diagnostics) {
-      let res = this.pfDocument.getAreayByPosition(diag.range.start);
+      let res = this._pfDocument.getAreayByPosition(diag.range.start);
       if (!res) continue;
 
       let [area, start] = res;
       let end = area.getOffset(diag.range.end);
-      let found: [Node, number] | undefined;
-      this.editorView.state.doc.descendants((node: Node, pos: number) => {
-        if (node.attrs.id === area.id) found = [node, pos];
-        if (found) return false;
-      });
+      let found = this.findNode((node, _) => node.attrs.id === area.id);
       if (!found) continue;
-
-      let codemirror: CodeMirrorView | null = CodeMirrorView.findByPos(
-        found[1],
-      );
+      let codemirror = CodeMirrorView.findByPos(found[1]);
       if (!codemirror) continue;
 
       codemirror.handleDiagnostic(diag, start, end!);
@@ -344,14 +353,14 @@ export class ProofFlow {
   }
 
   public setProofFlowDocument(pfDocument: ProofFlowDocument) {
-    this.pfDocument = pfDocument;
-    if (this.outputConfig) this.pfDocument.outputConfig = this.outputConfig;
+    this._pfDocument = pfDocument;
+    if (this.outputConfig) this._pfDocument.outputConfig = this.outputConfig;
     console.log("PF DOCUMENT IS BEING SET");
     console.log(pfDocument);
-    for (let area of this.pfDocument.areas) {
+    for (let area of this._pfDocument.areas) {
       switch (area.type) {
         case AreaType.Text:
-          this.createTextArea(area);
+          this.createTextArea(area, true);
           break;
         case AreaType.Code:
           this.createCodeArea(area);
@@ -405,7 +414,7 @@ export class ProofFlow {
       let node: Node;
       switch (innerArea.type) {
         case AreaType.Text:
-          node = this.createTextNode(innerArea);
+          node = this.createTextNode(innerArea, true);
           break;
         case AreaType.Code:
           node = this.createCodeNode(innerArea);
@@ -426,7 +435,6 @@ export class ProofFlow {
     let inputNode: Node = this._schema.node("input", { id: area.id }, [
       inputContentNode,
     ]);
-    console.log(inputNode);
     this.insertAtEnd(inputNode);
   }
 
@@ -450,7 +458,7 @@ export class ProofFlow {
       let node: Node;
       switch (innerArea.type) {
         case AreaType.Text:
-          node = this.createTextNode(innerArea);
+          node = this.createTextNode(innerArea, true);
           break;
         case AreaType.Code:
           node = this.createCodeNode(innerArea);
@@ -467,7 +475,7 @@ export class ProofFlow {
     // Create the content node
     let contentNode: Node = this._schema.node(
       "collapsible_content",
-      { visible: true },
+      { visible: false },
       contentNodes,
     );
 
@@ -488,13 +496,13 @@ export class ProofFlow {
    * @param text - The text content of the node.
    * @returns The created text node.
    */
-  private createTextNode(area: Area): Node {
+  private createTextNode(area: Area, render: boolean): Node {
     let textNode: Node = this._schema.node(
       "markdown",
       { id: area.id },
       area.content ? ProofFlowSchema.text(area.content) : undefined,
     );
-    return textNode;
+    return render ? markdownToRendered(textNode, this._schema) : textNode;
   }
 
   /**
@@ -532,8 +540,8 @@ export class ProofFlow {
    *
    * @param text - The text to be inserted in the text area.
    */
-  public createTextArea(area: Area): void {
-    let textNode = this.createTextNode(area);
+  public createTextArea(area: Area, render: boolean): void {
+    let textNode = this.createTextNode(area, render);
     this.insertAtEnd(textNode);
   }
 
@@ -570,7 +578,7 @@ export class ProofFlow {
    * Saves the file by creating a download link for the content and triggering a click event on it.
    */
   public saveFile() {
-    const result = this.pfDocument.toString();
+    const result = this._pfDocument.toString();
     const blob = new Blob([result], { type: "text" });
     const url = URL.createObjectURL(blob);
 
@@ -651,5 +659,24 @@ export class ProofFlow {
       newUserMode === UserMode.Teacher ? "true" : "false",
     );
     handleUserModeSwitch();
+  }
+
+  /**
+   * Inserts the given string at the selection/cursor position.
+   *
+   * @param string - The string to insert.
+   */
+  async insertAtCursor(string: string) {
+    // Create a new transaction
+    let trans: Transaction = this.getState().tr;
+    // This does not work for math nodes
+    if (this.editorView.state.selection instanceof NodeSelection) {
+      return;
+    } else {
+      // Insert the text at the selection/cursor-position and update the editor state
+      trans = trans.insertText(string);
+      this.editorView.state = this.editorView.state.apply(trans);
+      this.editorView.updateState(this.editorView.state);
+    }
   }
 }
