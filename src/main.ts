@@ -58,10 +58,14 @@ window.onbeforeunload = function () {
  * Creates the settings and initializes the settings bar.
  */
 export function createSettings() {
-  document.getElementById("file-input")?.removeEventListener("change", readSingleFile, false);
+  document
+    .getElementById("file-input")
+    ?.removeEventListener("change", readSingleFile, false);
   new SettingsBar(content, settingsOverlay, proofFlow.getEditorView());
   // Input to read file
-  document.getElementById("file-input")?.addEventListener("change", readSingleFile, false);
+  document
+    .getElementById("file-input")
+    ?.addEventListener("change", readSingleFile, false);
 }
 
 /**

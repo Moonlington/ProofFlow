@@ -1,4 +1,4 @@
-import { Schema, Node, ResolvedPos, Slice, Fragment } from "prosemirror-model";
+import { Schema, Node } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/codemirrorview.ts";
 import type { GetPos } from "../codemirror/types.ts";
 import { ProofFlowSchema, ProofStatus } from "./proofflowschema.ts";
@@ -15,7 +15,6 @@ import { mathSerializer } from "@benrbray/prosemirror-math";
 // import { AreaType } from "../parser/area.ts";
 import { ButtonBar } from "./ButtonBar.ts";
 import { linter } from "@codemirror/lint";
-import { javascript } from "@codemirror/lang-javascript";
 
 import { applyGlobalKeyBindings } from "../commands/shortcuts";
 // import { Area } from "../parser/area.ts";
@@ -48,8 +47,6 @@ import {
   ProofflowLSPClient,
   ProofflowLSPClientFileType,
 } from "../lspClient/ProofflowLSPClient.ts";
-import { autocomplete } from "../codemirror/extensions/autocomplete.ts";
-import { wordHover } from "../codemirror/extensions/hovertooltip.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
 import { markdownToRendered } from "../commands/helpers.ts";
 import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
@@ -79,12 +76,12 @@ export class ProofFlow {
 
   private _pfDocument: ProofFlowDocument = new ProofFlowDocument([]);
 
-  private outputConfig: OutputConfig | undefined = undefined;
+  private outputConfig?: OutputConfig;
 
-  private lastUpdate: Date = new Date();
-  private lastTransaction: Date = new Date();
+  private lastUpdate?: number;
+  private lastTransaction?: number;
 
-  private updateTimeoutID: NodeJS.Timeout = undefined!;
+  private updateTimeoutID?: NodeJS.Timeout;
   private msTypingBuffer = 250;
 
   private msMaxUpdateTime = 1000;
@@ -129,6 +126,7 @@ export class ProofFlow {
         this.editorView.updateState(this.editorView.state.apply(tr));
         if (tr.docChanged) {
           this.updateWithBuffer(tr.doc);
+          this.lastTransaction = Date.now();
         }
       },
 
@@ -173,21 +171,27 @@ export class ProofFlow {
   }
 
   updateWithBuffer(doc: Node) {
-    let now = new Date();
-    if (now.getTime() - this.lastTransaction.getTime() >= this.msTypingBuffer) {
-      clearTimeout(this.updateTimeoutID);
-      this.updateProofFlowDocument(doc);
-    } else if (
-      now.getTime() - this.lastUpdate.getTime() <
-      this.msMaxUpdateTime
-    ) {
+    let now = Date.now();
+    if (!this.lastUpdate) this.lastUpdate = now;
+    if (!this.lastTransaction) this.lastTransaction = now;
+
+    if (now - this.lastUpdate > this.msMaxUpdateTime) {
+      if (!this.updateTimeoutID)
+        this.updateTimeoutID = setTimeout(
+          () => this.updateProofFlowDocument(doc),
+          this.msMaxUpdateTime,
+        );
+      return;
+    }
+
+    if (now - this.lastTransaction <= this.msTypingBuffer) {
       clearTimeout(this.updateTimeoutID);
       this.updateTimeoutID = setTimeout(
         () => this.updateProofFlowDocument(doc),
         this.msMaxUpdateTime,
       );
+      return;
     }
-    this.lastTransaction = now;
   }
 
   updateProofFlowDocument(doc: Node) {
@@ -196,7 +200,8 @@ export class ProofFlow {
     if (this.outputConfig) parsed.outputConfig = this.outputConfig;
     if (parsed.toString() === this._pfDocument.toString()) return;
     this._pfDocument = parsed;
-    this.lastUpdate = new Date();
+    this.lastUpdate = undefined;
+    this.lastTransaction = undefined;
 
     this.lspClient?.didChange(parsed);
   }
@@ -269,8 +274,9 @@ export class ProofFlow {
 
     // Iterate over all nodes in doc
     this.getState().doc.descendants((node: Node, offset: number) => {
-      if (node.type.name != "code_mirror" && node.type.name != "input") return true;
-      
+      if (node.type.name != "code_mirror" && node.type.name != "input")
+        return true;
+
       if (node.type.name == "input") {
         // Save the node and offset
         prevInput = node;
@@ -283,7 +289,7 @@ export class ProofFlow {
           let instance = CodeMirrorView.findByPos(offset);
           if (instance == null) return false;
           diagnosticCount += instance.diagnostics.length;
-        })
+        });
 
         // If it is zero then set it to correct otherwise incorrect
         if (diagnosticCount == 0) {
@@ -293,15 +299,14 @@ export class ProofFlow {
         }
         return false;
       }
-      
+
       // If instance has QED error then set previous input to incorrect
       let instance = CodeMirrorView.findByPos(offset);
       if (instance == null) return true;
       if (instance.isQEDError && prevInput != null) {
         inputProof(prevInput, ProofStatus.Incorrect, prevOffset);
       }
-
-    })
+    });
   }
 
   /**
