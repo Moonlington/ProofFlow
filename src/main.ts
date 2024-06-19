@@ -41,6 +41,11 @@ handleUserModeSwitch();
 // Update the color scheme
 reloadColorScheme();
 
+// Input to read file
+document
+  .getElementById("file-input")
+  ?.addEventListener("change", readSingleFile, false);
+
 // prevent user from leaving the page without saving
 window.onbeforeunload = function () {
   return "Are you sure you want to leave? You may have unsaved changes.";
