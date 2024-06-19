@@ -390,7 +390,7 @@ export class CodeMirrorView implements NodeView {
       instance.isQEDError = false;
       let tr = setDiagnostics(instance.cm.state, []);
       instance.cm.dispatch(tr);
-    })
+    });
   }
 
   checkQEDError(start: number) {
@@ -408,7 +408,7 @@ export class CodeMirrorView implements NodeView {
     this.diagnostics.push(diagnostic);
     console.log(this.diagnostics);
     let tr = setDiagnostics(this.cm.state, this.diagnostics);
-    
+
     if (this.checkQEDError(start)) {
       this.isQEDError = true;
     }

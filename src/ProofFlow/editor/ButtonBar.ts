@@ -4,7 +4,11 @@ import {
   cmdInsertMarkdown,
   cmdInsertMath,
 } from "../commands/commands.ts";
-import {InsertionPlace, getContainingNode, toggleLineNumbers} from "../commands/helpers.ts";
+import {
+  InsertionPlace,
+  getContainingNode,
+  toggleLineNumbers,
+} from "../commands/helpers.ts";
 import { EditorView } from "prosemirror-view";
 import { NodeSelection } from "prosemirror-state";
 import { deleteSelection, selectParentNode } from "prosemirror-commands";
