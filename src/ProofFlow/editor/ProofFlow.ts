@@ -252,34 +252,43 @@ export class ProofFlow {
   }
 
   private setProofColors() {
-    function setInstanceColor(state: EditorState, instance: CodeMirrorView, color: ProofStatus) {
-      let resolvedPos = state.doc.resolve(instance.getPos());
-      const grandParentDepth = resolvedPos.depth - 1;
-      if (grandParentDepth >= 0) {
-        const grandParentPos = resolvedPos.before(grandParentDepth);
-        let node = state.doc.nodeAt(grandParentPos);
-        if (node != null) {
-          inputProof(node, color, grandParentPos);
-        }
-      }
-    }
+    // Previous input area node and its offset
+    let prevInput: Node | null = null;
+    let prevOffset: number;
 
-    let prevInstance: CodeMirrorView | null = null;
+    // Iterate over all nodes in doc
     this.getState().doc.descendants((node: Node, offset: number) => {
-      if (node.type.name != "code_mirror") return true;
+      if (node.type.name != "code_mirror" && node.type.name != "input") return true;
+      
+      if (node.type.name == "input") {
+        // Save the node and offset
+        prevInput = node;
+        prevOffset = offset;
+
+        // Count the amount of diagnostics inside the input area
+        let diagnosticCount = 0;
+        node.descendants((node: Node, offset: number) => {
+          if (node.type.name != "code_mirror") return true;
+          let instance = CodeMirrorView.findByPos(offset);
+          if (instance == null) return false;
+          diagnosticCount += instance.diagnostics.length;
+        })
+
+        // If it is zero then set it to correct otherwise incorrect
+        if (diagnosticCount == 0) {
+          inputProof(node, ProofStatus.Correct, offset);
+        } else {
+          inputProof(node, ProofStatus.Incorrect, offset);
+        }
+        return false;
+      }
+      
+      // If instance has QED error then set previous input to incorrect
       let instance = CodeMirrorView.findByPos(offset);
       if (instance == null) return true;
-
-      if (instance.diagnostics.length == 0) {
-        setInstanceColor(this.getState(), instance, ProofStatus.Correct);
-      } else {
-        setInstanceColor(this.getState(), instance, ProofStatus.Incorrect);
+      if (instance.isQEDError && prevInput != null) {
+        inputProof(prevInput, ProofStatus.Incorrect, prevOffset);
       }
-      if (instance.isQEDError && prevInstance != null) {
-        setInstanceColor(this.getState(), prevInstance, ProofStatus.Incorrect);
-      }
-
-      prevInstance = instance;
     })
   }
 

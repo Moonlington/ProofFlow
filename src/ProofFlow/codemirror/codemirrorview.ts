@@ -395,7 +395,6 @@ export class CodeMirrorView implements NodeView {
 
   checkQEDError(start: number) {
     if (start != 0) return false;
-    if (this.cm.state.doc.line(1).text.substring(0, 4) != 'Qed.') return false;
     return true;
   }
 
