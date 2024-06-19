@@ -7,7 +7,6 @@ import "./styles/main.css";
 import "@benrbray/prosemirror-math/dist/prosemirror-math.css";
 import "katex/dist/katex.min.css";
 import { reloadColorScheme } from "./ProofFlow/settings/updateColors.ts";
-import { SettingsBar } from "./ProofFlow/settings/settingsBar.ts";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
 import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
 
@@ -27,18 +26,11 @@ const editor = document.createElement("div");
 editor.id = "editor";
 container.appendChild(editor);
 
-const content = document.createElement("div");
-content.id = "content";
-container.appendChild(content);
-
 // Create a new instance of the ProofFlow class
-let proofFlow: ProofFlow = new ProofFlow(editor, content);
+let proofFlow: ProofFlow = new ProofFlow(editor, container);
 
 // Create the settings overlay
 const settingsOverlay = new SettingsOverlay(container);
-
-// Create the settings bar
-createSettings();
 
 // Export the proofFlow instance
 export { proofFlow };
@@ -54,21 +46,26 @@ window.onbeforeunload = function () {
   return "Are you sure you want to leave? You may have unsaved changes.";
 };
 
-/**
- * Creates the settings and initializes the settings bar.
- */
-export function createSettings() {
-  document.getElementById("file-input")?.removeEventListener("change", readSingleFile, false);
-  new SettingsBar(content, settingsOverlay, proofFlow.getEditorView());
-  // Input to read file
-  document.getElementById("file-input")?.addEventListener("change", readSingleFile, false);
+export function showOverlay(bool: boolean) {
+  settingsOverlay.showOverlay(bool);
 }
+
+export function adjustLeftDivWidth() {
+  const rightDiv = document.getElementById("miniMapContainer")!;
+  const leftDiv = document.getElementById("ProofFlowEditor")!;
+  const windowWidth = window.innerWidth;
+  const rightDivWidth = rightDiv.offsetWidth;
+  leftDiv.style.width = windowWidth - rightDivWidth - 12 + "px";
+}
+
+window.addEventListener("resize", adjustLeftDivWidth);
+window.addEventListener("load", adjustLeftDivWidth);
 
 /**
  * Reads a single file from the input event and processes it.
  * @param e - The input event.
  */
-function readSingleFile(e: Event) {
+export function readSingleFile(e: Event) {
   console.log("Reading file...");
   // Get the file list from the input event and check if it's empty
   if (!e.target) return;

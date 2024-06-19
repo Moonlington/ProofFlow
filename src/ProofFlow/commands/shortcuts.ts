@@ -5,10 +5,8 @@ import {
   getCollapsibleInsertCommand,
   getInputInsertCommand,
 } from "./insert-commands";
-import { proofFlow } from "../../main";
+import { proofFlow, showOverlay } from "../../main";
 import { UserMode } from "../UserMode/userMode";
-import { Minimap } from "../minimap";
-import { toggleLineNumbers } from "./helpers.ts";
 
 /**
  * Applies global key bindings to the editor view.
@@ -16,10 +14,7 @@ import { toggleLineNumbers } from "./helpers.ts";
  *
  * @returns function to remove the keybindings
  */
-export function applyGlobalKeyBindings(
-  editorView: EditorView,
-  minimap: Minimap,
-): () => void {
+export function applyGlobalKeyBindings(editorView: EditorView): () => void {
   let globalKeyBindings = (event: KeyboardEvent) => {
     if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
@@ -43,20 +38,26 @@ export function applyGlobalKeyBindings(
       event.preventDefault();
       let command = getInputInsertCommand();
       command(editorView.state, editorView.dispatch);
-    } else if (event.key === "h" && (event.ctrlKey || event.metaKey)) {
+    } else if (
+      event.key === "s" &&
+      (event.ctrlKey || event.metaKey) &&
+      proofFlow.getUserMode() === UserMode.Teacher
+    ) {
       event.preventDefault();
-      minimap.switch();
-    } else if (event.key === "l" && (event.ctrlKey || event.metaKey)) {
+      proofFlow.saveFile();
+    } else if (event.key === "Escape") {
       event.preventDefault();
-      toggleLineNumbers();
+      showOverlay(false);
     }
+
     // Add comments here to describe the purpose of each key binding
     // "Ctrl + Z" or "Cmd + Z" for undo
     // "Ctrl + Y" or "Cmd + Y" for redo
     // "Ctrl + P" or "Cmd + P" for selecting parent node
     // "Ctrl + B" or "Cmd + B" for collapsible insert command
     // "Ctrl + I" or "Cmd + I" for input insert command (only for teacher mode)
-    // "Ctrl + H" or "Cmd + H" for toggling the minimap
+    // "Ctrl + S" or "Cmd + S" for saving the file (only for teacher mode)
+    // "Escape" for closing the settings overlay
   };
   document.addEventListener("keydown", globalKeyBindings);
 
