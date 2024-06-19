@@ -121,7 +121,7 @@ export const ProofFlowSchema: Schema = new Schema({
       },
       group: "area",
       content: "inline*", // aka text and math_inline
-      code: true, 
+      code: true,
       toDOM(_node) {
         return ["markdown", { class: "markdown" }, 0];
       },
@@ -156,7 +156,11 @@ export const ProofFlowSchema: Schema = new Schema({
       parseDOM: [{ tag: "markdown-rendered-child", preserveWhitespace: true }],
       atom: true,
       toDOM(_node) {
-        return ["markdown-rendered-child", { class: "markdown-rendered-child" }, 0];
+        return [
+          "markdown-rendered-child",
+          { class: "markdown-rendered-child" },
+          0,
+        ];
       },
     },
 
@@ -213,20 +217,22 @@ export const ProofFlowSchema: Schema = new Schema({
      * The math_inline node.
      * Represents inline math.
      */
-    math_inline: {               
+    math_inline: {
       group: "inline",
-      content: "text*",        
-      inline: true,            
-      atom: true,              
+      content: "text*",
+      inline: true,
+      atom: true,
       toDOM: () => ["math-inline", { class: "math-node" }, 0],
-      parseDOM: [{
-          tag: "math-inline"   
-      }]
+      parseDOM: [
+        {
+          tag: "math-inline",
+        },
+      ],
     },
 
     /**
      * A wrapper node to be able to insert inline math into a markdown_rendered node which only accepts block content
-     */ 
+     */
     math_inline_block: {
       group: "block",
       content: "math_inline*",
@@ -310,7 +316,6 @@ export const ProofFlowSchema: Schema = new Schema({
         ];
       },
     },
-
 
     ordered_list: {
       content: "list_item+",

@@ -9,6 +9,7 @@ import "katex/dist/katex.min.css";
 import { reloadColorScheme } from "./ProofFlow/settings/updateColors.ts";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
 import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
+import { WebApplicationSaver } from "./ProofFlow/fileHandlers/webApplicationSaver.ts";
 
 const app = document.createElement("div");
 app.id = "app";
@@ -27,7 +28,11 @@ editor.id = "editor";
 container.appendChild(editor);
 
 // Create a new instance of the ProofFlow class
-let proofFlow: ProofFlow = new ProofFlow(editor, container);
+let proofFlow: ProofFlow = new ProofFlow({
+  editorElem: editor,
+  containerElem: container,
+  fileSaver: new WebApplicationSaver(),
+});
 
 // Create the settings overlay
 const settingsOverlay = new SettingsOverlay(container);
