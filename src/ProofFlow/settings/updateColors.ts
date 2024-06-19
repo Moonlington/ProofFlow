@@ -48,9 +48,6 @@ export function updateColors(newSchema: string, darkMode: boolean): void {
     document
       .getElementById("ProofFlowEditor")!
       .style.setProperty(`--${element}`, color);
-    document
-      .getElementById("button-bar")!
-      .style.setProperty(`--${element}`, color);
   });
 
   // Update the background color of the settings overlay

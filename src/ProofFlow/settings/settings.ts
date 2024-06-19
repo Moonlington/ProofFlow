@@ -30,45 +30,19 @@ export class SettingsOverlay {
     overlay.className = "overlay";
     overlay.id = "settings";
 
-    // Create the popup
-    const popup = document.createElement("div");
-    popup.className = "popup";
-
-    // Add close button
-    const closeButton = this.closeButton();
-    popup.appendChild(closeButton);
-
-    // Add content
-    const header = document.createElement("h2");
-    header.textContent = "Settings Menu";
-
-    // Get the settings from the local storage
-    const localStorage = window.localStorage;
-    const teacherMode: boolean = Boolean(
-      localStorage.getItem("teacherMode") === "true",
-    );
-    const darkMode: boolean = Boolean(
-      localStorage.getItem("darkMode") === "true",
-    );
-    const colorScheme = localStorage.getItem("colorScheme") || "";
-    const lspPath = localStorage.getItem("lspPath") || "";
-
-    // Add user mode settings
-    const userModeContainer = this.userModeContainer(teacherMode);
-
-    // Add color scheme settings
-    const colorSchemeContainer = this.colorSchemeContainer(
-      darkMode,
-      colorScheme,
-    );
-
-    // Add LSP server path settings
-    const lspContainer = this.lspContainer(lspPath);
+    // Get all the settings
+    const popup = this.settingsMenu();
+    const userModeContainer = this.userModeContainer();
+    const colorSchemeContainer = this.colorSchemeContainer();
+    const miniMapContainer = this.miniMapContainer();
+    const lspContainer = this.lspContainer();
+    const textStyleContainer = this.textStyleContainer();
 
     // Append the elements to the popup
-    popup.appendChild(header);
     popup.appendChild(userModeContainer);
+    popup.appendChild(miniMapContainer);
     popup.appendChild(colorSchemeContainer);
+    popup.appendChild(textStyleContainer);
     popup.appendChild(lspContainer);
 
     // Append the popup to the overlay
@@ -85,6 +59,23 @@ export class SettingsOverlay {
    */
   public showOverlay(visible: boolean) {
     this._overlay.style.display = visible ? "flex" : "none";
+  }
+
+  private settingsMenu(): HTMLElement {
+    // Create the popup
+    const popup = document.createElement("div");
+    popup.className = "popup";
+
+    // Add close button
+    const closeButton = this.closeButton();
+    popup.appendChild(closeButton);
+
+    // Add text header
+    const header = document.createElement("h2");
+    header.textContent = "Settings Menu";
+    popup.appendChild(header);
+
+    return popup;
   }
 
   /**
@@ -111,28 +102,35 @@ export class SettingsOverlay {
    *
    * @returns {HTMLElement} The user mode container element.
    */
-  private userModeContainer(modeSet: boolean): HTMLElement {
+  private userModeContainer(): HTMLElement {
+    // Create the container and header
     const userModeContainer = document.createElement("div");
     userModeContainer.className = "settings-container";
 
     const userModeLabel = document.createElement("h4");
     userModeLabel.textContent = "Teacher Mode";
 
+    // Create the checkbox for the usermode
     const userModeCheckbox = document.createElement("input");
     userModeCheckbox.type = "checkbox";
     userModeCheckbox.id = "user-mode-checkbox";
     userModeCheckbox.classList.add("checkbox");
+
+    userModeCheckbox.addEventListener("click", () => {
+      proofFlow.switchUserMode();
+    });
+
+    // Get the current user mode from local storage
+    const modeSet: boolean = Boolean(
+      localStorage.getItem("teacherMode") === "true",
+    );
 
     if (modeSet) {
       userModeCheckbox.checked = true;
       proofFlow.switchUserMode();
     }
 
-    // add the event listener
-    userModeCheckbox.addEventListener("click", () => {
-      proofFlow.switchUserMode();
-    });
-
+    // Add a label to the checkbox
     const userModeDescription = document.createElement("label");
     userModeDescription.htmlFor = "user-mode-checkbox";
     userModeDescription.textContent =
@@ -142,6 +140,7 @@ export class SettingsOverlay {
     userModeContainer.appendChild(userModeLabel);
     userModeContainer.appendChild(userModeCheckbox);
     userModeContainer.appendChild(userModeDescription);
+
     return userModeContainer;
   }
 
@@ -151,44 +150,25 @@ export class SettingsOverlay {
    *
    * @returns The color scheme container element.
    */
-  private colorSchemeContainer(
-    darkMode: boolean,
-    colorScheme: string,
-  ): HTMLElement {
+  private colorSchemeContainer(): HTMLElement {
+    // Create the container and header
     const colorSchemeContainer = document.createElement("div");
     colorSchemeContainer.className = "settings-container";
 
     const colorSchemeLabel = document.createElement("h4");
     colorSchemeLabel.textContent = "Color Scheme";
 
+    // Create the checkbox for darkmode
     const darkModeCheckbox = document.createElement("input");
     darkModeCheckbox.type = "checkbox";
     darkModeCheckbox.id = "dark-checkbox";
     darkModeCheckbox.classList.add("checkbox");
 
-    if (darkMode) {
-      darkModeCheckbox.checked = true;
-    }
-
+    // Add a label to the checkbox
     const darkDescription = document.createElement("label");
     darkDescription.htmlFor = "dark-checkbox";
     darkDescription.textContent = "Dark mode";
     darkDescription.classList.add("checkbox");
-
-    const colorSchemeSelect = document.createElement("select");
-    colorSchemeSelect.id = "color-theme";
-    colorSchemeSelect.className = "dropdown";
-
-    colorSchemesKeys.forEach((option) => {
-      const optionElement = document.createElement("option");
-      optionElement.value = option;
-      optionElement.textContent = option;
-      colorSchemeSelect.appendChild(optionElement);
-    });
-
-    if (colorScheme) {
-      colorSchemeSelect.value = colorScheme;
-    }
 
     // update the colors when the checkbox is clicked
     darkModeCheckbox.addEventListener("click", () => {
@@ -199,12 +179,40 @@ export class SettingsOverlay {
       );
     });
 
+    // Create the dropdown for the color scheme
+    const colorSchemeSelect = document.createElement("select");
+    colorSchemeSelect.id = "color-theme";
+    colorSchemeSelect.className = "dropdown";
+
+    // Add the color schemes to the dropdown
+    colorSchemesKeys.forEach((option) => {
+      const optionElement = document.createElement("option");
+      optionElement.value = option;
+      optionElement.textContent = option;
+      colorSchemeSelect.appendChild(optionElement);
+    });
+
     // update the colors when the select element is changed
     colorSchemeSelect.addEventListener("change", (e) => {
       const target = e.target as HTMLSelectElement;
       updateColors(target.value, darkModeCheckbox.checked);
       window.localStorage.setItem("colorScheme", target.value);
     });
+
+    // Get the current color scheme from local storage
+    const darkMode: boolean = Boolean(
+      localStorage.getItem("darkMode") === "true",
+    );
+
+    const colorScheme = localStorage.getItem("colorScheme") || "";
+
+    if (darkMode) {
+      darkModeCheckbox.checked = true;
+    }
+
+    if (colorScheme) {
+      colorSchemeSelect.value = colorScheme;
+    }
 
     const br = document.createElement("br");
 
@@ -217,7 +225,10 @@ export class SettingsOverlay {
     return colorSchemeContainer;
   }
 
-  private lspContainer(currentPath: string): HTMLElement {
+  private lspContainer(): HTMLElement {
+    // Get the current LSP path from local storage
+    const currentPath = localStorage.getItem("lspPath") || "";
+
     const lspContainer = document.createElement("div");
     const lspLabel = document.createElement("h4");
     lspLabel.textContent = "LSP Server Path";
@@ -244,5 +255,141 @@ export class SettingsOverlay {
 
     lspContainer.classList.add("settings-container");
     return lspContainer;
+  }
+
+  /**
+   * Creates and returns an HTML element representing the mini map container.
+   *
+   * @returns {HTMLElement} - The mini map container element.
+   */
+  private miniMapContainer(): HTMLElement {
+    // Create the container and header
+    const miniMapContainer = document.createElement("div");
+    miniMapContainer.classList.add("settings-container");
+
+    const miniMapLabel = document.createElement("h4");
+    miniMapLabel.textContent = "Minimap";
+
+    // Create the checkbox for the minimap
+    const miniMapCheckbox = document.createElement("input");
+    miniMapCheckbox.type = "checkbox";
+    miniMapCheckbox.id = "mini-map-checkbox";
+    miniMapCheckbox.classList.add("checkbox");
+
+    // Create the label for the checkbox
+    const miniMapDescription = document.createElement("label");
+    miniMapDescription.htmlFor = "mini-map-checkbox";
+    miniMapDescription.textContent = "Enable minimap";
+    miniMapDescription.classList.add("checkbox");
+
+    // Add event listener
+    miniMapCheckbox.addEventListener("click", () => {
+      proofFlow.switchMinimap();
+      window.localStorage.setItem(
+        "minimap",
+        miniMapCheckbox.checked.toString(),
+      );
+    });
+
+    // Update from storage
+    const on = localStorage.getItem("minimap") === "true";
+
+    miniMapCheckbox.checked = on;
+
+    if (!on) {
+      proofFlow.switchMinimap();
+    }
+
+    miniMapContainer.appendChild(miniMapLabel);
+    miniMapContainer.appendChild(miniMapCheckbox);
+    miniMapContainer.appendChild(miniMapDescription);
+
+    return miniMapContainer;
+  }
+
+  /**
+   * Creates a container element for text style settings.
+   * The container includes a header, dropdowns for text style and text size,
+   * and event listeners to update the editor's font family and font size.
+   * The container also retrieves and sets stored values for text style and text size.
+   * 
+   * @returns The created container element.
+   */
+  private textStyleContainer() {
+    // Create the container and header
+    const textStyleContainer = document.createElement("div");
+    textStyleContainer.classList.add("settings-container");
+
+    const textStyleLabel = document.createElement("h4");
+    textStyleLabel.textContent = "Text Style";
+
+    // Dropdown for the text style
+    const textStyleSelect = document.createElement("select");
+    textStyleSelect.id = "text-style";
+    textStyleSelect.classList.add("dropdown");
+
+    // Add the options
+    const textStyleOptions = ["Serif", "Sans-serif", "Monospace"];
+
+    textStyleOptions.forEach((option) => {
+      const optionElement = document.createElement("option");
+      optionElement.value = option;
+      optionElement.textContent = option;
+      textStyleSelect.appendChild(optionElement);
+    });
+
+    // Add event listener
+    textStyleSelect.addEventListener("change", (e) => {
+      const target = e.target as HTMLSelectElement;
+      const editor = document.getElementById("editor")!;
+      editor.style.fontFamily = target.value;
+      localStorage.setItem("textStyle", target.value);
+    });
+
+    // Dropdown for the text size
+    const textSize = document.createElement("select");
+    textSize.id = "text-size";
+    textSize.classList.add("dropdown");
+
+    // Add the options
+    const textSizeOptions = ["Smaller", "Small", "Medium", "Large", "Larger"];
+
+    textSizeOptions.forEach((option) => {
+      const optionElement = document.createElement("option");
+      optionElement.value = option;
+      optionElement.textContent = option;
+      textSize.appendChild(optionElement);
+    });
+
+    // Add event listener
+    textSize.addEventListener("change", (e) => {
+      const target = e.target as HTMLSelectElement;
+      const editor = document.getElementById("editor")!;
+      editor.style.fontSize = target.value;
+      localStorage.setItem("textSize", target.value);
+    });
+
+    // Update with stored values
+    const currentStyle = localStorage.getItem("textStyle");
+    const currentSize = localStorage.getItem("textSize");
+
+    if (currentStyle) {
+      textStyleSelect.value = currentStyle;
+      const editor = document.getElementById("editor")!;
+      editor.style.fontFamily = currentStyle;
+    }
+
+    if (currentSize) {
+      textSize.value = currentSize;
+      const editor = document.getElementById("editor")!;
+      editor.style.fontSize = currentSize;
+    }
+
+    // Append all to the container
+    textStyleContainer.appendChild(textStyleLabel);
+    textStyleContainer.appendChild(textSize);
+    textStyleContainer.appendChild(textStyleSelect);
+
+    return textStyleContainer;
   }
 }
