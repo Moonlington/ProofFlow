@@ -1,7 +1,7 @@
 import { Schema, Node, ResolvedPos, Slice, Fragment } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/codemirrorview.ts";
 import type { GetPos } from "../codemirror/types.ts";
-import { ProofFlowSchema } from "./proofflowschema.ts";
+import { ProofFlowSchema, ProofStatus } from "./proofflowschema.ts";
 import {
   EditorState,
   EditorStateConfig,
@@ -14,8 +14,6 @@ import { ProofFlowPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 // import { AreaType } from "../parser/area.ts";
 import { ButtonBar } from "./ButtonBar.ts";
-
-import { basicSetup } from "codemirror";
 import { linter } from "@codemirror/lint";
 import { javascript } from "@codemirror/lang-javascript";
 
@@ -54,6 +52,8 @@ import { autocomplete } from "../codemirror/extensions/autocomplete.ts";
 import { wordHover } from "../codemirror/extensions/hovertooltip.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
 import { markdownToRendered } from "../commands/helpers.ts";
+import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
+import { inputProof } from "../commands/helpers.ts";
 // CSS
 
 export class ProofFlow {
@@ -142,7 +142,7 @@ export class ProofFlow {
             cmOptions: {
               extensions: [
                 // will be changed, and later code from basic setup will be added to the codebase
-                basicSetup,
+                basicSetupNoHistory,
                 linter(null),
                 // javascript(),
                 // autocomplete(this),
@@ -259,6 +259,49 @@ export class ProofFlow {
 
       codemirror.handleDiagnostic(diag, start, end!);
     }
+    this.setProofColors();
+  }
+
+  private setProofColors() {
+    // Previous input area node and its offset
+    let prevInput: Node | null = null;
+    let prevOffset: number;
+
+    // Iterate over all nodes in doc
+    this.getState().doc.descendants((node: Node, offset: number) => {
+      if (node.type.name != "code_mirror" && node.type.name != "input") return true;
+      
+      if (node.type.name == "input") {
+        // Save the node and offset
+        prevInput = node;
+        prevOffset = offset;
+
+        // Count the amount of diagnostics inside the input area
+        let diagnosticCount = 0;
+        node.descendants((node: Node, offset: number) => {
+          if (node.type.name != "code_mirror") return true;
+          let instance = CodeMirrorView.findByPos(offset);
+          if (instance == null) return false;
+          diagnosticCount += instance.diagnostics.length;
+        })
+
+        // If it is zero then set it to correct otherwise incorrect
+        if (diagnosticCount == 0) {
+          inputProof(node, ProofStatus.Correct, offset);
+        } else {
+          inputProof(node, ProofStatus.Incorrect, offset);
+        }
+        return false;
+      }
+      
+      // If instance has QED error then set previous input to incorrect
+      let instance = CodeMirrorView.findByPos(offset);
+      if (instance == null) return true;
+      if (instance.isQEDError && prevInput != null) {
+        inputProof(prevInput, ProofStatus.Incorrect, prevOffset);
+      }
+
+    })
   }
 
   /**

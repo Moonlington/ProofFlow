@@ -18,10 +18,10 @@ const CoqParser = new SimpleParser({
 });
 
 const CoqMDParser = new SimpleParser({
-  code: [/```coq\n/, /\n```/],
+  code: [/\n```coq\n/, /\n```/],
   math: [/\$\$/, /\$\$/],
-  collapsible: [/<hint(?: title="(.*?)")?>\n/, /\n<\/hint>/],
-  input: [/<input-area>\n/, /\n<\/input-area>/],
+  collapsible: [/<hint(?: title="(.*?)")?>/, /\n<\/hint>/],
+  input: [/<input-area>/, /\n<\/input-area>/],
 });
 
 const LeanParser = new SimpleParser({
@@ -42,11 +42,11 @@ const CoqOutput: OutputConfig = {
 
 const CoqMDOutput: OutputConfig = {
   text: ["", ""],
-  code: ["```coq\n", "\n```"],
+  code: ["\n```coq\n", "\n```"],
   math: ["$$", "$$"],
-  collapsible: ["<hint>\n", "\n</hint>"],
-  collapsibletitle: ['<hint title="TITLE">\n', "\n</hint>"],
-  input: ["<input-area>\n", "\n</input-area>"],
+  collapsible: ["<hint>", "\n</hint>"],
+  collapsibletitle: ['<hint title="TITLE">', "\n</hint>"],
+  input: ["<input-area>", "\n</input-area>"],
 };
 
 const LeanOutput: OutputConfig = {

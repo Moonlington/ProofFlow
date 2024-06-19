@@ -163,7 +163,7 @@ export const markdownPlugin = new Plugin({
 
           let newInputNode = ProofFlowSchema.node(
             "input",
-            { id: node.attrs.id },
+            { id: node.attrs.id, proof: node.attrs.proof },
             newInputContentNode,
           );
 
