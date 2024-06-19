@@ -251,9 +251,15 @@ export function markdownToRendered(node: Node, schema: Schema) {
       parsedParts.push(wrappedMathNode);
     } else {
       // Make a markdown child node with the text content
-      if (result[i] == '') continue; // If the content is empty, skip it (the last element of result[] is always empty)
+      if (result[i] == "") continue; // If the content is empty, skip it (the last element of result[] is always empty)
       let parsedChildContent = defaultMarkdownParser.parse(result[i]);
-      if (parsedChildContent) parsedParts.push(markdownRenderedChildNodeType.create(null, parsedChildContent.content));
+      if (parsedChildContent)
+        parsedParts.push(
+          markdownRenderedChildNodeType.create(
+            null,
+            parsedChildContent.content,
+          ),
+        );
     }
   }
 
