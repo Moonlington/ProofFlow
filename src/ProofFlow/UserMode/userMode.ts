@@ -90,7 +90,7 @@ function lockCode(area: Element, lock: boolean) {
 function lockCollapsible(area: Element, lock: boolean) {
   const title = area.querySelector("collapsible_title");
   title?.setAttribute("contenteditable", lock ? "false" : "true");
-  
+
   // Lock the content of the collapsible area
   const content = area.querySelector(".collapsible_content");
   const contentChildren = content?.children;

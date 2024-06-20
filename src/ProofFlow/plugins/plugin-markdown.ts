@@ -200,23 +200,26 @@ export const markdownPlugin = new Plugin({
         const resolvedPos = trans.doc.resolve(position);
         trans.setSelection(TextSelection.near(resolvedPos, -1));
       };
-      
+
       // Allows to get into math nodes
       if (!(node.type.name === "math_display")) {
         resolveAndSetSelection(correctPos);
       } else {
         const newResolvedPos = trans.doc.resolve(correctPos);
-        const newContainerName = newResolvedPos.node(newResolvedPos.depth - 1).type.name;
-        if (newContainerName !== "input_content" && proofFlow.getUserMode() === UserMode.Student) {
+        const newContainerName = newResolvedPos.node(newResolvedPos.depth - 1)
+          .type.name;
+        if (
+          newContainerName !== "input_content" &&
+          proofFlow.getUserMode() === UserMode.Student
+        ) {
           // Prevents bug for escaping collapsible areas
           resolveAndSetSelection(pos);
         } else {
           resolveAndSetSelection(correctPos);
         }
-      } 
+      }
 
       view.dispatch(trans);
-
 
       // If we switch while inside of student Mode, we need to lock the editing of the new nodes
       if (locked) {

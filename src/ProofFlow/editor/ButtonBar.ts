@@ -146,12 +146,20 @@ export class ButtonBar {
       // make another transaction to check if the selection moved outside of input when it shouldn't
       container = getContainingNode(this._editorView.state.selection);
       // check if selection moved illegaly
-      if (proofFlow.getUserMode() == UserMode.Student && container?.type.name !== "input_content") {
+      if (
+        proofFlow.getUserMode() == UserMode.Student &&
+        container?.type.name !== "input_content"
+      ) {
         // if it did, move it away from all content
         const tr = this._editorView.state.tr;
         this._editorView.dispatch(
-          tr.setSelection(new TextSelection(this._editorView.state.doc.resolve(0), this._editorView.state.doc.resolve(0))),
-        )
+          tr.setSelection(
+            new TextSelection(
+              this._editorView.state.doc.resolve(0),
+              this._editorView.state.doc.resolve(0),
+            ),
+          ),
+        );
       }
     };
 
