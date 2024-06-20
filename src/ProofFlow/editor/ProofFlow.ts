@@ -36,9 +36,7 @@ import { CoqMDParser, CoqParser, LeanParser } from "../parser/parsers.ts";
 import { CoqMDOutput, CoqOutput, LeanOutput } from "../parser/outputconfigs.ts";
 import { LSPClientHandler } from "../lspClient/lspClientHandler.ts";
 import { DiagnosticsMessageData } from "../lspClient/models.ts";
-import {
-  ProofFlowLSPClientFileType,
-} from "../lspClient/ProofFlowLSPClient.ts";
+import { ProofFlowLSPClientFileType } from "../lspClient/ProofFlowLSPClient.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
 import { markdownToRendered } from "../commands/helpers.ts";
 import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
@@ -185,11 +183,12 @@ export class ProofFlow {
     if (!this.lastTransaction) this.lastTransaction = now;
 
     if (now - this.lastUpdate > this.msMaxUpdateTime) {
-      if (!this.updateTimeoutID)
+      if (!this.updateTimeoutID) {
         this.updateTimeoutID = setTimeout(
           () => this.updateProofFlowDocument(doc),
           this.msMaxUpdateTime,
         );
+      }
       return;
     }
 
@@ -207,10 +206,11 @@ export class ProofFlow {
     clearTimeout(this.updateTimeoutID);
     let parsed = docToPFDocument(this.fileName, doc);
     if (this.outputConfig) parsed.outputConfig = this.outputConfig;
-    if (parsed.toString() === this._pfDocument.toString()) return;
-    this._pfDocument = parsed;
     this.lastUpdate = undefined;
     this.lastTransaction = undefined;
+    this.updateTimeoutID = undefined;
+    if (parsed.toString() === this._pfDocument.toString()) return;
+    this._pfDocument = parsed;
 
     this.lspClient?.didChange(parsed);
   }
@@ -669,7 +669,7 @@ export class ProofFlow {
     );
     handleUserModeSwitch();
   }
-  
+
   /**
    * Inserts the given string at the selection/cursor position.
    *
