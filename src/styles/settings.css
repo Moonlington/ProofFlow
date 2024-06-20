@@ -83,15 +83,25 @@
 
 .settings-text-input {
     width: 80%;
-    background-color: var(--hover);
-    color: var(--text-color);
+    background-color: var(--secondary-color);
+    color: var(--button-text-color);
     border: none;
     padding: 5px;
     margin-top: 5px;
+    height: 19px;
+}
+
+.settings-text-input::placeholder {
+    color: var(--button-text-color);
+} 
+
+.settings-text-input:focus {
+    background-color: var(--hover);
+    color: var(--text-color);
 }
 
 .settings-text-input:hover {
-    background-color: var(--secondary-color);
+    background-color: var(--hover);
 }
 
 .settings-apply-button {
