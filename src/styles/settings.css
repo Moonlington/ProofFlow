@@ -60,7 +60,6 @@
     background-color: rgba(255, 0, 0, 0.44);
     border: 1px black solid;
     font-size: 16px;
-    /* Adjust this to fit the cross properly */
 }
 
 .close-button:hover {
@@ -102,6 +101,7 @@
 
 .settings-text-input:hover {
     background-color: var(--hover);
+    color: var(--text-color);
 }
 
 .settings-apply-button {
