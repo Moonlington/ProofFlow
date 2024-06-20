@@ -346,7 +346,7 @@ export class SettingsOverlay {
     textSize.classList.add("dropdown");
 
     // Add the options
-    const textSizeOptions = ["Smaller", "Small", "Medium", "Large", "Larger"];
+    const textSizeOptions = ["X-Small", "Small", "Smaller", "Medium", "Large", "Larger", "X-Large"];
     
     textSizeOptions.forEach((option) => {
       const optionElement = document.createElement("option");
