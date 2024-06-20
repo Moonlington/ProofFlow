@@ -1,6 +1,6 @@
 import { SimpleParser } from "./parser";
 
-export { CoqParser, CoqMDParser, LeanParser };
+export { CoqParser, CoqMDParser, LeanParser, PureLeanParser };
 
 const CoqParser = new SimpleParser({
   text: [/\n\(\*\*/, /\*\)\n/],
@@ -21,4 +21,11 @@ const LeanParser = new SimpleParser({
   math: [/:::math\n/, /:::\n/],
   collapsible: [/:::collapsible\n(?:# (.*?)\n)?/, /:::\n/],
   input: [/:::input\n/, /:::\n/],
+});
+
+const PureLeanParser = new SimpleParser({
+  text: [/\n\/-\n/, /\n-\/\n/],
+  math: [/\n\/-\$\$\n/, /\n-\/\$\$\n/],
+  collapsible: [/\n-- <hint(?: title="(.*?)")?>\n?/, /\n-- <\/hint>\n/],
+  input: [/\n-- <input-area>\n/, /\n-- <\/input-area>\n/],
 });

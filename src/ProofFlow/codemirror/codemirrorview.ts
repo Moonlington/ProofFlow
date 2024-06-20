@@ -20,6 +20,8 @@ import { LSPDiagnostic } from "../lspClient/models.ts";
 import { ProofFlow } from "../editor/ProofFlow.ts";
 import { wordHover } from "./extensions/hovertooltip.ts";
 
+type Severity = "hint" | "info" | "warning" | "error";
+
 const computeChange = (
   oldVal: string,
   newVal: string,
@@ -405,10 +407,28 @@ export class CodeMirrorView implements NodeView {
   }
 
   handleDiagnostic(diag: LSPDiagnostic, start: number, end: number) {
+    let severity: Severity;
+    switch (diag.severity) {
+      case 1:
+        severity = "error";
+        break;
+      case 2:
+        severity = "warning";
+        break;
+      case 3:
+        severity = "info";
+        break;
+      case 4:
+        severity = "hint";
+        break;
+      default:
+        severity = "error";
+        break;
+    }
     let diagnostic: Diagnostic = {
       from: start,
       to: end,
-      severity: "error",
+      severity: severity,
       message: diag.message,
     };
     this.diagnostics.push(diagnostic);
