@@ -3,10 +3,10 @@ import { SimpleParser } from "./parser";
 export { CoqParser, CoqMDParser, LeanParser };
 
 const CoqParser = new SimpleParser({
-  text: [/\(\*\*/, /\*\)/],
+  text: [/\n\(\*\*/, /\*\)\n/],
   math: [/\$\$/, /\$\$/],
-  collapsible: [/\n<hint(?: title="(.*?)")?>\n/, /\n<\/hint>\n/],
-  input: [/\n<input-area>\n/, /\n<\/input-area>\n/],
+  collapsible: [/\n\(\*<hint(?: title="(.*?)")?>\*\)\n/, /\n\(\*<\/hint>\*\)\n/],
+  input: [/\n\(\*<input-area>\*\)\n/, /\n\(\*<\/input-area>\*\)\n/],
 });
 
 const CoqMDParser = new SimpleParser({

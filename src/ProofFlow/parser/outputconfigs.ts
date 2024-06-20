@@ -3,12 +3,12 @@ import { OutputConfig } from "../editor/ProofFlowDocument";
 export { CoqOutput, CoqMDOutput, LeanOutput };
 
 const CoqOutput: OutputConfig = {
-  text: ["(**", "*)"],
+  text: ["\n(**", "*)\n"],
   code: ["", ""],
   math: ["$$", "$$"],
-  collapsible: ["\n<hint>\n", "\n</hint>\n"],
-  collapsibletitle: ['\n<hint title="TITLE">\n', "\n</hint>\n"],
-  input: ["\n<input-area>\n", "\n</input-area>\n"],
+  collapsible: ["\n(*<hint>*)\n", "\n(*</hint>*)\n"],
+  collapsibletitle: ['\n(*<hint title="TITLE">*)\n', "\n(*</hint>*)\n"],
+  input: ["\n(*<input-area>*)\n", "\n(*</input-area>*)\n"],
 };
 
 const CoqMDOutput: OutputConfig = {
