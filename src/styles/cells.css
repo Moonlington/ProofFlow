@@ -49,4 +49,6 @@ markdown, math-display {
 .cm-editor, .cm-editor > *, .ͼ2 .cm-gutters, .cm-activeLineGutter {
   background-color: var(--primary-color) !important;
   color: var(--text-color) !important;
+  font-family: var(--font-family) !important;
+  font-size: var(--font-size) !important;
 }

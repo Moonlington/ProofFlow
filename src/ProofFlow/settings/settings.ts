@@ -347,7 +347,7 @@ export class SettingsOverlay {
 
     // Add the options
     const textSizeOptions = ["X-Small", "Small", "Smaller", "Medium", "Large", "Larger", "X-Large"];
-    
+
     textSizeOptions.forEach((option) => {
       const optionElement = document.createElement("option");
       optionElement.value = option;
@@ -361,9 +361,8 @@ export class SettingsOverlay {
     textFontSelect.classList.add("dropdown");
 
     // Add the options
-    const textFontOptions  = [
+    const textFontOptions = [
       "Arial",
-      "Helvetica",
       "Times New Roman",
       "Courier New",
       "Georgia",
@@ -386,7 +385,8 @@ export class SettingsOverlay {
     // Add event listeners
     textFontSelect.addEventListener("change", (e) => {
       const target = e.target as HTMLSelectElement;
-      editor.style.fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
+      const fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
+      document.documentElement.style.setProperty(`--font-family`, fontFamily);
       localStorage.setItem("textFont", target.value);
       if (textFontsWithStyles.includes(textFontSelect.value)) {
         textStyleSelect.style.display = "";
@@ -397,7 +397,8 @@ export class SettingsOverlay {
 
     textStyleSelect.addEventListener("change", (e) => {
       const target = e.target as HTMLSelectElement;
-      editor.style.fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
+      const fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
+      document.documentElement.style.setProperty(`--font-family`, fontFamily);
       localStorage.setItem("textStyle", target.value);
     });
 
@@ -418,21 +419,21 @@ export class SettingsOverlay {
       textStyleSelect.style.display = "none";
     }
 
-    if (currentFont && currentStyle) 
-    {
+    if (currentFont && currentStyle) {
       textFontSelect.value = currentFont;
       textStyleSelect.value = currentStyle;
-      editor.style.fontFamily = `${currentFont}, ${currentStyle}`;
-    } 
-    else if (currentFont) 
-    {
+      const fontFamily = `${currentFont}, ${currentStyle}`;
+      document.documentElement.style.setProperty(`--font-family`, fontFamily);
+    }
+    else if (currentFont) {
       textFontSelect.value = currentFont;
-      editor.style.fontFamily = `${currentFont}`;
-    } 
-    else if (currentStyle) 
-    {
+      const fontFamily = `${currentFont}`;
+      document.documentElement.style.setProperty(`--font-family`, fontFamily);
+}
+    else if (currentStyle) {
       textStyleSelect.value = currentStyle;
-      editor.style.fontFamily = `${currentStyle}`;
+      const fontFamily = `${currentStyle}`;
+      document.documentElement.style.setProperty(`--font-family`, fontFamily);
     }
 
     if (currentSize) {
