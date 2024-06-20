@@ -90,6 +90,21 @@ function lockCode(area: Element, lock: boolean) {
 function lockCollapsible(area: Element, lock: boolean) {
   const title = area.querySelector("collapsible_title");
   title?.setAttribute("contenteditable", lock ? "false" : "true");
+
+  // Lock the content of the collapsible area
+  const content = area.querySelector(".collapsible_content");
+  const contentChildren = content?.children;
+
+  if (contentChildren) {
+    Array.from(contentChildren).forEach((area) => {
+      if (area.classList.contains("markdown")) {
+        lockMarkdown(area, lock);
+      } else if (area.classList.contains("cm-editor")) {
+        area.classList.toggle("unlocked", lock);
+        lockCode(area, lock);
+      }
+    });
+  }
 }
 
 // Test function for color changing

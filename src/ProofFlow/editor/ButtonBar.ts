@@ -10,7 +10,7 @@ import {
   toggleLineNumbers,
 } from "../commands/helpers.ts";
 import { EditorView } from "prosemirror-view";
-import { NodeSelection } from "prosemirror-state";
+import { NodeSelection, TextSelection } from "prosemirror-state";
 import { deleteSelection, selectParentNode } from "prosemirror-commands";
 import {
   getCollapsibleInsertCommand,
@@ -122,12 +122,13 @@ export class ButtonBar {
   private addOtherButtons() {
     const deleteFunction = () => {
       const selection = this._editorView.state.selection;
-      const container = getContainingNode(selection);
+      let container = getContainingNode(selection);
       if (
         proofFlow.getUserMode() === UserMode.Student &&
         container?.type.name !== "input_content"
       )
         return;
+
       if (this._editorView.state.selection instanceof NodeSelection) {
         // this works for math nodes
         deleteSelection(this._editorView.state, this._editorView.dispatch);
@@ -135,10 +136,28 @@ export class ButtonBar {
         // this works for markdown and code blocks
         const depth = this._editorView.state.selection.$head.depth;
         const tr = this._editorView.state.tr;
+        tr.delete(
+          this._editorView.state.selection.$head.before(depth),
+          this._editorView.state.selection.$head.after(depth),
+        ),
+          this._editorView.dispatch(tr);
+      }
+
+      // get the node containing the selection check if the selection moved outside of input when it shouldn't
+      container = getContainingNode(this._editorView.state.selection);
+      // check if selection moved illegaly
+      if (
+        proofFlow.getUserMode() == UserMode.Student &&
+        container?.type.name !== "input_content"
+      ) {
+        // if it did, make a transaction to move it away from all content
+        const tr = this._editorView.state.tr;
         this._editorView.dispatch(
-          tr.delete(
-            this._editorView.state.selection.$head.before(depth),
-            this._editorView.state.selection.$head.after(depth),
+          tr.setSelection(
+            new TextSelection(
+              this._editorView.state.doc.resolve(0),
+              this._editorView.state.doc.resolve(0),
+            ),
           ),
         );
       }
