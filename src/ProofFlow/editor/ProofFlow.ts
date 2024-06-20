@@ -286,6 +286,7 @@ export class ProofFlow {
     // Previous input area node and its offset
     let prevInput: Node | null = null;
     let prevOffset: number;
+    let focusedInstance: any;
 
     // Iterate over all nodes in doc
     this.getState().doc.descendants((node: Node, offset: number) => {
@@ -302,6 +303,9 @@ export class ProofFlow {
         node.descendants((node: Node, offset: number) => {
           if (node.type.name != "code_mirror") return true;
           let instance = CodeMirrorView.findByPos(offset);
+          if (instance?.cm.hasFocus) {
+            focusedInstance = instance;
+          }
           if (instance == null) return false;
           diagnosticCount += instance.diagnostics.length;
         });
@@ -322,6 +326,9 @@ export class ProofFlow {
         inputProof(prevInput, ProofStatus.Incorrect, prevOffset);
       }
     });
+    if (focusedInstance != null) {
+      focusedInstance.forceforwardSelection();
+    }
   }
 
   /**

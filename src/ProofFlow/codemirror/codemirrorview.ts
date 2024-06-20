@@ -194,6 +194,14 @@ export class CodeMirrorView implements NodeView {
   }
 
   /**
+   * Method to move the cursor to the ProseMirrocr editor
+   */
+  forceforwardSelection() {
+    this.cm.focus();
+    this.forceforwardSelection();
+  }
+
+  /**
    * Method to blur the CodeMirror instance when other instances are focused
    */
   blurInstance() {
