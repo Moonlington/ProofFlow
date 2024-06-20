@@ -37,8 +37,8 @@ import { CoqMDOutput, CoqOutput, LeanOutput } from "../parser/outputconfigs.ts";
 import { LSPClientHandler } from "../lspClient/lspClientHandler.ts";
 import { DiagnosticsMessageData } from "../lspClient/models.ts";
 import {
-  ProofflowLSPClient,
-  ProofflowLSPClientFileType,
+  ProofFlowLSPClient,
+  ProofFlowLSPClientFileType,
 } from "../lspClient/ProofFlowLSPClient.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
 import { markdownToRendered } from "../commands/helpers.ts";
@@ -46,6 +46,7 @@ import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
 import { inputProof } from "../commands/helpers.ts";
 import { ProofFlowSaver } from "../fileHandlers/proofFlowSaver.ts";
 import { adjustLeftDivWidth } from "../../main.ts";
+import { LSPClientManager } from "../lspClient/lspClientManager.ts";
 // CSS
 
 export type ProofFlowOptions = {
@@ -53,6 +54,7 @@ export type ProofFlowOptions = {
   containerElem: HTMLElement;
 
   fileSaver?: ProofFlowSaver;
+  lspManager?: LSPClientManager;
 };
 
 export class ProofFlow {
@@ -71,6 +73,8 @@ export class ProofFlow {
   private userMode: UserMode = UserMode.Student; // The teacher mode of the editor
   public fileName: string = "file.mv";
 
+  private lspPath: string = "";
+
   // static filePath: string = "file.text";
   private fileType: AcceptedFileType = AcceptedFileType.Unknown;
 
@@ -78,7 +82,10 @@ export class ProofFlow {
 
   private removeGlobalKeyBindings: () => void;
 
-  private _pfDocument: ProofFlowDocument = new ProofFlowDocument([]);
+  private _pfDocument: ProofFlowDocument = new ProofFlowDocument(
+    this.fileName,
+    [],
+  );
 
   private outputConfig?: OutputConfig;
 
@@ -91,6 +98,7 @@ export class ProofFlow {
   private msMaxUpdateTime = 1000;
 
   private lspClient?: LSPClientHandler;
+  private lspManager?: LSPClientManager;
 
   /**
    * Represents the ProofFlow class.
@@ -102,6 +110,7 @@ export class ProofFlow {
     this._editorElem = options.editorElem; // Set the editor element
     this._containerElem = options.containerElem; // Set the container element
     this.fileSaver = options.fileSaver;
+    this.lspManager = options.lspManager;
 
     // Create the editor
     this.editorView = this.createEditorView();
@@ -199,7 +208,7 @@ export class ProofFlow {
 
   updateProofFlowDocument(doc: Node) {
     clearTimeout(this.updateTimeoutID);
-    let parsed = docToPFDocument(doc);
+    let parsed = docToPFDocument(this.fileName, doc);
     if (this.outputConfig) parsed.outputConfig = this.outputConfig;
     if (parsed.toString() === this._pfDocument.toString()) return;
     this._pfDocument = parsed;
@@ -324,37 +333,39 @@ export class ProofFlow {
 
     // Process the file content
     let parser: Parser;
-    let lspClientFileType: ProofflowLSPClientFileType;
+    let lspClientFileType: ProofFlowLSPClientFileType;
     switch (this.fileType) {
       case AcceptedFileType.Coq:
+        window.localStorage.setItem("currentLspType", "Coq");
         parser = CoqParser;
         this.outputConfig = CoqOutput;
         let proxy = parser as SimpleParser;
         proxy.defaultAreaType = AreaType.Code;
-        lspClientFileType = ProofflowLSPClientFileType.Coq;
+        lspClientFileType = ProofFlowLSPClientFileType.Coq;
         break;
       case AcceptedFileType.CoqMD:
         parser = CoqMDParser;
         this.outputConfig = CoqMDOutput;
-        lspClientFileType = ProofflowLSPClientFileType.Coq;
+        lspClientFileType = ProofFlowLSPClientFileType.Coq;
         break;
       case AcceptedFileType.Lean:
         parser = LeanParser;
         this.outputConfig = LeanOutput;
-        lspClientFileType = ProofflowLSPClientFileType.Lean;
+        lspClientFileType = ProofFlowLSPClientFileType.Lean;
         break;
       default:
         return;
     }
     let pfDocument = parser.parse(text);
+    pfDocument.uri = this.fileName;
     this.setProofFlowDocument(pfDocument);
 
-    this.lspClient = new ProofflowLSPClient(
-      this.fileName,
-      "ws://localhost:8080",
-      this.handleDiagnostics.bind(this),
-      lspClientFileType,
-    );
+    this.lspClient = this.lspManager?.getLSP(lspClientFileType);
+    if (!this.lspClient) {
+      console.log("No lsp found");
+      return;
+    }
+    this.lspClient.setDiagnosticsHandler(this.handleDiagnostics.bind(this));
     await this.lspClient.initialize();
     this.lspClient.initialized();
     this.lspClient.didOpen(pfDocument);
@@ -594,12 +605,16 @@ export class ProofFlow {
    * and creating a new editor view.
    */
   public reset() {
-    this.lspClient?.didClose();
+    this.lspClient?.didClose(this.pfDocument);
     this.lspClient?.shutdown();
     this.lspClient = undefined;
 
     this.minimap?.destroy();
     this.removeGlobalKeyBindings();
+
+    CodeMirrorView.resetDiagnostics();
+    CodeMirrorView.instances = [];
+    CodeMirrorView.focused = null;
 
     // Remove all children from the editor element
     while (this._editorElem.firstChild != null) {
@@ -650,6 +665,10 @@ export class ProofFlow {
       newUserMode === UserMode.Teacher ? "true" : "false",
     );
     handleUserModeSwitch();
+  }
+
+  public setLsp(path: string) {
+    this.lspPath = path;
   }
 
   /**

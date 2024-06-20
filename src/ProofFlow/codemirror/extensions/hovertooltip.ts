@@ -24,7 +24,7 @@ export function wordHover(cmview: CodeMirrorView) {
 
         let position = area.getPosition(pos);
 
-        const result = await lsp.hover(position);
+        const result = await lsp.hover(cmview.proofflow.pfDocument, position);
 
         if (!result) return resolve(null);
 

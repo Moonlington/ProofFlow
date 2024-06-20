@@ -10,6 +10,7 @@ import { reloadColorScheme } from "./ProofFlow/settings/updateColors.ts";
 import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
 import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
 import { WebApplicationSaver } from "./ProofFlow/fileHandlers/webApplicationSaver.ts";
+import { WebApplicationLSPManager } from "./ProofFlow/lspClient/webApplicationManager.ts";
 
 const app = document.createElement("div");
 app.id = "app";
@@ -32,6 +33,10 @@ let proofFlow: ProofFlow = new ProofFlow({
   editorElem: editor,
   containerElem: container,
   fileSaver: new WebApplicationSaver(),
+  lspManager: new WebApplicationLSPManager(
+    "ws://localhost:8080",
+    window.localStorage,
+  ),
 });
 
 // Create the settings overlay
