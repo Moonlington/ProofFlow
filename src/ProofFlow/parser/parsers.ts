@@ -1,10 +1,6 @@
 import { SimpleParser } from "./parser";
 
-export {
-  CoqParser,
-  CoqMDParser,
-  LeanParser,
-};
+export { CoqParser, CoqMDParser, LeanParser };
 
 const CoqParser = new SimpleParser({
   text: [/\(\*\*/, /\*\)/],

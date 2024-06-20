@@ -428,23 +428,22 @@ export class SettingsOverlay {
     } else {
       textStyleSelect.style.display = "none";
     }
-    
+
     let fontFamily = "";
-    
+
     if (currentFont) {
       textFontSelect.value = currentFont;
       fontFamily += currentFont;
     }
-    
+
     if (currentStyle) {
       textStyleSelect.value = currentStyle;
-      fontFamily += (currentFont ? `, ${currentStyle}` : currentStyle);
+      fontFamily += currentFont ? `, ${currentStyle}` : currentStyle;
     }
-    
+
     if (currentFont || currentStyle) {
       document.documentElement.style.setProperty(`--font-family`, fontFamily);
     }
-    
 
     if (currentSize) {
       textSize.value = currentSize;

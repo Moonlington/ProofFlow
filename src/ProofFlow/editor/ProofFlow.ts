@@ -32,16 +32,8 @@ import {
 } from "./ProofFlowDocument.ts";
 
 import { Parser, SimpleParser } from "../parser/parser.ts";
-import {
-  CoqMDParser,
-  CoqParser,
-  LeanParser,
-} from "../parser/parsers.ts";
-import {
-  CoqMDOutput,
-  CoqOutput,
-  LeanOutput,
-} from "../parser/outputconfigs.ts"
+import { CoqMDParser, CoqParser, LeanParser } from "../parser/parsers.ts";
+import { CoqMDOutput, CoqOutput, LeanOutput } from "../parser/outputconfigs.ts";
 import { LSPClientHandler } from "../lspClient/lspClientHandler.ts";
 import { DiagnosticsMessageData } from "../lspClient/models.ts";
 import {
