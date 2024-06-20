@@ -53,9 +53,9 @@ export class ButtonBar {
 
     // Remove listener to read file if it exists
     document
-    .getElementById("file-input")
-    ?.removeEventListener("change", readSingleFile, false);
-    
+      .getElementById("file-input")
+      ?.removeEventListener("change", readSingleFile, false);
+
     this.addCellButtons();
     this.addOtherButtons();
     this.addSettingsButtons();
@@ -65,8 +65,8 @@ export class ButtonBar {
 
     // Add listener to read file
     document
-    .getElementById("file-input")
-    ?.addEventListener("change", readSingleFile, false);
+      .getElementById("file-input")
+      ?.addEventListener("change", readSingleFile, false);
   }
 
   /**

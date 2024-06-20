@@ -32,7 +32,11 @@ export function autocomplete(view: CodeMirrorView) {
           let trigChar = line.text[pos - line.from - 1];
           let position = area.getPosition(pos);
 
-          const result = await lsp.completion(position, trigChar);
+          const result = await lsp.completion(
+            view.proofflow.pfDocument,
+            position,
+            trigChar,
+          );
           if (!result) return resolve(null);
 
           const completionItems = result as CompletionList;

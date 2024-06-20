@@ -41,7 +41,7 @@ class SimpleParser implements Parser {
   }
 
   parse(document: string): ProofFlowDocument {
-    let pfDocument = new ProofFlowDocument([]);
+    let pfDocument = new ProofFlowDocument("", []);
     return this.recurParse(pfDocument, document);
   }
 

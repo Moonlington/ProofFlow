@@ -226,30 +226,75 @@ export class SettingsOverlay {
   }
 
   private lspContainer(): HTMLElement {
-    // Get the current LSP path from local storage
-    const currentPath = localStorage.getItem("lspPath") || "";
+    // Get the LSP objects and types from local storage
+    const lspCoq = JSON.parse(localStorage.getItem("coq") || "{}");
+    const lspLean = JSON.parse(localStorage.getItem("lean") || "{}");
+
+    let lspCoqPath = lspCoq.path || "";
+    let lspLeanPath = lspLean.path || "";
+
+    const currentLspType = localStorage.getItem("currentLspType") || "coq";
 
     const lspContainer = document.createElement("div");
     const lspLabel = document.createElement("h4");
     lspLabel.textContent = "LSP Server Path";
+
+    const lspSelect = document.createElement("select");
+    lspSelect.id = "lsp-type";
+    lspSelect.className = "dropdown";
+
+    const optionElementCoq = document.createElement("option");
+    optionElementCoq.value = "coq";
+    optionElementCoq.textContent = "Coq";
+    lspSelect.appendChild(optionElementCoq);
+    const optionElementLean = document.createElement("option");
+    optionElementLean.value = "lean";
+    optionElementLean.textContent = "Lean";
+    lspSelect.appendChild(optionElementLean);
+    lspSelect.value = currentLspType || "coq";
 
     const lspPath = document.createElement("input");
     lspPath.type = "text";
     lspPath.id = "lsp-path";
     lspPath.placeholder = "Enter the path to the LSP server";
     lspPath.classList.add("settings-text-input");
-    lspPath.value = currentPath;
+    if (currentLspType == "coq") {
+      lspPath.value = lspCoqPath;
+    } else if (currentLspType == "lean") {
+      lspPath.value = lspLeanPath;
+    }
+
+    lspSelect.addEventListener("change", (e) => {
+      const target = e.target as HTMLSelectElement;
+      const lspType = target.value;
+      window.localStorage.setItem("currentLspType", lspType);
+      if (lspType === "coq") {
+        lspPath.value = JSON.parse(localStorage.getItem("coq") || "{}").path;
+      } else if (lspType === "lean") {
+        lspPath.value = JSON.parse(localStorage.getItem("lean") || "{}").path;
+      }
+      proofFlow.setLsp(lspPath.value);
+    });
 
     const lspButton = document.createElement("button");
     lspButton.textContent = "Apply";
     lspButton.addEventListener("click", () => {
       console.log("LSP Path: " + lspPath.value); //TODO Add lspPath functionality
       // proofFlow.setLspPath(lspPath.value);
-      window.localStorage.setItem("lspPath", lspPath.value);
+      let lsp = {
+        path: lspPath.value,
+        type: lspSelect.value,
+      };
+      const lspType = lspSelect.value;
+
+      window.localStorage.setItem(lspType, JSON.stringify(lsp));
+      window.localStorage.setItem("currentLspType", lspType);
+      proofFlow.setLsp(lspPath.value);
     });
     lspButton.classList.add("settings-apply-button");
 
     lspContainer.appendChild(lspLabel);
+    lspContainer.appendChild(lspSelect);
     lspContainer.appendChild(lspPath);
     lspContainer.appendChild(lspButton);
 
@@ -312,7 +357,7 @@ export class SettingsOverlay {
    * The container includes a header, dropdowns for text style and text size,
    * and event listeners to update the editor's font family and font size.
    * The container also retrieves and sets stored values for text style and text size.
-   * 
+   *
    * @returns The created container element.
    */
   private textStyleContainer() {
