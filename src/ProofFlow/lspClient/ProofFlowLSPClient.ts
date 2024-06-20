@@ -51,6 +51,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
   private fileType: ProofFlowLSPClientFileType;
 
   private lspPath: string;
+  
+  private lastPfDocument?: ProofFlowDocument
 
   constructor(
     wsUrl: string,
@@ -67,6 +69,16 @@ class ProofFlowLSPClient implements LSPClientHandler {
       this.socket.send(
         JSON.stringify({ type: "init", data: "Client initialized" }),
       );
+    });
+
+    this.socket.addEventListener("message", async (event) => {
+      const message: LSPServerResponse<string> = JSON.parse(event.data);
+      if (message.type === "reconnect") {
+        console.log("Received reconnect message");
+        await this.initialize()
+        this.initialized()
+        if (this.lastPfDocument) this.didOpen(this.lastPfDocument)
+      }
     });
   }
   setDiagnosticsHandler(handler: diagnosticsHandler): void {
@@ -171,6 +183,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
       },
     };
 
+    this.lastPfDocument = pfDocument;
+
     this.expectNoResponse("didOpen", params);
   }
 
@@ -187,6 +201,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
       ],
     };
 
+    this.lastPfDocument = pfDocument;
+
     this.expectNoResponse("didChange", params);
   }
 
@@ -196,6 +212,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
         uri: pfDocument.uri,
       },
     };
+
+    this.lastPfDocument = pfDocument;
 
     this.expectNoResponse("didClose", params);
   }
@@ -214,6 +232,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
       },
     };
 
+    this.lastPfDocument = pfDocument;
+
     return this.waitForResponse("references", params);
   }
 
@@ -228,6 +248,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
       position: pos,
     };
 
+    this.lastPfDocument = pfDocument;
+
     return this.waitForResponse("definition", params);
   }
 
@@ -241,6 +263,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
       },
       position: pos,
     };
+
+    this.lastPfDocument = pfDocument;
 
     return this.waitForResponse("typeDefinition", params);
   }
@@ -260,6 +284,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
       },
     };
 
+    this.lastPfDocument = pfDocument;
+
     return this.waitForResponse("signatureHelp", params);
   }
 
@@ -274,6 +300,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
       position: pos,
     };
 
+    this.lastPfDocument = pfDocument;
+
     return this.waitForResponse("hover", params);
   }
 
@@ -287,6 +315,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
       },
       position: pos,
     };
+
+    this.lastPfDocument = pfDocument;
 
     return this.waitForResponse("declaration", params);
   }
@@ -306,6 +336,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
         triggerCharacter: char,
       },
     };
+
+    this.lastPfDocument = pfDocument;
 
     return this.waitForResponse("completion", params);
   }
