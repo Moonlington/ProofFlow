@@ -37,7 +37,6 @@ import { CoqMDOutput, CoqOutput, LeanOutput } from "../parser/outputconfigs.ts";
 import { LSPClientHandler } from "../lspClient/lspClientHandler.ts";
 import { DiagnosticsMessageData } from "../lspClient/models.ts";
 import {
-  ProofFlowLSPClient,
   ProofFlowLSPClientFileType,
 } from "../lspClient/ProofFlowLSPClient.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
@@ -72,8 +71,6 @@ export class ProofFlow {
 
   private userMode: UserMode = UserMode.Student; // The teacher mode of the editor
   public fileName: string = "file.mv";
-
-  private lspPath: string = "";
 
   // static filePath: string = "file.text";
   private fileType: AcceptedFileType = AcceptedFileType.Unknown;
@@ -672,11 +669,7 @@ export class ProofFlow {
     );
     handleUserModeSwitch();
   }
-
-  public setLsp(path: string) {
-    this.lspPath = path;
-  }
-
+  
   /**
    * Inserts the given string at the selection/cursor position.
    *

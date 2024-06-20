@@ -323,7 +323,6 @@ export class SettingsOverlay {
       } else if (lspType === "lean") {
         lspPath.value = JSON.parse(localStorage.getItem("lean") || "{}").path;
       }
-      proofFlow.setLsp(lspPath.value);
     });
 
     const lspButton = document.createElement("button");
@@ -339,7 +338,6 @@ export class SettingsOverlay {
 
       window.localStorage.setItem(lspType, JSON.stringify(lsp));
       window.localStorage.setItem("currentLspType", lspType);
-      proofFlow.setLsp(lspPath.value);
     });
     lspButton.classList.add("settings-apply-button");
 
