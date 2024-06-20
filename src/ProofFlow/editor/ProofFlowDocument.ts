@@ -1,4 +1,5 @@
 import { Node } from "prosemirror-model";
+import { CoqMDOutput } from "../parser/outputconfigs";
 
 export {
   AreaType,
@@ -186,7 +187,7 @@ const NOPConfig: OutputConfig = {
 //TODO: Incorporate handling the index mapping here, this is a big task and should be done carefully.
 class ProofFlowDocument {
   areas: Area[];
-  private _outputConfig: OutputConfig = NOPConfig;
+  private _outputConfig: OutputConfig = CoqMDOutput;
 
   constructor(areas: Area[]) {
     this.areas = areas;

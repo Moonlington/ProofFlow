@@ -33,13 +33,15 @@ import {
 
 import { Parser, SimpleParser } from "../parser/parser.ts";
 import {
-  CoqMDOutput,
   CoqMDParser,
-  CoqOutput,
   CoqParser,
-  LeanOutput,
   LeanParser,
 } from "../parser/parsers.ts";
+import {
+  CoqMDOutput,
+  CoqOutput,
+  LeanOutput,
+} from "../parser/outputconfigs.ts"
 import { LSPClientHandler } from "../lspClient/lspClientHandler.ts";
 import { DiagnosticsMessageData } from "../lspClient/models.ts";
 import {
@@ -75,7 +77,7 @@ export class ProofFlow {
   private fileSaver?: ProofFlowSaver;
 
   private userMode: UserMode = UserMode.Student; // The teacher mode of the editor
-  public fileName: string = "file.txt";
+  public fileName: string = "file.mv";
 
   // static filePath: string = "file.text";
   private fileType: AcceptedFileType = AcceptedFileType.Unknown;

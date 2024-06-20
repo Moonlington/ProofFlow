@@ -126,6 +126,7 @@ export function getCollapsibleInsertCommand(): Command {
 
 /**
  * Returns a command function that inserts an input command at the current selection.
+ * 
  * @returns A command function that inserts an input command.
  */
 export function getInputInsertCommand(): Command {
@@ -183,17 +184,17 @@ export function getInputInsertCommand(): Command {
 /**
  * Helper function to get the start and end positions of the selection.
  * @param selection - The current selection.
- * @param selectionType - The type of the selection.
- * @param oldNode - The old node being replaced.
+ *
  * @returns The start and end positions.
  */
 function getSelectionPositions(selection: Selection) {
   let posStart: number, posEnd: number;
+  const selectionType = getSelectionType(selection);
 
-  if (Selection instanceof NodeSelection) {
-    posStart = selection.from;
+  if (selectionType.isNodeSelection) {
+    posStart = selection.from; // Get the position of the selection
     posEnd = selection.to;
-  } else {
+  } else { // text selection
     posStart = selection.$from.depth
       ? selection.$from.before(selection.$from.depth)
       : 0;
