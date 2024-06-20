@@ -60,7 +60,6 @@
     background-color: rgba(255, 0, 0, 0.44);
     border: 1px black solid;
     font-size: 16px;
-    /* Adjust this to fit the cross properly */
 }
 
 .close-button:hover {
@@ -73,25 +72,47 @@
     margin-top: 5px;
 }
 
-.dropdown:hover {
+.dropdown:hover, .dropdown option {
     background-color: var(--highlight);
+}
+
+.dropdown option:checked {
+    background-color: var(--hover);
+    color: var(--button-text-color);
+}
+
+.checkbox:checked {
+    accent-color: var(--secondary-color);
 }
 
 .checkbox:hover {
     cursor: pointer;
+    accent-color: var(--hover);
 }
+
 
 .settings-text-input {
     width: 80%;
-    background-color: var(--hover);
-    color: var(--text-color);
+    background-color: var(--secondary-color);
+    color: var(--button-text-color);
     border: none;
     padding: 5px;
     margin-top: 5px;
+    height: 19px;
+}
+
+.settings-text-input::placeholder {
+    color: var(--button-text-color);
+} 
+
+.settings-text-input:focus {
+    background-color: var(--hover);
+    color: var(--text-color);
 }
 
 .settings-text-input:hover {
-    background-color: var(--secondary-color);
+    background-color: var(--hover);
+    color: var(--text-color);
 }
 
 .settings-apply-button {
