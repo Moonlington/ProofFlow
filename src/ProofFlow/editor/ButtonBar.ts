@@ -143,14 +143,14 @@ export class ButtonBar {
           this._editorView.dispatch(tr);
       }
 
-      // make another transaction to check if the selection moved outside of input when it shouldn't
+      // get the node containing the selection check if the selection moved outside of input when it shouldn't
       container = getContainingNode(this._editorView.state.selection);
       // check if selection moved illegaly
       if (
         proofFlow.getUserMode() == UserMode.Student &&
         container?.type.name !== "input_content"
       ) {
-        // if it did, move it away from all content
+        // if it did, make a transaction to move it away from all content
         const tr = this._editorView.state.tr;
         this._editorView.dispatch(
           tr.setSelection(
