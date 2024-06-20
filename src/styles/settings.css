@@ -72,13 +72,24 @@
     margin-top: 5px;
 }
 
-.dropdown:hover {
+.dropdown:hover, .dropdown option {
     background-color: var(--highlight);
+}
+
+.dropdown option:checked {
+    background-color: var(--hover);
+    color: var(--button-text-color);
+}
+
+.checkbox:checked {
+    accent-color: var(--secondary-color);
 }
 
 .checkbox:hover {
     cursor: pointer;
+    accent-color: var(--hover);
 }
+
 
 .settings-text-input {
     width: 80%;
