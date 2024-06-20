@@ -162,7 +162,7 @@ export const markdownPlugin = new Plugin({
             }
 
             if (bIsClickedInputNode) {
-              offsetToClicked += innerOffsetToClicked + 1;
+              offsetToClicked += innerOffsetToClicked + 2;
             }
             innerOffsetToClicked += newChildNode.nodeSize;
 
@@ -194,7 +194,15 @@ export const markdownPlugin = new Plugin({
       });
 
       trans.replaceWith(0, view.state.doc.content.size, newNodes);
-      trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos), -1));
+
+      const newResolvedPos = trans.doc.resolve(correctPos);
+      const newContainerName = newResolvedPos.node(newResolvedPos.depth - 1).type.name;
+      if (!(newContainerName === "input_content") && proofFlow.getUserMode() === UserMode.Student ) {
+        // Prevents bug for escaping collapsible areas
+        trans.setSelection(TextSelection.near(trans.doc.resolve(pos), -1));
+      } else {
+        trans.setSelection(TextSelection.near(trans.doc.resolve(correctPos), -1));
+      }
       view.dispatch(trans);
 
       // If we switch while inside of student Mode, we need to lock the editing of the new nodes
