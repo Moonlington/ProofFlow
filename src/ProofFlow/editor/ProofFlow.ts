@@ -274,7 +274,13 @@ export class ProofFlow {
       let codemirror = CodeMirrorView.findByPos(found[1]);
       if (!codemirror) continue;
 
-      codemirror.handleDiagnostic(diag, start, end!);
+      if (end == undefined) {
+        // This should not happen
+        console.error("End is mapped to undefined in handleDiagnostics");
+        continue;
+      }
+
+      codemirror.handleDiagnostic(diag, start, end);
     }
     this.setProofColors();
   }

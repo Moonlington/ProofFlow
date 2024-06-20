@@ -6,18 +6,18 @@ const CoqOutput: OutputConfig = {
   text: ["(**", "*)"],
   code: ["", ""],
   math: ["$$", "$$"],
-  collapsible: ["<hint>", "</hint>"],
-  collapsibletitle: ['<hint title="TITLE">\n', "\n</hint>"],
-  input: ["<input-area>\n", "\n</input-area>"],
+  collapsible: ["\n<hint>\n", "\n</hint>\n"],
+  collapsibletitle: ['\n<hint title="TITLE">\n', "\n</hint>\n"],
+  input: ["\n<input-area>\n", "\n</input-area>\n"],
 };
 
 const CoqMDOutput: OutputConfig = {
   text: ["", ""],
-  code: ["\n```coq\n", "\n```"],
+  code: ["\n```coq\n", "\n```\n"],
   math: ["$$", "$$"],
-  collapsible: ["<hint>", "\n</hint>"],
-  collapsibletitle: ['<hint title="TITLE">', "\n</hint>"],
-  input: ["<input-area>", "\n</input-area>"],
+  collapsible: ["<hint>", "</hint>"],
+  collapsibletitle: ['<hint title="TITLE">', "</hint>"],
+  input: ["<input-area>", "</input-area>"],
 };
 
 const LeanOutput: OutputConfig = {
