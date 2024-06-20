@@ -96,7 +96,6 @@ function lockCollapsible(area: Element, lock: boolean) {
 
   if (contentChildren) {
     Array.from(contentChildren).forEach((area) => {
-      console.log(area);
       if (area.classList.contains("markdown")) {
         lockMarkdown(area, lock);
       } else if (area.classList.contains("cm-editor")) {
