@@ -1,6 +1,7 @@
 import { Plugin } from "prosemirror-state";
 import { Node } from "prosemirror-model";
 import { TextSelection } from "prosemirror-state";
+import { DirectEditorProps, EditorView } from "prosemirror-view";
 
 import {
   isClickedNode,
@@ -15,9 +16,21 @@ import { UserMode, lockEditing } from "../UserMode/userMode.ts";
 
 export const markdownPlugin = new Plugin({
   props: {
+    handleDOMEvents: {
+      blur(view: EditorView, event: Event) {
+        console.log("blur");
+      }
+    },
     handleClickOn(view, pos, node, nodePos, _event, direct) {
       if (node.type.name === undefined || !direct) return; // If the node being clicked is not a valid node or the click is not a user action, return
+      console.log("handleClickOn");
 
+      transformNodes(view, pos, nodePos);
+    },
+  },
+});
+
+function transformNodes(view: EditorView, pos: number, nodePos: number) {
       let trans = view.state.tr;
       let cursorOffset = pos;
       let clickedPos = nodePos;
@@ -187,6 +200,4 @@ export const markdownPlugin = new Plugin({
       if (locked) {
         lockEditing(true);
       }
-    },
-  },
-});
+}
