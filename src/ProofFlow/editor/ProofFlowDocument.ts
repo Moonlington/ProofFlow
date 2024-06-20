@@ -98,8 +98,7 @@ class Area {
     if (localLine > 0) pos.character++;
     return (
       lines.slice(0, localLine).join("\n").length +
-      pos.character -
-      this.range.start.character
+      pos.character
     );
   }
 }
