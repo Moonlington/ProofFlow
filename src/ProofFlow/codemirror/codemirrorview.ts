@@ -64,6 +64,7 @@ export class CodeMirrorView implements NodeView {
   updating = false;
   diagnostics: Diagnostic[] = new Array();
   isQEDError = false;
+  isError = false;
   proofflow: ProofFlow;
 
   static instances: CodeMirrorView[] = [];
@@ -191,6 +192,14 @@ export class CodeMirrorView implements NodeView {
     }
 
     CodeMirrorView.focused = this;
+  }
+
+  /**
+   * Method to move the cursor to the ProseMirrocr editor
+   */
+  forceforwardSelection() {
+    this.cm.focus();
+    this.forwardSelection();
   }
 
   /**
@@ -384,6 +393,7 @@ export class CodeMirrorView implements NodeView {
     CodeMirrorView.instances.forEach((instance) => (instance.diagnostics = []));
     CodeMirrorView.instances.forEach((instance) => {
       instance.isQEDError = false;
+      instance.isError = false;
       let tr = setDiagnostics(instance.cm.state, []);
       instance.cm.dispatch(tr);
     });
@@ -407,6 +417,7 @@ export class CodeMirrorView implements NodeView {
     if (this.checkQEDError(start)) {
       this.isQEDError = true;
     }
+    this.isError = true;
     this.cm.dispatch(tr);
   }
 }
