@@ -1,4 +1,4 @@
-export { ProofFlowLSPClient as ProofflowLSPClient, ProofflowLSPClientFileType };
+export { ProofFlowLSPClient, ProofFlowLSPClientFileType };
 
 import {
   ProofFlowDocument,
@@ -34,31 +34,29 @@ type LSPServerResponse<ResponseType> = {
   data: ResponseType;
 };
 
-enum ProofflowLSPClientFileType {
+enum ProofFlowLSPClientFileType {
   Coq = "coq",
   Lean = "lean",
 }
 
+export type diagnosticsHandler = (diag: DiagnosticsMessageData) => void;
+
 class ProofFlowLSPClient implements LSPClientHandler {
-  private uri: string; // uri of the document
   private wsUrl: string; // URL of the websocket
 
   private socket: WebSocket;
 
   private version = 0;
 
-  private fileType: ProofflowLSPClientFileType;
+  private fileType: ProofFlowLSPClientFileType;
 
   private lspPath: string;
 
   constructor(
-    uri: string,
     wsUrl: string,
-    diagnosticsFunc: (diag: DiagnosticsMessageData) => void,
-    fileType: ProofflowLSPClientFileType,
+    fileType: ProofFlowLSPClientFileType,
     path: string,
   ) {
-    this.uri = uri;
     this.wsUrl = wsUrl;
     this.fileType = fileType;
     this.lspPath = path;
@@ -70,12 +68,13 @@ class ProofFlowLSPClient implements LSPClientHandler {
         JSON.stringify({ type: "init", data: "Client initialized" }),
       );
     });
-
+  }
+  setDiagnosticsHandler(handler: diagnosticsHandler): void {
     this.socket.addEventListener("message", (event) => {
       const message: DiagnosticsMessage = JSON.parse(event.data);
       if (message.type === "diagnostics") {
         console.log("Received diagnostics:", message.data);
-        diagnosticsFunc(message.data);
+        handler(message.data);
       }
     });
   }
@@ -165,7 +164,7 @@ class ProofFlowLSPClient implements LSPClientHandler {
   didOpen(pfDocument: ProofFlowDocument): void {
     let params: DidOpenTextDocumentParams = {
       textDocument: {
-        uri: this.uri,
+        uri: pfDocument.uri,
         languageId: this.fileType,
         version: this.version++,
         text: pfDocument.toString(),
@@ -178,7 +177,7 @@ class ProofFlowLSPClient implements LSPClientHandler {
   didChange(pfDocument: ProofFlowDocument): void {
     let params: DidChangeTextDocumentParams = {
       textDocument: {
-        uri: this.uri,
+        uri: pfDocument.uri,
         version: this.version++,
       },
       contentChanges: [
@@ -191,20 +190,23 @@ class ProofFlowLSPClient implements LSPClientHandler {
     this.expectNoResponse("didChange", params);
   }
 
-  didClose(): void {
+  didClose(pfDocument: ProofFlowDocument): void {
     let params: DidCloseTextDocumentParams = {
       textDocument: {
-        uri: this.uri,
+        uri: pfDocument.uri,
       },
     };
 
     this.expectNoResponse("didClose", params);
   }
 
-  async references(pos: Position): Promise<Range[] | null> {
+  async references(
+    pfDocument: ProofFlowDocument,
+    pos: Position,
+  ): Promise<Range[] | null> {
     let params: ReferenceParams = {
       textDocument: {
-        uri: this.uri,
+        uri: pfDocument.uri,
       },
       position: pos,
       context: {
@@ -215,10 +217,13 @@ class ProofFlowLSPClient implements LSPClientHandler {
     return this.waitForResponse("references", params);
   }
 
-  async definition(pos: Position): Promise<(Range | Range[]) | null> {
+  async definition(
+    pfDocument: ProofFlowDocument,
+    pos: Position,
+  ): Promise<(Range | Range[]) | null> {
     let params: DefinitionParams = {
       textDocument: {
-        uri: this.uri,
+        uri: pfDocument.uri,
       },
       position: pos,
     };
@@ -226,10 +231,13 @@ class ProofFlowLSPClient implements LSPClientHandler {
     return this.waitForResponse("definition", params);
   }
 
-  async typeDefinition(pos: Position): Promise<(Range | Range[]) | null> {
+  async typeDefinition(
+    pfDocument: ProofFlowDocument,
+    pos: Position,
+  ): Promise<(Range | Range[]) | null> {
     let params: TypeDefinitionParams = {
       textDocument: {
-        uri: this.uri,
+        uri: pfDocument.uri,
       },
       position: pos,
     };
@@ -237,10 +245,13 @@ class ProofFlowLSPClient implements LSPClientHandler {
     return this.waitForResponse("typeDefinition", params);
   }
 
-  async signatureHelp(pos: Position): Promise<SignatureHelp | null> {
+  async signatureHelp(
+    pfDocument: ProofFlowDocument,
+    pos: Position,
+  ): Promise<SignatureHelp | null> {
     let params: SignatureHelpParams = {
       textDocument: {
-        uri: this.uri,
+        uri: pfDocument.uri,
       },
       position: pos,
       context: {
@@ -252,10 +263,13 @@ class ProofFlowLSPClient implements LSPClientHandler {
     return this.waitForResponse("signatureHelp", params);
   }
 
-  async hover(pos: Position): Promise<Hover | null> {
+  async hover(
+    pfDocument: ProofFlowDocument,
+    pos: Position,
+  ): Promise<Hover | null> {
     let params: HoverParams = {
       textDocument: {
-        uri: this.uri,
+        uri: pfDocument.uri,
       },
       position: pos,
     };
@@ -263,10 +277,13 @@ class ProofFlowLSPClient implements LSPClientHandler {
     return this.waitForResponse("hover", params);
   }
 
-  async gotoDeclaration(pos: Position): Promise<(Range | Range[]) | null> {
+  async gotoDeclaration(
+    pfDocument: ProofFlowDocument,
+    pos: Position,
+  ): Promise<(Range | Range[]) | null> {
     let params: DeclarationParams = {
       textDocument: {
-        uri: this.uri,
+        uri: pfDocument.uri,
       },
       position: pos,
     };
@@ -275,12 +292,13 @@ class ProofFlowLSPClient implements LSPClientHandler {
   }
 
   async completion(
+    pfDocument: ProofFlowDocument,
     pos: Position,
     char: string,
   ): Promise<CompletionList | CompletionItem[] | null> {
     let params: CompletionParams = {
       textDocument: {
-        uri: this.uri,
+        uri: pfDocument.uri,
       },
       position: pos,
       context: {

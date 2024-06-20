@@ -3,6 +3,7 @@ import {
   ProofFlowDocument,
   Range,
 } from "../editor/ProofFlowDocument.ts";
+import { diagnosticsHandler } from "./ProofFlowLSPClient.ts";
 import {
   CompletionItem,
   CompletionList,
@@ -20,20 +21,38 @@ export interface LSPClientHandler {
   shutdown(): void;
   exit(): void;
 
+  setDiagnosticsHandler(handler: diagnosticsHandler): void;
+
   // Document Synchronization
   didOpen(pfDocument: ProofFlowDocument): void;
   didChange(pfDocument: ProofFlowDocument): void;
-  didClose(): void;
+  didClose(pfDocument: ProofFlowDocument): void;
 
   // Language Features
   // documentSymbol(params: DocumentSymbolParams): DocumentSymbol[] | SymbolInformation[] | null
-  references(pos: Position): Promise<Range[] | null>;
-  definition(pos: Position): Promise<RangeResponse | null>;
-  typeDefinition(pos: Position): Promise<RangeResponse | null>;
-  signatureHelp(pos: Position): Promise<SignatureHelp | null>;
-  hover(pos: Position): Promise<Hover | null>;
-  gotoDeclaration(pos: Position): Promise<RangeResponse | null>;
+  references(
+    pfDocument: ProofFlowDocument,
+    pos: Position,
+  ): Promise<Range[] | null>;
+  definition(
+    pfDocument: ProofFlowDocument,
+    pos: Position,
+  ): Promise<RangeResponse | null>;
+  typeDefinition(
+    pfDocument: ProofFlowDocument,
+    pos: Position,
+  ): Promise<RangeResponse | null>;
+  signatureHelp(
+    pfDocument: ProofFlowDocument,
+    pos: Position,
+  ): Promise<SignatureHelp | null>;
+  hover(pfDocument: ProofFlowDocument, pos: Position): Promise<Hover | null>;
+  gotoDeclaration(
+    pfDocument: ProofFlowDocument,
+    pos: Position,
+  ): Promise<RangeResponse | null>;
   completion(
+    pfDocument: ProofFlowDocument,
     pos: Position,
     char: string,
   ): Promise<CompletionItem[] | CompletionList | null>;

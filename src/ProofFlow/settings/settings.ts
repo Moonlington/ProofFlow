@@ -18,8 +18,6 @@ export class SettingsOverlay {
     this._overlay = this.render();
     this.showOverlay(false);
   }
-  
-
 
   /**
    * Renders the settings menu overlay.
@@ -229,14 +227,13 @@ export class SettingsOverlay {
 
   private lspContainer(): HTMLElement {
     // Get the LSP objects and types from local storage
-    const lspCoq = JSON.parse(localStorage.getItem("Coq") || "{}");
-    const lspLean = JSON.parse(localStorage.getItem("Lean") || "{}");
+    const lspCoq = JSON.parse(localStorage.getItem("coq") || "{}");
+    const lspLean = JSON.parse(localStorage.getItem("lean") || "{}");
 
     let lspCoqPath = lspCoq.path || "";
     let lspLeanPath = lspLean.path || "";
 
-
-    const currentLspType = localStorage.getItem("currentLspType") || "Coq";
+    const currentLspType = localStorage.getItem("currentLspType") || "coq";
 
     const lspContainer = document.createElement("div");
     const lspLabel = document.createElement("h4");
@@ -245,25 +242,25 @@ export class SettingsOverlay {
     const lspSelect = document.createElement("select");
     lspSelect.id = "lsp-type";
     lspSelect.className = "dropdown";
-    
+
     const optionElementCoq = document.createElement("option");
-    optionElementCoq.value = "Coq";
+    optionElementCoq.value = "coq";
     optionElementCoq.textContent = "Coq";
     lspSelect.appendChild(optionElementCoq);
     const optionElementLean = document.createElement("option");
-    optionElementLean.value = "Lean";
+    optionElementLean.value = "lean";
     optionElementLean.textContent = "Lean";
     lspSelect.appendChild(optionElementLean);
-    lspSelect.value = currentLspType || "Coq";
+    lspSelect.value = currentLspType || "coq";
 
     const lspPath = document.createElement("input");
     lspPath.type = "text";
     lspPath.id = "lsp-path";
     lspPath.placeholder = "Enter the path to the LSP server";
     lspPath.classList.add("settings-text-input");
-    if (currentLspType == "Coq") {
+    if (currentLspType == "coq") {
       lspPath.value = lspCoqPath;
-    } else if (currentLspType == "Lean") {
+    } else if (currentLspType == "lean") {
       lspPath.value = lspLeanPath;
     }
 
@@ -271,14 +268,13 @@ export class SettingsOverlay {
       const target = e.target as HTMLSelectElement;
       const lspType = target.value;
       window.localStorage.setItem("currentLspType", lspType);
-      if (lspType === "Coq") {
-        lspPath.value = JSON.parse(localStorage.getItem("Coq") || "{}").path;
-      } else if (lspType === "Lean") {
-        lspPath.value = JSON.parse(localStorage.getItem("Lean") || "{}").path;
+      if (lspType === "coq") {
+        lspPath.value = JSON.parse(localStorage.getItem("coq") || "{}").path;
+      } else if (lspType === "lean") {
+        lspPath.value = JSON.parse(localStorage.getItem("lean") || "{}").path;
       }
       proofFlow.setLsp(lspPath.value);
     });
-
 
     const lspButton = document.createElement("button");
     lspButton.textContent = "Apply";
@@ -287,10 +283,10 @@ export class SettingsOverlay {
       // proofFlow.setLspPath(lspPath.value);
       let lsp = {
         path: lspPath.value,
-        type: lspSelect.value,      
+        type: lspSelect.value,
       };
       const lspType = lspSelect.value;
-      
+
       window.localStorage.setItem(lspType, JSON.stringify(lsp));
       window.localStorage.setItem("currentLspType", lspType);
       proofFlow.setLsp(lspPath.value);
@@ -361,7 +357,7 @@ export class SettingsOverlay {
    * The container includes a header, dropdowns for text style and text size,
    * and event listeners to update the editor's font family and font size.
    * The container also retrieves and sets stored values for text style and text size.
-   * 
+   *
    * @returns The created container element.
    */
   private textStyleContainer() {
