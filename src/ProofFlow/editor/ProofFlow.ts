@@ -300,14 +300,14 @@ export class ProofFlow {
 
         // Count the amount of diagnostics inside the input area
         let diagnosticCount = 0;
-        node.descendants((node: Node, offset: number) => {
+        node.descendants((node: Node, childOffset: number) => {
           if (node.type.name != "code_mirror") return true;
-          let instance = CodeMirrorView.findByPos(offset);
+          let instance = CodeMirrorView.findByPos(offset + childOffset + 1);
           if (instance?.cm.hasFocus) {
             focusedInstance = instance;
           }
           if (instance == null) return false;
-          diagnosticCount += instance.diagnostics.length;
+          if (instance.isError) diagnosticCount++;
         });
 
         // If it is zero then set it to correct otherwise incorrect
