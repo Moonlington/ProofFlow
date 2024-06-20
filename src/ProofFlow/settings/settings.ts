@@ -316,6 +316,8 @@ export class SettingsOverlay {
    * @returns The created container element.
    */
   private textStyleContainer() {
+    const editor = document.getElementById("editor")!;
+
     // Create the container and header
     const textStyleContainer = document.createElement("div");
     textStyleContainer.classList.add("settings-container");
@@ -338,14 +340,6 @@ export class SettingsOverlay {
       textStyleSelect.appendChild(optionElement);
     });
 
-    // Add event listener
-    textStyleSelect.addEventListener("change", (e) => {
-      const target = e.target as HTMLSelectElement;
-      const editor = document.getElementById("editor")!;
-      editor.style.fontFamily = target.value;
-      localStorage.setItem("textStyle", target.value);
-    });
-
     // Dropdown for the text size
     const textSize = document.createElement("select");
     textSize.id = "text-size";
@@ -353,7 +347,7 @@ export class SettingsOverlay {
 
     // Add the options
     const textSizeOptions = ["Smaller", "Small", "Medium", "Large", "Larger"];
-
+    
     textSizeOptions.forEach((option) => {
       const optionElement = document.createElement("option");
       optionElement.value = option;
@@ -361,10 +355,54 @@ export class SettingsOverlay {
       textSize.appendChild(optionElement);
     });
 
-    // Add event listener
+    // Dropdown for the text font
+    const textFontSelect = document.createElement("select");
+    textFontSelect.id = "text-font";
+    textFontSelect.classList.add("dropdown");
+
+    // Add the options
+    const textFontOptions  = [
+      "Arial",
+      "Helvetica",
+      "Times New Roman",
+      "Courier New",
+      "Georgia",
+      "Verdana",
+      "Trebuchet",
+      "Palatino",
+      "Garamond",
+      "Comic Sans"
+    ];
+
+    const textFontsWithStyles = ["Comic Sans", "Palatino", "Trebuchet"]
+
+    textFontOptions.forEach((option) => {
+      const optionElement = document.createElement("option");
+      optionElement.value = option;
+      optionElement.textContent = option;
+      textFontSelect.appendChild(optionElement);
+    });
+
+    // Add event listeners
+    textFontSelect.addEventListener("change", (e) => {
+      const target = e.target as HTMLSelectElement;
+      editor.style.fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
+      localStorage.setItem("textFont", target.value);
+      if (textFontsWithStyles.includes(textFontSelect.value)) {
+        textStyleSelect.style.display = "";
+      } else {
+        textStyleSelect.style.display = "none";
+      }
+    });
+
+    textStyleSelect.addEventListener("change", (e) => {
+      const target = e.target as HTMLSelectElement;
+      editor.style.fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
+      localStorage.setItem("textStyle", target.value);
+    });
+
     textSize.addEventListener("change", (e) => {
       const target = e.target as HTMLSelectElement;
-      const editor = document.getElementById("editor")!;
       editor.style.fontSize = target.value;
       localStorage.setItem("textSize", target.value);
     });
@@ -372,22 +410,40 @@ export class SettingsOverlay {
     // Update with stored values
     const currentStyle = localStorage.getItem("textStyle");
     const currentSize = localStorage.getItem("textSize");
+    const currentFont = localStorage.getItem("textFont");
 
-    if (currentStyle) {
+    if (currentFont && textFontsWithStyles.includes(currentFont)) {
+      textStyleSelect.style.display = "";
+    } else {
+      textStyleSelect.style.display = "none";
+    }
+
+    if (currentFont && currentStyle) 
+    {
+      textFontSelect.value = currentFont;
       textStyleSelect.value = currentStyle;
-      const editor = document.getElementById("editor")!;
-      editor.style.fontFamily = currentStyle;
+      editor.style.fontFamily = `${currentFont}, ${currentStyle}`;
+    } 
+    else if (currentFont) 
+    {
+      textFontSelect.value = currentFont;
+      editor.style.fontFamily = `${currentFont}`;
+    } 
+    else if (currentStyle) 
+    {
+      textStyleSelect.value = currentStyle;
+      editor.style.fontFamily = `${currentStyle}`;
     }
 
     if (currentSize) {
       textSize.value = currentSize;
-      const editor = document.getElementById("editor")!;
       editor.style.fontSize = currentSize;
     }
 
     // Append all to the container
     textStyleContainer.appendChild(textStyleLabel);
     textStyleContainer.appendChild(textSize);
+    textStyleContainer.appendChild(textFontSelect);
     textStyleContainer.appendChild(textStyleSelect);
 
     return textStyleContainer;
