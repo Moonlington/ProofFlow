@@ -1,10 +1,6 @@
 import { OutputConfig } from "../editor/ProofFlowDocument";
 
-export {
-  CoqOutput,
-  CoqMDOutput,
-  LeanOutput,
-}
+export { CoqOutput, CoqMDOutput, LeanOutput };
 
 const CoqOutput: OutputConfig = {
   text: ["(**", "*)"],
@@ -14,7 +10,7 @@ const CoqOutput: OutputConfig = {
   collapsibletitle: ['<hint title="TITLE">\n', "\n</hint>"],
   input: ["<input-area>\n", "\n</input-area>"],
 };
-  
+
 const CoqMDOutput: OutputConfig = {
   text: ["", ""],
   code: ["\n```coq\n", "\n```"],
