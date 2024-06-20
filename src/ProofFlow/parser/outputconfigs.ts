@@ -1,6 +1,6 @@
 import { OutputConfig } from "../editor/ProofFlowDocument";
 
-export { CoqOutput, CoqMDOutput, LeanOutput };
+export { CoqOutput, CoqMDOutput, LeanOutput, PureLeanOutput };
 
 const CoqOutput: OutputConfig = {
   text: ["(**", "*)"],
@@ -27,4 +27,13 @@ const LeanOutput: OutputConfig = {
   collapsible: [":::collapsible\n", ":::\n"],
   collapsibletitle: [":::collapsible\n# TITLE\n", ":::\n"],
   input: [":::input\n", ":::\n"],
+};
+
+const PureLeanOutput: OutputConfig = {
+  text: ["\n/-\n", "\n-/\n"],
+  code: ["", ""],
+  math: ["\n/-$$\n", "\n$$-/\n"],
+  collapsible: ["\n-- <hint>\n)?", "\n-- </hint>\n"],
+  collapsibletitle: ['\n-- <hint title="TITLE">\n', "\n-- </hint>\n"],
+  input: ["\n-- <input-area>\n", '\n-- <"input-area>\n'],
 };

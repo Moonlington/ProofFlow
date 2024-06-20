@@ -32,8 +32,18 @@ import {
 } from "./ProofFlowDocument.ts";
 
 import { Parser, SimpleParser } from "../parser/parser.ts";
-import { CoqMDParser, CoqParser, LeanParser } from "../parser/parsers.ts";
-import { CoqMDOutput, CoqOutput, LeanOutput } from "../parser/outputconfigs.ts";
+import {
+  CoqMDParser,
+  CoqParser,
+  LeanParser,
+  PureLeanParser,
+} from "../parser/parsers.ts";
+import {
+  CoqMDOutput,
+  CoqOutput,
+  LeanOutput,
+  PureLeanOutput,
+} from "../parser/outputconfigs.ts";
 import { LSPClientHandler } from "../lspClient/lspClientHandler.ts";
 import { DiagnosticsMessageData } from "../lspClient/models.ts";
 import {
@@ -349,8 +359,15 @@ export class ProofFlow {
         lspClientFileType = ProofFlowLSPClientFileType.Coq;
         break;
       case AcceptedFileType.Lean:
-        parser = LeanParser;
-        this.outputConfig = LeanOutput;
+        if (text.indexOf("import VersoProofFlow") !== -1) {
+          parser = LeanParser;
+          this.outputConfig = LeanOutput;
+        } else {
+          parser = PureLeanParser;
+          this.outputConfig = PureLeanOutput;
+          let proxy = parser as SimpleParser;
+          proxy.defaultAreaType = AreaType.Code;
+        }
         lspClientFileType = ProofFlowLSPClientFileType.Lean;
         break;
       default:
