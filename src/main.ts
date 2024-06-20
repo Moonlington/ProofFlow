@@ -96,7 +96,7 @@ export function readSingleFile(e: Event) {
 
   // Event listener to process the file content
   reader.onloadend = (readerEvent: ProgressEvent<FileReader>) => {
-    if (readerEvent?.target?.result) {
+    if (typeof readerEvent?.target?.result === "string") {
       // Get the result from the reader event
       const result = readerEvent.target.result.toString();
       proofFlow.reset();
