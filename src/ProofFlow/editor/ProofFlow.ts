@@ -108,7 +108,7 @@ export class ProofFlow {
     this._editorElem = options.editorElem; // Set the editor element
     this._containerElem = options.containerElem; // Set the container element
     this.fileSaver = options.fileSaver;
-    
+
     // Create the editor
     this.editorView = this.createEditorView();
 
