@@ -424,7 +424,7 @@ export class SettingsOverlay {
     const currentFont = localStorage.getItem("textFont");
 
     if (currentFont && textFontsWithStyles.includes(currentFont)) {
-      textStyleSelect.style.display = "block"; // Ensure display is explicitly set to 'block'
+      textStyleSelect.style.display = "";
     } else {
       textStyleSelect.style.display = "none";
     }
