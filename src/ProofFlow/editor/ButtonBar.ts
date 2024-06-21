@@ -18,7 +18,7 @@ import {
 } from "../commands/insert-commands.ts";
 import { proofFlow, readSingleFile } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
-import { undo, redo } from "prosemirror-history";
+import { undo, redo, closeHistory } from "prosemirror-history";
 import { showOverlay } from "../../main.ts";
 
 /**
@@ -135,12 +135,14 @@ export class ButtonBar {
       } else {
         // this works for markdown and code blocks
         const depth = this._editorView.state.selection.$head.depth;
-        const tr = this._editorView.state.tr;
+        let tr = this._editorView.state.tr;
         tr.delete(
           this._editorView.state.selection.$head.before(depth),
           this._editorView.state.selection.$head.after(depth),
-        ),
-          this._editorView.dispatch(tr);
+        );
+        tr = closeHistory(tr);
+        this._editorView.dispatch(tr);
+          
       }
 
       // get the node containing the selection check if the selection moved outside of input when it shouldn't

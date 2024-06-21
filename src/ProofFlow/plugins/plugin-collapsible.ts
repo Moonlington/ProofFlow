@@ -1,4 +1,5 @@
 import { Plugin } from "prosemirror-state";
+import { proofFlow } from "../../main";
 
 export let collapsibleAreaPlugin = new Plugin({
   props: {
@@ -9,6 +10,7 @@ export let collapsibleAreaPlugin = new Plugin({
         let trans = view.state.tr.setNodeAttribute(startPos, "visible", !state);
 
         view.dispatch(trans);
+        proofFlow.addUndoTrack();
       }
     },
   },

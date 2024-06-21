@@ -54,6 +54,8 @@ import { inputProof } from "../commands/helpers.ts";
 import { ProofFlowSaver } from "../fileHandlers/proofFlowSaver.ts";
 import { adjustLeftDivWidth } from "../../main.ts";
 import { LSPClientManager } from "../lspClient/lspClientManager.ts";
+import { undo, redo, undoDepth, redoDepth } from "prosemirror-history";
+import e from "express";
 // CSS
 
 export type ProofFlowOptions = {
@@ -104,6 +106,9 @@ export class ProofFlow {
 
   private lspClient?: LSPClientHandler;
   private lspManager?: LSPClientManager;
+
+  private undoTrackStack: Node[] = [];
+  private redoTrackStack: Node[] = [];
 
   /**
    * Represents the ProofFlow class.
@@ -718,7 +723,103 @@ export class ProofFlow {
     }
   }
 
+  /**
+   * Switches the minimap on or off.
+   */
   public switchMinimap() {
     this.minimap?.switch();
+  }
+
+  /**
+   * Performs a custom undo action in the editor.
+   */
+  public customUndo() {
+    // If the last element in the undoTrackStack is the current undo depth
+    // Meaning the last element is one that should not have its own undo
+    // action, we pop it off and set extraUndo to true. To indicate that we
+    // need to undo one more step that actually should have an undo action.
+    let extraUndo = false;
+    if (this.undoTrackStack[this.undoTrackStack.length - 1] === undoDepth(this.editorView.state)) {
+      this.undoTrackStack.pop();
+      extraUndo = true;
+    }
+
+    // If the redoStack is empty, clear the track for the redos.
+    if (redoDepth(this.editorView.state) === 0) {
+      this.redoTrackStack = [];
+    }
+    
+    // The original undo action
+    undo(this.editorView.state, this.editorView.dispatch);
+
+    // Check if we have undos that do not deserve its own undo action
+    while (this.undoTrackStack[this.undoTrackStack.length - 1] === undoDepth(this.editorView.state)) {
+      this.undoTrackStack.pop();
+      undo(this.editorView.state, this.editorView.dispatch);
+      this.addRedoTrack();
+    }
+
+    // If we have an extra undo action, we need to undo one more step
+    if (extraUndo) {
+      undo(this.editorView.state, this.editorView.dispatch);
+      this.addRedoTrack();
+    }
+  }
+
+  /**
+   * Performs a custom redo action in the editor.
+   */
+  public customRedo() {
+    // If the last element in the redoTrackStack is the current redo depth
+    // Meaning the last element is one that should not have its own redo
+    // action, we pop it off and set extraRedo to true. To indicate that we
+    // need to redo one more step that actually should have an redo action.
+    let extraRedo = false;
+    if (this.redoTrackStack[this.redoTrackStack.length - 1] === redoDepth(this.editorView.state)) {
+      this.redoTrackStack.pop();
+      extraRedo = true;
+    }
+
+    // The original redo action
+    redo(this.editorView.state, this.editorView.dispatch);
+
+    // Check if we have redos that do not deserve its own redo action
+    while (this.redoTrackStack[this.redoTrackStack.length - 1] === redoDepth(this.editorView.state)) {
+      this.redoTrackStack.pop();
+      redo(this.editorView.state, this.editorView.dispatch);
+      this.addUndoTrack();
+    }
+
+    // If we have an extra redo action, we need to redo one more step
+    if (extraRedo) {
+      redo(this.editorView.state, this.editorView.dispatch);
+      this.addRedoTrack();
+    }
+  }
+
+  /**
+   * Adds an undo track to the undo track stack.
+   * If the current undo depth is already in the stack, it will not be added again.
+   */
+  public addUndoTrack() {
+    const currenUndoDepth = undoDepth(this.getState());
+
+    // Ensure we do not add the same undo depth twice
+    if (this.undoTrackStack[this.undoTrackStack.length - 1] === currenUndoDepth) return;
+    this.undoTrackStack.push(currenUndoDepth);
+  }
+
+  /**
+   * Adds a redo track to the redo track stack.
+   * 
+   * @remarks
+   * This method adds the current redo depth to the redo track stack, ensuring that the same redo depth is not added twice.
+   */
+  public addRedoTrack() {
+    const currenRedoDepth = redoDepth(this.getState());
+
+    // Ensure we do not add the same redo depth twice
+    if (this.redoTrackStack[this.redoTrackStack.length - 1] === currenRedoDepth) return;
+    this.redoTrackStack.push(currenRedoDepth);
   }
 }
