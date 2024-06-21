@@ -202,7 +202,8 @@ export const markdownPlugin = new Plugin({
       };
 
       // Allows to get into math nodes
-      if (!(node.type.name === "math_display")) {
+      console.log("Node type: ", node.type.name);
+      if (node.type.name === "math_display") {
         resolveAndSetSelection(correctPos);
       } else {
         const newResolvedPos = trans.doc.resolve(correctPos);
