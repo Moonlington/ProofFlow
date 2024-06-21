@@ -22,13 +22,15 @@ export const arrowKeyHandler = (
     const { $from } = selection;
     const userMode = proofFlow.getUserMode();
     const node = $from.node($from.depth);
+    const inStudentMode = userMode === UserMode.Student;
 
     // Check if the current node is not a markdown node
-    if (node.type.name !== "markdown") {
+    if (node.type.name !== "markdown" && inStudentMode) {
+      console.log("here");
       return true;
     }
 
-    const inStudentMode = userMode === UserMode.Student;
+
 
     const containingNode = getContainingNode(selection);
     const inInput = containingNode?.type.name === "input_content";
