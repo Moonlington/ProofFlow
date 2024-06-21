@@ -72,14 +72,14 @@ export class Minimap {
       this.timeoutIdScroll = setTimeout(
         this.trackScroll.bind(this),
         this.debounceDelay / 24,
-      );
+      ) as unknown as number;
     });
     editor!.addEventListener("resize", () => {
       if (this.timeoutIdResize != null) return;
       this.timeoutIdResize = setTimeout(
         this.getDimensions.bind(this),
         this.debounceDelay / 24,
-      );
+      ) as unknown as number;
     });
     this.on = true;
   }
@@ -104,7 +104,7 @@ export class Minimap {
     this.timeoutIdHTML = setTimeout(
       this.updateHTML.bind(this),
       this.debounceDelay,
-    );
+    ) as unknown as number;
   };
 
   public updateHTML() {

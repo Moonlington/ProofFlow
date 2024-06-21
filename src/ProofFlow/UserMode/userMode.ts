@@ -118,3 +118,10 @@ function lockCollapsible(area: Element, lock: boolean) {
 //     }
 //   });
 // }
+
+export const _private = {
+  lockEditing,
+  lockMarkdown,
+  lockCode,
+  lockCollapsible
+};
