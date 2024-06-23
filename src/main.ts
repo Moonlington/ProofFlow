@@ -96,11 +96,10 @@ export function readSingleFile(e: Event) {
 
   // Event listener to process the file content
 reader.onloadend = async (readerEvent: ProgressEvent<FileReader>) => {
-  if (typeof readerEvent?.target?.result === "string") {
-    // Wait for user confirmation
-    const confirmed = await proofFlow.requestConfirm("Are you sure you want to load a new file, this will delete the current instance.");
-    if (!confirmed) return;
+  // Wait for user confirmation
+  const confirmed = await proofFlow.requestConfirm("Are you sure you want to load a new file, this will delete the current instance.");
 
+  if (typeof readerEvent?.target?.result === "string" && confirmed) {
     // Get the result from the reader event
     const result = readerEvent.target.result.toString();
     proofFlow.reset();

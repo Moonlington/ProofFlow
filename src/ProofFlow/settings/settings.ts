@@ -29,6 +29,7 @@ export class SettingsOverlay {
     const overlay = document.createElement("div");
     overlay.className = "overlay";
     overlay.id = "settings";
+    overlay.style.display = "";
 
     // Get all the settings
     const popup = this.settingsMenu();

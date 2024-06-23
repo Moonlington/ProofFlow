@@ -829,7 +829,7 @@ export class ProofFlow {
       // Button container showing below settings buttons, overlay over the editor
       // When clicking outside or on no, do not reset, if clicking on yes, reset
       const overlay = document.createElement("div");
-      overlay.className = "reset-overlay";
+      overlay.className = "overlay";
   
       const container = document.createElement("div");
       container.className = "reset-confirm-container";
@@ -860,7 +860,7 @@ export class ProofFlow {
       buttons.appendChild(no);
       container.appendChild(buttons);
       overlay.appendChild(container);
-      document.body.appendChild(overlay);
+      document.getElementById("container")!.appendChild(overlay);
     });
   }
   
