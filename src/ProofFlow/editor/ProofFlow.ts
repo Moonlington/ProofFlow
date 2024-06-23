@@ -659,6 +659,11 @@ export class ProofFlow {
     handleUserModeSwitch();
     reloadColorScheme();
     adjustLeftDivWidth();
+    const on = localStorage.getItem("minimap") === "true";
+
+    if (!on) {
+      this.switchMinimap();
+    }
   }
 
   /**
