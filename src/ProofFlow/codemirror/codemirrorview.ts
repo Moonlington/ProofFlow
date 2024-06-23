@@ -402,8 +402,8 @@ export class CodeMirrorView implements NodeView {
   }
 
   checkQEDError(start: number) {
-    if (start != 0) return false;
-    return true;
+    let endFirstLine = this.cm.state.doc.line(1).length;
+    return start < endFirstLine;
   }
 
   handleDiagnostic(diag: LSPDiagnostic, start: number, end: number) {
