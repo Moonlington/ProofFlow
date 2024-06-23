@@ -189,7 +189,7 @@ export class CodeMirrorView implements NodeView {
     }
 
     // Ensure only one cursor is active
-    if (CodeMirrorView.focused instanceof CodeMirrorView) {
+    if (CodeMirrorView.focused instanceof CodeMirrorView && CodeMirrorView.focused != this) {
       CodeMirrorView.focused.blurInstance();
     }
 

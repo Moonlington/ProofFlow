@@ -28,6 +28,8 @@ const editor = document.createElement("div");
 editor.id = "editor";
 container.appendChild(editor);
 
+export let firefoxUsed = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow({
   editorElem: editor,
