@@ -219,9 +219,11 @@ export class ButtonBar {
       },
       {
         symbol: "&#x21bb;",
-        cmd: () => {
-          proofFlow.reset();
-          proofFlow.setFileName("file.mv");
+        cmd: async () => {
+          if (await proofFlow.requestConfirm("Are you sure you want to clear the file?")) {
+            proofFlow.reset();
+            proofFlow.setFileName("File.mv");
+          }
         },
         hoverText: "Clear File",
       },
