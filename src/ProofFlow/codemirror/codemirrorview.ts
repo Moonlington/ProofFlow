@@ -407,6 +407,9 @@ export class CodeMirrorView implements NodeView {
   }
 
   handleDiagnostic(diag: LSPDiagnostic, start: number, end: number) {
+    // If the diagnostics gets handled when the doc does not have any
+    // characters at that position anymore, CodeMirror breaks
+    end = Math.min(end, this.cm.state.doc.length);
     let severity: Severity;
     switch (diag.severity) {
       case 1:
