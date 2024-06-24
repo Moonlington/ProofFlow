@@ -123,6 +123,7 @@ export async function readSingleFile(e: Event) {
       proofFlow.reset();
       proofFlow.setFileName(file.name);
       proofFlow.openFile(result, fileType);
+      handleUserModeSwitch();
     }
   };
 }

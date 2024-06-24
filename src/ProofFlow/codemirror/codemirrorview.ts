@@ -72,6 +72,11 @@ export class CodeMirrorView implements NodeView {
   static instances: CodeMirrorView[] = [];
   static focused: CodeMirrorView | null = null;
 
+  /**
+   * Constructs a new instance of the CodeMirrorView class.
+   * @param proofflow The ProofFlow instance.
+   * @param options The options for configuring the CodeMirrorView.
+   */
   constructor(proofflow: ProofFlow, options: CodeMirrorViewOptions) {
     this.proofflow = proofflow;
     // Store for later
@@ -157,10 +162,26 @@ export class CodeMirrorView implements NodeView {
     // Add the newest instance to the list of instances
     CodeMirrorView.instances.push(this);
 
-    // Ensure the selection is synchronized from ProseMirror to codemirror
-    this._outerView.dom.addEventListener("focus", () =>
-      this.forwardSelection(),
-    );
+    // Add a click event listener to the outer view to ensure the selection is synchronized
+    // and we can blur the codemirror editor, so we cannot edit it
+    this._outerView.dom.addEventListener("click", (event) => {
+      const clickInside = this.cm.dom.contains(event.target as Node);
+      if (!clickInside) {
+          // Ensure the selection is synchronized from ProseMirror to codemirror
+          this.forwardSelection();
+          // Clear the selection by setting the anchor and head to the same position
+          // Then blurring the contentDOM to ensure we cannot edit the codemirror editor
+          this.cm.dispatch({
+            selection: {
+              anchor: this.cm.state.selection.main.head,
+              head: this.cm.state.selection.main.head,
+            },
+          });
+          this.cm.contentDOM.blur();
+          CodeMirrorView.focused = null;
+      } 
+    });
+
   }
 
   /**
@@ -186,6 +207,7 @@ export class CodeMirrorView implements NodeView {
 
     if (!selection.eq(state.selection)) {
       this._outerView.dispatch(state.tr.setSelection(selection));
+      this._outerView.dispatchEvent
     }
 
     // Ensure only one cursor is active
@@ -371,7 +393,6 @@ export class CodeMirrorView implements NodeView {
   focus() {
     this.cm.focus();
     this.forwardSelection();
-    console.log("focused", this);
     CodeMirrorView.focused = this;
   }
 
