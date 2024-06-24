@@ -5,7 +5,10 @@ export { CoqParser, CoqMDParser, LeanParser, PureLeanParser };
 const CoqParser = new SimpleParser({
   text: [/\n\(\*\*/, /\*\)\n/],
   math: [/\$\$/, /\$\$/],
-  collapsible: [/\n\(\*<hint(?: title="(.*?)")?>\*\)\n/, /\n\(\*<\/hint>\*\)\n/],
+  collapsible: [
+    /\n\(\*<hint(?: title="(.*?)")?>\*\)\n/,
+    /\n\(\*<\/hint>\*\)\n/,
+  ],
   input: [/\n\(\*<input-area>\*\)\n/, /\n\(\*<\/input-area>\*\)\n/],
 });
 

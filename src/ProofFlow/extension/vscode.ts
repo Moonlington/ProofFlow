@@ -1,5 +1,5 @@
 import type { WebviewApi } from "vscode-webview";
-// RETRIEVED FROM https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/frameworks/hello-world-react-vite/webview-ui/src/utilities/vscode.ts 
+// RETRIEVED FROM https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/frameworks/hello-world-react-vite/webview-ui/src/utilities/vscode.ts
 /**
  * A utility wrapper around the acquireVsCodeApi() function, which enables
  * message passing and state management between the webview and extension
@@ -17,7 +17,7 @@ class VSCodeAPIWrapper {
     // context (i.e. VS Code development window or web browser)
     if (typeof acquireVsCodeApi === "function") {
       this.vsCodeApi = acquireVsCodeApi();
-    } 
+    }
   }
 
   /**
@@ -72,7 +72,7 @@ class VSCodeAPIWrapper {
       return newState;
     }
   }
-  
+
   public isVSCodeEnvironment(): boolean {
     return this.vsCodeApi !== undefined;
   }
