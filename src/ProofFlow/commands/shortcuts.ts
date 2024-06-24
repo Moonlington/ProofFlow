@@ -1,5 +1,4 @@
 import { EditorView } from "prosemirror-view";
-import { undo, redo } from "prosemirror-history";
 import { selectParentNode } from "prosemirror-commands";
 import {
   getCollapsibleInsertCommand,
@@ -85,10 +84,10 @@ export function applyGlobalKeyBindings(editorView: EditorView): () => void {
       proofFlow.saveFile();
     },
     'Ctrl+y': () => {
-      redo(editorView.state, editorView.dispatch);
+      proofFlow.customRedo();
     },
     'Ctrl+z': () => {
-      undo(editorView.state, editorView.dispatch);
+      proofFlow.customUndo();
     },
     'escape': () => {
       showOverlay(false);

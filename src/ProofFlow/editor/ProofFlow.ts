@@ -54,6 +54,8 @@ import { inputProof } from "../commands/helpers.ts";
 import { ProofFlowSaver } from "../fileHandlers/proofFlowSaver.ts";
 import { adjustLeftDivWidth, firefoxUsed } from "../../main.ts";
 import { LSPClientManager } from "../lspClient/lspClientManager.ts";
+import { undo, redo, undoDepth, redoDepth } from "prosemirror-history";
+import e from "express";
 // CSS
 
 export type ProofFlowOptions = {
@@ -72,6 +74,7 @@ export class ProofFlow {
     schema: ProofFlowSchema,
     plugins: ProofFlowPlugins,
   };
+  private _buttonBar?: ButtonBar; // The button bar for the editor
 
   private editorView: EditorView; // The view of the editor
 
@@ -104,6 +107,9 @@ export class ProofFlow {
 
   private lspClient?: LSPClientHandler;
   private lspManager?: LSPClientManager;
+
+  private undoTrackStack: Node[] = [];
+  private redoTrackStack: Node[] = [];
 
   /**
    * Represents the ProofFlow class.
@@ -181,8 +187,8 @@ export class ProofFlow {
     this.minimap = new Minimap();
 
     // Create the button bar and render it
-    const buttonBar = new ButtonBar(this._schema, editorView);
-    buttonBar.render(this._containerElem);
+    this._buttonBar = new ButtonBar(this._schema, editorView);
+    this._buttonBar.render(this._containerElem);
 
     return editorView;
   }
@@ -725,7 +731,163 @@ export class ProofFlow {
     }
   }
 
+  /**
+   * Switches the minimap on or off.
+   */
   public switchMinimap() {
     this.minimap?.switch();
+  }
+
+  /**
+   * Performs a custom undo action in the editor.
+   */
+  public customUndo() {
+    // If the last element in the undoTrackStack is the current undo depth
+    // Meaning the last element is one that should not have its own undo
+    // action, we pop it off and set extraUndo to true. To indicate that we
+    // need to undo one more step that actually should have an undo action.
+    let extraUndo = false;
+    if (
+      this.undoTrackStack[this.undoTrackStack.length - 1] ===
+      undoDepth(this.editorView.state)
+    ) {
+      this.undoTrackStack.pop();
+      extraUndo = true;
+    }
+
+    // If the redoStack is empty, clear the track for the redos.
+    if (redoDepth(this.editorView.state) === 0) {
+      this.redoTrackStack = [];
+    }
+
+    // The original undo action
+    undo(this.editorView.state, this.editorView.dispatch);
+
+    // Check if we have undos that do not deserve its own undo action
+    while (
+      this.undoTrackStack[this.undoTrackStack.length - 1] ===
+      undoDepth(this.editorView.state)
+    ) {
+      this.undoTrackStack.pop();
+      undo(this.editorView.state, this.editorView.dispatch);
+      this.addRedoTrack();
+    }
+
+    // If we have an extra undo action, we need to undo one more step
+    if (extraUndo) {
+      undo(this.editorView.state, this.editorView.dispatch);
+      this.addRedoTrack();
+    }
+  }
+
+  /**
+   * Performs a custom redo action in the editor.
+   */
+  public customRedo() {
+    // If the last element in the redoTrackStack is the current redo depth
+    // Meaning the last element is one that should not have its own redo
+    // action, we pop it off and set extraRedo to true. To indicate that we
+    // need to redo one more step that actually should have an redo action.
+    let extraRedo = false;
+    if (
+      this.redoTrackStack[this.redoTrackStack.length - 1] ===
+      redoDepth(this.editorView.state)
+    ) {
+      this.redoTrackStack.pop();
+      extraRedo = true;
+    }
+
+    // The original redo action
+    redo(this.editorView.state, this.editorView.dispatch);
+
+    // Check if we have redos that do not deserve its own redo action
+    while (
+      this.redoTrackStack[this.redoTrackStack.length - 1] ===
+      redoDepth(this.editorView.state)
+    ) {
+      this.redoTrackStack.pop();
+      redo(this.editorView.state, this.editorView.dispatch);
+      this.addUndoTrack();
+    }
+
+    // If we have an extra redo action, we need to redo one more step
+    if (extraRedo) {
+      redo(this.editorView.state, this.editorView.dispatch);
+      this.addRedoTrack();
+    }
+  }
+
+  /**
+   * Adds an undo track to the undo track stack.
+   * If the current undo depth is already in the stack, it will not be added again.
+   */
+  public addUndoTrack() {
+    const currenUndoDepth = undoDepth(this.getState());
+
+    // Ensure we do not add the same undo depth twice
+    if (this.undoTrackStack[this.undoTrackStack.length - 1] === currenUndoDepth)
+      return;
+    this.undoTrackStack.push(currenUndoDepth);
+  }
+
+  /**
+   * Adds a redo track to the redo track stack.
+   *
+   * @remarks
+   * This method adds the current redo depth to the redo track stack, ensuring that the same redo depth is not added twice.
+   */
+  public addRedoTrack() {
+    const currenRedoDepth = redoDepth(this.getState());
+
+    // Ensure we do not add the same redo depth twice
+    if (this.redoTrackStack[this.redoTrackStack.length - 1] === currenRedoDepth)
+      return;
+    this.redoTrackStack.push(currenRedoDepth);
+  }
+
+  public requestConfirm(question: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      // Button container showing below settings buttons, overlay over the editor
+      // When clicking outside or on no, do not reset, if clicking on yes, reset
+      const overlay = document.createElement("div");
+      overlay.className = "overlay";
+
+      const container = document.createElement("div");
+      container.className = "reset-confirm-container";
+      const message = document.createElement("p");
+      message.textContent = question;
+      container.appendChild(message);
+      const buttons = document.createElement("div");
+      buttons.className = "reset-confirm-buttons";
+      const yes = document.createElement("button");
+      yes.textContent = "Yes";
+      yes.onclick = () => {
+        overlay.remove();
+        resolve(true);
+      };
+      const no = document.createElement("button");
+      no.textContent = "No";
+      no.onclick = () => {
+        overlay.remove();
+        resolve(false);
+      };
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          overlay.remove();
+          resolve(false);
+        }
+      };
+      buttons.appendChild(yes);
+      buttons.appendChild(no);
+      container.appendChild(buttons);
+      overlay.appendChild(container);
+      document.getElementById("container")!.appendChild(overlay);
+    });
+  }
+
+  public resetButtonBar() {
+    this._buttonBar?.destroy();
+    this._buttonBar = new ButtonBar(this._schema, this.editorView);
+    this._buttonBar.render(this._containerElem);
   }
 }
