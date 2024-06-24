@@ -894,13 +894,13 @@ export class ProofFlow {
    */
   public deselectAll() {
     const tr = this.editorView.state.tr;
-        this.editorView.dispatch(
-          tr.setSelection(
-            new TextSelection(
-              this.editorView.state.doc.resolve(0),
-              this.editorView.state.doc.resolve(0),
-            ),
-          ),
-        );
+    this.editorView.dispatch(
+      tr.setSelection(
+        new TextSelection(
+          this.editorView.state.doc.resolve(0),
+          this.editorView.state.doc.resolve(0),
+        ),
+      ),
+    );
   }
 }

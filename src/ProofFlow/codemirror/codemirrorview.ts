@@ -163,31 +163,34 @@ export class CodeMirrorView implements NodeView {
     CodeMirrorView.instances.push(this);
 
     // Add a click event listener to the outer view to ensure the selection is synchronized
-    // and we can blur the codemirror editor, so we cannot edit it
-    this._outerView.dom.addEventListener("click", (event) => {
-      const clickInside = this.cm.dom.contains(event.target as Node);
-      if (!clickInside) {
-          // Ensure the selection is synchronized from ProseMirror to codemirror
-          this.forwardSelection();
-          // Clear the selection by setting the anchor and head to the same position
-          // Then blurring the contentDOM to ensure we cannot edit the codemirror editor
-          this.cm.dispatch({
-            selection: {
-              anchor: this.cm.state.selection.main.head,
-              head: this.cm.state.selection.main.head,
-            },
-          });
-          this.cm.contentDOM.blur();
-          CodeMirrorView.focused = null;
-      } else {
-        // Check if we clicked inside of a locked codemirror editor
-        // if so, we deselect all nodes, esnuring we cannot edit anything
+    // and we can blur the CodeMirror editor, making it non-editable.
+    this._outerView.dom.addEventListener("click", (event: MouseEvent) => {
+      const clickedInsideCodeMirror = this.cm.dom.contains(
+        event.target as Node,
+      );
+
+      if (clickedInsideCodeMirror) {
+        // If we clicked inside a locked CodeMirror editor, deselect all nodes to prevent editing.
         if (this.cm.contentDOM.contentEditable === "false") {
           proofFlow.deselectAll();
         }
+        return;
       }
-    });
 
+      // Synchronize the selection from ProseMirror to CodeMirror.
+      this.forwardSelection();
+
+      // Clear the selection by setting the anchor and head to the same position,
+      // then blur the contentDOM to prevent editing.
+      this.cm.dispatch({
+        selection: {
+          anchor: this.cm.state.selection.main.head,
+          head: this.cm.state.selection.main.head,
+        },
+      });
+      this.cm.contentDOM.blur();
+      CodeMirrorView.focused = null;
+    });
   }
 
   /**
@@ -213,7 +216,7 @@ export class CodeMirrorView implements NodeView {
 
     if (!selection.eq(state.selection)) {
       this._outerView.dispatch(state.tr.setSelection(selection));
-      this._outerView.dispatchEvent
+      this._outerView.dispatchEvent;
     }
 
     // Ensure only one cursor is active
