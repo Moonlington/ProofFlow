@@ -190,6 +190,8 @@ class ProofFlowDocument {
 
   public uri: string;
 
+  public documentProgressed: boolean = false;
+
   constructor(uri: string, areas: Area[]) {
     this.uri = uri;
     this.areas = areas;

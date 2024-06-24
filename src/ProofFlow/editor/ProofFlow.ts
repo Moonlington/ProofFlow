@@ -292,6 +292,10 @@ export class ProofFlow {
     this.setProofColors();
   }
 
+  public handleProgress() {
+    this.pfDocument.documentProgressed = true;
+  }
+
   private setProofColors() {
     // Previous input area node and its offset
     let prevInput: Node | null = null;
@@ -393,6 +397,7 @@ export class ProofFlow {
       return;
     }
     this.lspClient.setDiagnosticsHandler(this.handleDiagnostics.bind(this));
+    this.lspClient.setDocumentProgressHandler(this.handleProgress.bind(this));
     await this.lspClient.initialize();
     this.lspClient.initialized();
     this.lspClient.didOpen(pfDocument);

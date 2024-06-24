@@ -3258,3 +3258,8 @@ export interface DiagnosticsMessage {
   type: string;
   data: DiagnosticsMessageData; // Replace 'any' with a more specific type if you have one
 }
+
+export interface DocumentProgressMessage {
+  type: string;
+  data: string;
+}

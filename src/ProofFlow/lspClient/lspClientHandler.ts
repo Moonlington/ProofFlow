@@ -3,7 +3,7 @@ import {
   ProofFlowDocument,
   Range,
 } from "../editor/ProofFlowDocument.ts";
-import { diagnosticsHandler } from "./ProofFlowLSPClient.ts";
+import { diagnosticsHandler, documentProgressHandler } from "./ProofFlowLSPClient.ts";
 import {
   CompletionItem,
   CompletionList,
@@ -22,6 +22,7 @@ export interface LSPClientHandler {
   exit(): void;
 
   setDiagnosticsHandler(handler: diagnosticsHandler): void;
+  setDocumentProgressHandler(handler: documentProgressHandler): void;
 
   // Document Synchronization
   didOpen(pfDocument: ProofFlowDocument): void;
