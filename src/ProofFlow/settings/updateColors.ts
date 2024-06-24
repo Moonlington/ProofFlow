@@ -16,6 +16,7 @@ const variables: string[] = [
   "hover",
   "text-color",
   "button-text-color",
+  "background-color",
 ];
 
 /**
@@ -34,6 +35,9 @@ export function updateColors(newSchema: string, darkMode: boolean): void {
   // Colors that need to be inverted in dark mode
   const toBeInverted = ["primary-color", "text-color"];
 
+  // Update the background color of the overlay
+  colors.push(darkMode ? "#0000000A" : "#FFFFFF0A");
+
   // Update the colors
   variables.forEach((element, index) => {
     let color;
@@ -49,11 +53,6 @@ export function updateColors(newSchema: string, darkMode: boolean): void {
       .getElementById("ProofFlowEditor")!
       .style.setProperty(`--${element}`, color);
   });
-
-  // Update the background color of the settings overlay
-  document.getElementById("settings")!.style.backgroundColor = darkMode
-    ? "#FFFFFF0A"
-    : "#0000000A";
 }
 
 /**
