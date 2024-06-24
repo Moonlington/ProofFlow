@@ -151,16 +151,8 @@ export class ButtonBar {
         proofFlow.getUserMode() == UserMode.Student &&
         container?.type.name !== "input_content"
       ) {
-        // if it did, make a transaction to move it away from all content
-        const tr = this._editorView.state.tr;
-        this._editorView.dispatch(
-          tr.setSelection(
-            new TextSelection(
-              this._editorView.state.doc.resolve(0),
-              this._editorView.state.doc.resolve(0),
-            ),
-          ),
-        );
+        // if it did, deselect all nodes to ensure the user can't interact with the content
+        proofFlow.deselectAll();
       }
     };
 

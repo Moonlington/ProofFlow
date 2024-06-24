@@ -179,7 +179,13 @@ export class CodeMirrorView implements NodeView {
           });
           this.cm.contentDOM.blur();
           CodeMirrorView.focused = null;
-      } 
+      } else {
+        // Check if we clicked inside of a locked codemirror editor
+        // if so, we deselect all nodes, esnuring we cannot edit anything
+        if (this.cm.contentDOM.contentEditable === "false") {
+          proofFlow.deselectAll();
+        }
+      }
     });
 
   }
