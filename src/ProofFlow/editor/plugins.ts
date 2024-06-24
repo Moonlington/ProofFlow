@@ -20,7 +20,7 @@ import { collapsibleAreaPlugin } from "../plugins/plugin-collapsible.ts";
 import { markdownPlugin } from "../plugins/plugin-markdown.ts";
 import { arrowKeyHandler } from "../commands/arrowKeyHandler.ts";
 import { preventDropPlugin } from "../plugins/prevent-drop.ts";
-import {preventEmptyNodeSelection} from "../plugins/plugin-emptySelection.ts";
+import { preventEmptyNodeSelection } from "../plugins/plugin-emptySelection.ts";
 
 // Create input rules using default regex
 const blockMathInputRule = makeBlockMathInputRule(
