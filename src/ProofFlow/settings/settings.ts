@@ -30,6 +30,12 @@ export class SettingsOverlay {
     overlay.className = "overlay";
     overlay.id = "settings";
     overlay.style.display = "";
+    
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        this.showOverlay(false);
+      }
+    });
 
     // Get all the settings
     const popup = this.settingsMenu();
