@@ -223,7 +223,7 @@ export const markdownPlugin = new Plugin({
       view.dispatch(trans);
 
       proofFlow.addUndoTrack();
-      
+
       // If we switch while inside of student Mode, we need to lock the editing of the new nodes
       if (locked) {
         lockEditing(true);

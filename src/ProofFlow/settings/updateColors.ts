@@ -16,7 +16,7 @@ const variables: string[] = [
   "hover",
   "text-color",
   "button-text-color",
-  "background-color"
+  "background-color",
 ];
 
 /**
