@@ -19,6 +19,7 @@
     "@benrbray/prosemirror-math": "^1.0.0",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/matchbrackets": "^0.19.4",
+    "@types/vscode-webview": "^1.57.5",
     "axios": "^1.7.2",
     "codemirror": "^6.0.1",
     "express": "^4.19.2",

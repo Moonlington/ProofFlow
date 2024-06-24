@@ -51,8 +51,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
   private fileType: ProofFlowLSPClientFileType;
 
   private lspPath: string;
-  
-  private lastPfDocument?: ProofFlowDocument
+
+  private lastPfDocument?: ProofFlowDocument;
 
   constructor(
     wsUrl: string,
@@ -75,9 +75,9 @@ class ProofFlowLSPClient implements LSPClientHandler {
       const message: LSPServerResponse<string> = JSON.parse(event.data);
       if (message.type === "reconnect") {
         console.log("Received reconnect message");
-        await this.initialize()
-        this.initialized()
-        if (this.lastPfDocument) this.didOpen(this.lastPfDocument)
+        await this.initialize();
+        this.initialized();
+        if (this.lastPfDocument) this.didOpen(this.lastPfDocument);
       }
     });
   }
