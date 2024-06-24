@@ -30,8 +30,6 @@ export const arrowKeyHandler = (
       return true;
     }
 
-
-
     const containingNode = getContainingNode(selection);
     const inInput = containingNode?.type.name === "input_content";
 
