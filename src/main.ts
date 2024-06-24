@@ -11,9 +11,9 @@ import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
 import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
 import { WebApplicationSaver } from "./ProofFlow/fileHandlers/webApplicationSaver.ts";
 import { WebApplicationLSPManager } from "./ProofFlow/lspClient/webApplicationManager.ts";
-import { isVSCodeEnvironment } from "./ProofFlow/commands/helpers.ts";
 import { ProofFlowSaver } from "./ProofFlow/fileHandlers/proofFlowSaver.ts";
 import { VSCodeSaver } from "./ProofFlow/fileHandlers/vscodeSaver.ts";
+import { vscode } from "./ProofFlow/extension/vscode.ts";
 const app = document.createElement("div");
 app.id = "app";
 
@@ -32,7 +32,7 @@ container.appendChild(editor);
 
 // Check if we are in a VSCode Extension Environment; base filesaver on that
 let fileSaver: ProofFlowSaver;
-if (isVSCodeEnvironment()) {
+if (vscode.isVSCodeEnvironment()) {
   console.log("Running in VSCode Extension Environment");
   fileSaver = new VSCodeSaver();
 } else {

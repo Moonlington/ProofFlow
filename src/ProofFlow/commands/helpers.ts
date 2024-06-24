@@ -331,11 +331,3 @@ export function toggleLineNumbers() {
   }
   visibleLine = !visibleLine;
 }
-
-/**
- * Function to check if the current environment is a VSCode extension.
- * @returns A boolean indicating whether the current environment is a VSCode extension.
- */
-export function isVSCodeEnvironment(): boolean {
-  return vscode.isVSCodeEnvironment();
-}
