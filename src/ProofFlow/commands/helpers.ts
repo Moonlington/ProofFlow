@@ -1,4 +1,4 @@
-import { NodeType, Node, Schema, Fragment } from "prosemirror-model";
+import { NodeType, Node, Schema } from "prosemirror-model";
 import {
   EditorState,
   NodeSelection,
@@ -12,7 +12,6 @@ import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
 import { ProofStatus } from "../editor/proofFlowSchema";
 import { getNextAreaId } from "../editor/ProofFlowDocument";
-import { mathSerializer } from "@benrbray/prosemirror-math";
 
 /**
  * Represents the possible places where an insertion can occur.

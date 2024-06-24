@@ -202,3 +202,7 @@ class SimpleParser implements Parser {
     );
   }
 }
+
+export {
+  AreaType
+}

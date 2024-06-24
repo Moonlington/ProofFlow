@@ -65,3 +65,10 @@ export function cmdInsertMath(
     mathNodeType,
   );
 }
+
+export const _private = {
+  getInsertionFunction,
+  cmdInsertMath,
+  cmdInsertMarkdown,
+  cmdInsertCode
+};
