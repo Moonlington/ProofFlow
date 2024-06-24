@@ -92,7 +92,7 @@ export const markdownPlugin = new Plugin({
             let newChildNode: Node = node;
             let bIsClickedCollapsibleNode: boolean = isClickedNode(
               node,
-              collapsibleParentPos + pos,
+              collapsibleParentPos + pos + 1,
               clickedPos,
             );
 
@@ -151,7 +151,7 @@ export const markdownPlugin = new Plugin({
             let newChildNode: Node = node;
             let bIsClickedInputNode: boolean = isClickedNode(
               node,
-              inputParentPos + pos,
+              inputParentPos + pos + 1,
               clickedPos,
             );
 
