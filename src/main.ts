@@ -75,7 +75,14 @@ window.addEventListener("load", adjustLeftDivWidth);
  * Reads a single file from the input event and processes it.
  * @param e - The input event.
  */
-export function readSingleFile(e: Event) {
+export async function readSingleFile(e: Event) {
+  // Wait for user confirmation
+  const confirmed = await proofFlow.requestConfirm("Are you sure you want to load a new file, this will delete the current instance.");
+  if (!confirmed) {
+    proofFlow.resetButtonBar();
+    return;
+  }
+
   console.log("Reading file...");
   // Get the file list from the input event and check if it's empty
   if (!e.target) return;
@@ -95,11 +102,9 @@ export function readSingleFile(e: Event) {
   reader.readAsText(file, "UTF-8");
 
   // Event listener to process the file content
-reader.onloadend = async (readerEvent: ProgressEvent<FileReader>) => {
-  // Wait for user confirmation
-  const confirmed = await proofFlow.requestConfirm("Are you sure you want to load a new file, this will delete the current instance.");
+  reader.onloadend = (readerEvent: ProgressEvent<FileReader>) => {
 
-  if (typeof readerEvent?.target?.result === "string" && confirmed) {
+  if (typeof readerEvent?.target?.result === "string") {
     // Get the result from the reader event
     const result = readerEvent.target.result.toString();
     proofFlow.reset();

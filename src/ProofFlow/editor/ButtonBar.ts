@@ -307,4 +307,8 @@ export class ButtonBar {
     button.classList.add("editor-button");
     this._cellBar.appendChild(button);
   }
+
+  public destroy() {
+    this._bar.remove();
+  }
 }

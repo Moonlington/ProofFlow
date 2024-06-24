@@ -74,6 +74,7 @@ export class ProofFlow {
     schema: ProofFlowSchema,
     plugins: ProofFlowPlugins,
   };
+  private _buttonBar?: ButtonBar; // The button bar for the editor
 
   private editorView: EditorView; // The view of the editor
 
@@ -186,8 +187,8 @@ export class ProofFlow {
     this.minimap = new Minimap();
 
     // Create the button bar and render it
-    const buttonBar = new ButtonBar(this._schema, editorView);
-    buttonBar.render(this._containerElem);
+    this._buttonBar = new ButtonBar(this._schema, editorView);
+    this._buttonBar.render(this._containerElem);
 
     return editorView;
   }
@@ -864,4 +865,9 @@ export class ProofFlow {
     });
   }
   
+  public resetButtonBar() {
+    this._buttonBar?.destroy();
+    this._buttonBar = new ButtonBar(this._schema, this.editorView);
+    this._buttonBar.render(this._containerElem);
+  }
 }
