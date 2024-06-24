@@ -1,4 +1,4 @@
-import { Plugin } from "prosemirror-state";
+import { NodeSelection, Plugin, Transaction } from "prosemirror-state";
 import { Node } from "prosemirror-model";
 import { TextSelection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -12,6 +12,7 @@ import {
 import { ProofFlowSchema } from "../editor/proofFlowSchema.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode, lockEditing } from "../UserMode/userMode.ts";
+
 
 /**
  * Plugin that handles the conversion between markdown and rendered markdown nodes.
@@ -28,7 +29,51 @@ import { UserMode, lockEditing } from "../UserMode/userMode.ts";
  *    and thus calculating the exact character the user clicks at is not possible
  */
 export const markdownPlugin = new Plugin({
-  props: {
+  appendTransaction(transactions, oldState, newState) {
+      let trans = null;
+      transactions.forEach((trx) => {
+
+        // ============== Debugging ==============
+        console.log("Transaction: ", trx, trx.selectionSet);
+        console.log("Old state: ", oldState.selection);
+        console.log("New state: ", newState.selection);
+        // ============== Debugging ==============
+
+        let oldSelection = oldState.selection;
+        let newSelection = newState.selection;
+
+        let oldNode = undefined;
+        let newNode = undefined;
+        
+        if (newSelection instanceof NodeSelection) {
+          newNode = newSelection.node;
+          console.log("Node selection: ", newNode.type.name);
+        } else if (newSelection instanceof TextSelection) {
+          let resolvedPos = newSelection.$from;
+          newNode = resolvedPos.node(resolvedPos.depth);
+          console.log("New node: ", newNode.type.name, newNode.attrs.id);
+        }
+
+        if (oldSelection instanceof NodeSelection) {
+          oldNode = oldSelection.node;
+        } else if (oldSelection instanceof TextSelection) {
+          let resolvedPos = oldSelection.$from;
+          oldNode = resolvedPos.node(resolvedPos.depth);
+          console.log("Old node: ", oldNode.type.name, oldNode.attrs.id);
+        }
+
+        if (oldNode !== undefined && newNode !== undefined && oldNode.attrs.id === newNode.attrs.id) {
+          console.log("Same node clicked");
+          return;
+        } 
+
+        if (newNode !== undefined && newNode.type.name === "markdown") {
+          let replacementNode = markdownToRendered(newNode, ProofFlowSchema);
+        }
+      });
+      return trans;
+  },
+  /*props: {
     handleClickOn(view, pos, node, nodePos, _event, direct) {
       //if (node.type.name === undefined || !direct) return; // If the node being clicked is not a valid node or the click is not a user action, return
       //transformNodes(view, pos, nodePos);
@@ -230,29 +275,32 @@ function transformNodes(view: EditorView, pos: number, nodePos: number, node: No
     trans.setSelection(TextSelection.near(resolvedPos, -1));
   };
 
-  // Allows to get into math nodes
-  console.log(correctPos)
-  if (node.type.name === "math_display") {
-    resolveAndSetSelection(correctPos);
-  } else {
-    const newResolvedPos = trans.doc.resolve(correctPos);
-    const newContainerName = newResolvedPos.node(newResolvedPos.depth - 1) === undefined ? "" : newResolvedPos.node(newResolvedPos.depth - 1)
-      .type.name;
-    if (
-      newContainerName !== "input_content" &&
-      proofFlow.getUserMode() === UserMode.Student
-    ) {
-      // Prevents bug for escaping collapsible areas
-      resolveAndSetSelection(pos);
-    } else {
-      resolveAndSetSelection(correctPos);
-    }
-  }
+      // Allows to get into math nodes
+      console.log("Node type: ", node.type.name, correctPos);
+      if (node.type.name === "math_display") {
+        resolveAndSetSelection(correctPos);
+      } else {
+        const newResolvedPos = trans.doc.resolve(correctPos);
+        const newContainerName = newResolvedPos.node(newResolvedPos.depth - 1)
+          .type.name;
+        if (
+          newContainerName !== "input_content" &&
+          proofFlow.getUserMode() === UserMode.Student
+        ) {
+          // Prevents bug for escaping collapsible areas
+          resolveAndSetSelection(pos);
+        } else {
+          resolveAndSetSelection(correctPos);
+        }
+      }
 
   view.dispatch(trans);
 
-  // If we switch while inside of student Mode, we need to lock the editing of the new nodes
-  if (locked) {
-    lockEditing(true);
-  }
-}
+      // If we switch while inside of student Mode, we need to lock the editing of the new nodes
+      if (locked) {
+        lockEditing(true);
+      }
+    },
+  },*/
+});
+
