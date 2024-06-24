@@ -22,9 +22,7 @@ function getInsertionFunction(place: InsertionPlace) {
  * @param insertionPlace - The place where the code should be inserted.
  * @returns The command to insert the code.
  */
-export function cmdInsertCode(
-  insertionPlace: InsertionPlace,
-): Command {
+export function cmdInsertCode(insertionPlace: InsertionPlace): Command {
   const codeblockNodeType = ProofFlowSchema.nodes["code_mirror"];
   return getCodeInsertCommand(
     getInsertionFunction(insertionPlace),
@@ -38,9 +36,7 @@ export function cmdInsertCode(
  * @param insertionPlace - The insertion place where the markdown node should be inserted.
  * @returns The command object representing the insertion of the markdown node.
  */
-export function cmdInsertMarkdown(
-  insertionPlace: InsertionPlace,
-): Command {
+export function cmdInsertMarkdown(insertionPlace: InsertionPlace): Command {
   const mdNodeType = ProofFlowSchema.nodes["markdown"];
   return getMdInsertCommand(getInsertionFunction(insertionPlace), mdNodeType);
 }
@@ -51,9 +47,7 @@ export function cmdInsertMarkdown(
  * @param insertionPlace - The insertion place where the math node should be inserted.
  * @returns The command to insert the math node.
  */
-export function cmdInsertMath(
-  insertionPlace: InsertionPlace,
-): Command {
+export function cmdInsertMath(insertionPlace: InsertionPlace): Command {
   const mathNodeType = ProofFlowSchema.nodes["math_display"];
   return getMathInsertCommand(
     getInsertionFunction(insertionPlace),

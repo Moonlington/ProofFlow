@@ -347,7 +347,10 @@ export class ProofFlow {
         // Bug in Firefox that selectionchange is called when it is not supposed to
         // Firefox is the only browser that handles selectionchange events:
         // https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/selectionchange_event
-        setTimeout(focusedInstance.forceforwardSelection.bind(focusedInstance), 50);
+        setTimeout(
+          focusedInstance.forceforwardSelection.bind(focusedInstance),
+          50,
+        );
       } else {
         focusedInstance.forceforwardSelection();
       }

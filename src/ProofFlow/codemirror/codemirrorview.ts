@@ -148,8 +148,8 @@ export class CodeMirrorView implements NodeView {
             key: "Ctrl-Shift-m", // Stop linter from calling next diagnostics
             run: () => {
               return true;
-            }
-          }
+            },
+          },
         ]),
         cmExtensions,
         tabKeymap,
@@ -195,7 +195,10 @@ export class CodeMirrorView implements NodeView {
     }
 
     // Ensure only one cursor is active
-    if (CodeMirrorView.focused instanceof CodeMirrorView && CodeMirrorView.focused != this) {
+    if (
+      CodeMirrorView.focused instanceof CodeMirrorView &&
+      CodeMirrorView.focused != this
+    ) {
       CodeMirrorView.focused.blurInstance();
     }
 

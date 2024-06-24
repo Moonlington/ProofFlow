@@ -142,7 +142,7 @@ export function insertUnder(
     // If the selection is a text selection, insert the specified node types under the current selection
     const textSel = sel as TextSelection;
     const to = textSel.$from.end();
-    
+
     // Check if the to point is valid
     if (to > state.doc.nodeSize) {
       console.log("Invalid insertion point");

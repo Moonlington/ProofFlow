@@ -30,7 +30,8 @@ const editor = document.createElement("div");
 editor.id = "editor";
 container.appendChild(editor);
 
-export let firefoxUsed = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+export let firefoxUsed =
+  navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
 
 // Check if we are in a VSCode Extension Environment; base filesaver on that
 let fileSaver: ProofFlowSaver;
