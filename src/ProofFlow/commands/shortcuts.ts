@@ -18,11 +18,10 @@ export function applyGlobalKeyBindings(editorView: EditorView): () => void {
   let globalKeyBindings = (event: KeyboardEvent) => {
     if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
-      undo(editorView.state, editorView.dispatch);
-      console.log("undo");
+      proofFlow.customUndo();
     } else if (event.key === "y" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
-      redo(editorView.state, editorView.dispatch);
+      proofFlow.customRedo();
     } else if (event.key === "p" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       selectParentNode(editorView.state, editorView.dispatch);
