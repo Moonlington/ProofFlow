@@ -55,7 +55,6 @@ import { ProofFlowSaver } from "../fileHandlers/proofFlowSaver.ts";
 import { adjustLeftDivWidth } from "../../main.ts";
 import { LSPClientManager } from "../lspClient/lspClientManager.ts";
 import { undo, redo, undoDepth, redoDepth } from "prosemirror-history";
-import e from "express";
 // CSS
 
 export type ProofFlowOptions = {
