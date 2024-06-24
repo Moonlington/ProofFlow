@@ -142,7 +142,6 @@ export class ButtonBar {
         );
         tr = closeHistory(tr);
         this._editorView.dispatch(tr);
-          
       }
 
       // get the node containing the selection check if the selection moved outside of input when it shouldn't
@@ -220,7 +219,11 @@ export class ButtonBar {
       {
         symbol: "&#x21bb;",
         cmd: async () => {
-          if (await proofFlow.requestConfirm("Are you sure you want to clear the file?")) {
+          if (
+            await proofFlow.requestConfirm(
+              "Are you sure you want to clear the file?",
+            )
+          ) {
             proofFlow.reset();
             proofFlow.setFileName("File.mv");
           }

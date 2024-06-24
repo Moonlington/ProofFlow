@@ -740,7 +740,10 @@ export class ProofFlow {
     // action, we pop it off and set extraUndo to true. To indicate that we
     // need to undo one more step that actually should have an undo action.
     let extraUndo = false;
-    if (this.undoTrackStack[this.undoTrackStack.length - 1] === undoDepth(this.editorView.state)) {
+    if (
+      this.undoTrackStack[this.undoTrackStack.length - 1] ===
+      undoDepth(this.editorView.state)
+    ) {
       this.undoTrackStack.pop();
       extraUndo = true;
     }
@@ -749,12 +752,15 @@ export class ProofFlow {
     if (redoDepth(this.editorView.state) === 0) {
       this.redoTrackStack = [];
     }
-    
+
     // The original undo action
     undo(this.editorView.state, this.editorView.dispatch);
 
     // Check if we have undos that do not deserve its own undo action
-    while (this.undoTrackStack[this.undoTrackStack.length - 1] === undoDepth(this.editorView.state)) {
+    while (
+      this.undoTrackStack[this.undoTrackStack.length - 1] ===
+      undoDepth(this.editorView.state)
+    ) {
       this.undoTrackStack.pop();
       undo(this.editorView.state, this.editorView.dispatch);
       this.addRedoTrack();
@@ -776,7 +782,10 @@ export class ProofFlow {
     // action, we pop it off and set extraRedo to true. To indicate that we
     // need to redo one more step that actually should have an redo action.
     let extraRedo = false;
-    if (this.redoTrackStack[this.redoTrackStack.length - 1] === redoDepth(this.editorView.state)) {
+    if (
+      this.redoTrackStack[this.redoTrackStack.length - 1] ===
+      redoDepth(this.editorView.state)
+    ) {
       this.redoTrackStack.pop();
       extraRedo = true;
     }
@@ -785,7 +794,10 @@ export class ProofFlow {
     redo(this.editorView.state, this.editorView.dispatch);
 
     // Check if we have redos that do not deserve its own redo action
-    while (this.redoTrackStack[this.redoTrackStack.length - 1] === redoDepth(this.editorView.state)) {
+    while (
+      this.redoTrackStack[this.redoTrackStack.length - 1] ===
+      redoDepth(this.editorView.state)
+    ) {
       this.redoTrackStack.pop();
       redo(this.editorView.state, this.editorView.dispatch);
       this.addUndoTrack();
@@ -806,13 +818,14 @@ export class ProofFlow {
     const currenUndoDepth = undoDepth(this.getState());
 
     // Ensure we do not add the same undo depth twice
-    if (this.undoTrackStack[this.undoTrackStack.length - 1] === currenUndoDepth) return;
+    if (this.undoTrackStack[this.undoTrackStack.length - 1] === currenUndoDepth)
+      return;
     this.undoTrackStack.push(currenUndoDepth);
   }
 
   /**
    * Adds a redo track to the redo track stack.
-   * 
+   *
    * @remarks
    * This method adds the current redo depth to the redo track stack, ensuring that the same redo depth is not added twice.
    */
@@ -820,10 +833,10 @@ export class ProofFlow {
     const currenRedoDepth = redoDepth(this.getState());
 
     // Ensure we do not add the same redo depth twice
-    if (this.redoTrackStack[this.redoTrackStack.length - 1] === currenRedoDepth) return;
+    if (this.redoTrackStack[this.redoTrackStack.length - 1] === currenRedoDepth)
+      return;
     this.redoTrackStack.push(currenRedoDepth);
   }
-
 
   public requestConfirm(question: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
@@ -831,7 +844,7 @@ export class ProofFlow {
       // When clicking outside or on no, do not reset, if clicking on yes, reset
       const overlay = document.createElement("div");
       overlay.className = "overlay";
-  
+
       const container = document.createElement("div");
       container.className = "reset-confirm-container";
       const message = document.createElement("p");
@@ -856,7 +869,7 @@ export class ProofFlow {
           overlay.remove();
           resolve(false);
         }
-      }
+      };
       buttons.appendChild(yes);
       buttons.appendChild(no);
       container.appendChild(buttons);
@@ -864,7 +877,7 @@ export class ProofFlow {
       document.getElementById("container")!.appendChild(overlay);
     });
   }
-  
+
   public resetButtonBar() {
     this._buttonBar?.destroy();
     this._buttonBar = new ButtonBar(this._schema, this.editorView);

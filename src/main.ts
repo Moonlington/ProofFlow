@@ -77,7 +77,9 @@ window.addEventListener("load", adjustLeftDivWidth);
  */
 export async function readSingleFile(e: Event) {
   // Wait for user confirmation
-  const confirmed = await proofFlow.requestConfirm("Are you sure you want to load a new file, this will delete the current instance.");
+  const confirmed = await proofFlow.requestConfirm(
+    "Are you sure you want to load a new file, this will delete the current instance.",
+  );
   if (!confirmed) {
     proofFlow.resetButtonBar();
     return;
@@ -103,13 +105,12 @@ export async function readSingleFile(e: Event) {
 
   // Event listener to process the file content
   reader.onloadend = (readerEvent: ProgressEvent<FileReader>) => {
-
-  if (typeof readerEvent?.target?.result === "string") {
-    // Get the result from the reader event
-    const result = readerEvent.target.result.toString();
-    proofFlow.reset();
-    proofFlow.setFileName(file.name);
-    proofFlow.openFile(result, fileType);
-  }
-};
+    if (typeof readerEvent?.target?.result === "string") {
+      // Get the result from the reader event
+      const result = readerEvent.target.result.toString();
+      proofFlow.reset();
+      proofFlow.setFileName(file.name);
+      proofFlow.openFile(result, fileType);
+    }
+  };
 }
