@@ -98,7 +98,6 @@ export function applyGlobalKeyBindings(editorView: EditorView): () => void {
 
   let globalKeyBindings = (event: KeyboardEvent) => {
     const keyCombination = getKeyCombination(event);
-    console.log(keyCombination);
     const action = keyBindings[keyCombination];
     if (action) {
       event.preventDefault();

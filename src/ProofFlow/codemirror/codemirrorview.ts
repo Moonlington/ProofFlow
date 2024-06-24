@@ -144,6 +144,12 @@ export class CodeMirrorView implements NodeView {
               return false;
             },
           },
+          {
+            key: "Ctrl-Shift-m", // Stop linter from calling next diagnostics
+            run: () => {
+              return true;
+            }
+          }
         ]),
         cmExtensions,
         tabKeymap,
