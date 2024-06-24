@@ -30,11 +30,13 @@ import { UserMode, lockEditing } from "../UserMode/userMode.ts";
  */
 export const markdownPlugin = new Plugin({
   appendTransaction(transactions, oldState, newState) {
-      let trans = null;
-      transactions.forEach((trx) => {
+      let trans = newState.tr;
+      let sameNode = false;
+
+
 
         // ============== Debugging ==============
-        console.log("Transaction: ", trx, trx.selectionSet);
+        //console.log("Transaction: ", trx, trx.selectionSet);
         console.log("Old state: ", oldState.selection);
         console.log("New state: ", newState.selection);
         // ============== Debugging ==============
@@ -44,34 +46,89 @@ export const markdownPlugin = new Plugin({
 
         let oldNode = undefined;
         let newNode = undefined;
-        
+        let resolvedPosOldNode = oldSelection.$anchor; // Get the resolved position of the old node
+        let resolvedPosNewNode = newSelection.$head; // Get the resolved position of the new node
+
+        console.log("DOC SIZE new", newState.doc.nodeSize, " OLD ", oldState.doc.nodeSize)
+        // ==========================================================
+        // ======== PART: Handling the new node =====================
+        // ==========================================================
+
+        // ======== Case: Node Selection ========
         if (newSelection instanceof NodeSelection) {
           newNode = newSelection.node;
           console.log("Node selection: ", newNode.type.name);
-        } else if (newSelection instanceof TextSelection) {
-          let resolvedPos = newSelection.$from;
-          newNode = resolvedPos.node(resolvedPos.depth);
-          console.log("New node: ", newNode.type.name, newNode.attrs.id);
+        }     
+        // ======== Case: Text Selection ========
+        else if (newSelection instanceof TextSelection) {
+          let index = resolvedPosNewNode.depth;
+
+          // ======== FUNCTION: Get the lowest level area node that the selection is part of ========
+          for (let i = resolvedPosNewNode.depth; i > 0; i--) {
+            console.log("Node at depth ", i, resolvedPosNewNode.node(i).type.name);
+            if (highLevelCells.includes(resolvedPosNewNode.node(i).type.name)) {
+              console.log("Found node: ", resolvedPosNewNode.node(i).type.name);
+              index = i;
+              break;
+            }
+          }
+
+          newNode = resolvedPosNewNode.node(index); // The lowest level area node that the selection is part of
+          console.log("New node: ", newNode.type.name, newNode.attrs.id)
         }
 
+        if (newNode !== undefined && newNode.type.name === "markdown_rendered") {
+          let startOfNewNode = resolvedPosNewNode.start(resolvedPosNewNode.depth) - 2; // -2 offset to get the correct position
+          console.log(startOfNewNode)
+          let endOfNewNode = startOfNewNode + newNode.nodeSize;
+          let replacementNode = renderedToMarkdown(newNode, ProofFlowSchema);
+          console.log("new node rep pos: ", startOfNewNode, endOfNewNode)
+          trans.replaceWith(startOfNewNode, endOfNewNode, replacementNode);
+        }
+        // ==========================================================
+        // ================= PART: Handling the old node ============
+        // ==========================================================
+
+        // ======== Case: Node Selection ========
         if (oldSelection instanceof NodeSelection) {
           oldNode = oldSelection.node;
-        } else if (oldSelection instanceof TextSelection) {
-          let resolvedPos = oldSelection.$from;
-          oldNode = resolvedPos.node(resolvedPos.depth);
-          console.log("Old node: ", oldNode.type.name, oldNode.attrs.id);
-        }
-
-        if (oldNode !== undefined && newNode !== undefined && oldNode.attrs.id === newNode.attrs.id) {
-          console.log("Same node clicked");
-          return;
         } 
+        // ======== Case: Text Selection ========
+        else if (oldSelection instanceof TextSelection) {
+          let index = resolvedPosOldNode.depth; // Get the depth of the resolved position
 
-        if (newNode !== undefined && newNode.type.name === "markdown") {
-          let replacementNode = markdownToRendered(newNode, ProofFlowSchema);
+          // ======== FUNCTION: Get the lowest level area node that the selection is part of ========
+          for (let i = resolvedPosOldNode.depth; i > 0; i--) {
+            if (highLevelCells.includes(resolvedPosOldNode.node(i).type.name)) {
+              index = i;
+              break;
+            }
+          }
+
+          oldNode = resolvedPosOldNode.node(index); // The lowest level area node that the selection is part of
+          console.log("Old node: ", oldNode.type.name, oldNode.attrs.id)
         }
-      });
-      return trans;
+
+        // ======== FUNCTION: If the old node was a markdown node, replace it with rendered markdown ========
+        if (oldNode !== undefined && oldNode.type.name === "markdown") {       
+          let startOfOldNode = resolvedPosOldNode.start(resolvedPosOldNode.depth) - 1; // -1 offset to get the correct position
+          let endOfOldNode = startOfOldNode + oldNode.nodeSize;
+          let replacementNode = markdownToRendered(oldNode, ProofFlowSchema);
+          console.log("old node rep pos: ", startOfOldNode, endOfOldNode)
+          trans.replaceWith(startOfOldNode, endOfOldNode, replacementNode);
+        }
+        
+
+        // ======== FUNCTION: If we are still in the same node, do nothing ========
+        if (oldNode !== undefined && newNode !== undefined && oldNode.attrs.id === newNode.attrs.id) {
+
+          // ======== Debugging ==============
+          console.log("Same node clicked");
+          // ======== Debugging ==============
+          sameNode = true;
+        } 
+ 
+      return sameNode ? null : trans;
   },
   /*props: {
     handleClickOn(view, pos, node, nodePos, _event, direct) {

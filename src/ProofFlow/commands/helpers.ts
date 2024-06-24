@@ -331,3 +331,4 @@ export function toggleLineNumbers() {
   }
   visibleLine = !visibleLine;
 }
+
