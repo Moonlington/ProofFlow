@@ -144,6 +144,12 @@ export class CodeMirrorView implements NodeView {
               return false;
             },
           },
+          {
+            key: "Ctrl-Shift-m", // Stop linter from calling next diagnostics
+            run: () => {
+              return true;
+            },
+          },
         ]),
         cmExtensions,
         tabKeymap,
@@ -189,7 +195,10 @@ export class CodeMirrorView implements NodeView {
     }
 
     // Ensure only one cursor is active
-    if (CodeMirrorView.focused instanceof CodeMirrorView) {
+    if (
+      CodeMirrorView.focused instanceof CodeMirrorView &&
+      CodeMirrorView.focused != this
+    ) {
       CodeMirrorView.focused.blurInstance();
     }
 
@@ -402,11 +411,14 @@ export class CodeMirrorView implements NodeView {
   }
 
   checkQEDError(start: number) {
-    if (start != 0) return false;
-    return true;
+    let endFirstLine = this.cm.state.doc.line(1).length;
+    return start < endFirstLine;
   }
 
   handleDiagnostic(diag: LSPDiagnostic, start: number, end: number) {
+    // If the diagnostics gets handled when the doc does not have any
+    // characters at that position anymore, CodeMirror breaks
+    end = Math.min(end, this.cm.state.doc.length);
     let severity: Severity;
     switch (diag.severity) {
       case 1:

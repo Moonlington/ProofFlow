@@ -1,4 +1,3 @@
-import { Schema } from "prosemirror-model";
 import { Command } from "prosemirror-state";
 import { InsertionPlace, insertAbove, insertUnder } from "./helpers";
 import {
@@ -6,6 +5,7 @@ import {
   getMathInsertCommand,
   getMdInsertCommand,
 } from "./insert-commands";
+import { ProofFlowSchema } from "../editor/proofFlowSchema";
 
 /**
  * Returns the appropriate insertion function based on the specified place.
@@ -22,11 +22,8 @@ function getInsertionFunction(place: InsertionPlace) {
  * @param insertionPlace - The place where the code should be inserted.
  * @returns The command to insert the code.
  */
-export function cmdInsertCode(
-  schema: Schema,
-  insertionPlace: InsertionPlace,
-): Command {
-  const codeblockNodeType = schema.nodes["code_mirror"];
+export function cmdInsertCode(insertionPlace: InsertionPlace): Command {
+  const codeblockNodeType = ProofFlowSchema.nodes["code_mirror"];
   return getCodeInsertCommand(
     getInsertionFunction(insertionPlace),
     codeblockNodeType,
@@ -36,30 +33,22 @@ export function cmdInsertCode(
 /**
  * Inserts a markdown node into the schema at the specified insertion place.
  *
- * @param schema - The schema to insert the markdown node into.
  * @param insertionPlace - The insertion place where the markdown node should be inserted.
  * @returns The command object representing the insertion of the markdown node.
  */
-export function cmdInsertMarkdown(
-  schema: Schema,
-  insertionPlace: InsertionPlace,
-): Command {
-  const mdNodeType = schema.nodes["markdown"];
+export function cmdInsertMarkdown(insertionPlace: InsertionPlace): Command {
+  const mdNodeType = ProofFlowSchema.nodes["markdown"];
   return getMdInsertCommand(getInsertionFunction(insertionPlace), mdNodeType);
 }
 
 /**
  * Inserts a math node into the schema at the specified insertion place.
  *
- * @param schema - The schema to insert the math node into.
  * @param insertionPlace - The insertion place where the math node should be inserted.
  * @returns The command to insert the math node.
  */
-export function cmdInsertMath(
-  schema: Schema,
-  insertionPlace: InsertionPlace,
-): Command {
-  const mathNodeType = schema.nodes["math_display"];
+export function cmdInsertMath(insertionPlace: InsertionPlace): Command {
+  const mathNodeType = ProofFlowSchema.nodes["math_display"];
   return getMathInsertCommand(
     getInsertionFunction(insertionPlace),
     mathNodeType,

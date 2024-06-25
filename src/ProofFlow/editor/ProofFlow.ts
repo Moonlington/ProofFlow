@@ -52,7 +52,7 @@ import { markdownToRendered } from "../commands/helpers.ts";
 import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
 import { inputProof } from "../commands/helpers.ts";
 import { ProofFlowSaver } from "../fileHandlers/proofFlowSaver.ts";
-import { adjustLeftDivWidth } from "../../main.ts";
+import { adjustLeftDivWidth, firefoxUsed } from "../../main.ts";
 import { LSPClientManager } from "../lspClient/lspClientManager.ts";
 import { undo, redo, undoDepth, redoDepth } from "prosemirror-history";
 import e from "express";
@@ -302,7 +302,7 @@ export class ProofFlow {
     // Previous input area node and its offset
     let prevInput: Node | null = null;
     let prevOffset: number;
-    let focusedInstance: any;
+    let focusedInstance: CodeMirrorView | undefined;
 
     // Iterate over all nodes in doc
     this.getState().doc.descendants((node: Node, offset: number) => {
@@ -343,7 +343,17 @@ export class ProofFlow {
       }
     });
     if (focusedInstance != null) {
-      focusedInstance.forceforwardSelection();
+      if (firefoxUsed) {
+        // Bug in Firefox that selectionchange is called when it is not supposed to
+        // Firefox is the only browser that handles selectionchange events:
+        // https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/selectionchange_event
+        setTimeout(
+          focusedInstance.forceforwardSelection.bind(focusedInstance),
+          50,
+        );
+      } else {
+        focusedInstance.forceforwardSelection();
+      }
     }
   }
 
