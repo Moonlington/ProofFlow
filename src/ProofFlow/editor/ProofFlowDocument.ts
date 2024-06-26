@@ -20,11 +20,11 @@ export type Position = {
   character: number;
 };
 
-/*
+/**
  * Function to convert an index to a position in the document
- * @param index: Index of the character in the document
- * @param str: String representation of the document
- * @returns: Position of the character in the document
+ * @param {number} index - Index of the character in the document
+ * @param {string} str - String representation of the document
+ * @returns - Position of the character in the document
  */
 function indexToPosition(index: number, str: string): Position {
   let lineNumber = str.substring(0, index).split("\n").length - 1;
@@ -43,10 +43,10 @@ class Range {
     this.end = end;
   }
 
-  /*
+  /**
    * Function to check if a position is within the range
-   * @param pos: Position to be checked
-   * @returns: boolean value indicating if the position is within the range
+   * @param {Position} pos - Position to be checked
+   * @returns - boolean value indicating if the position is within the range
    */
   contains(pos: Position): boolean {
     if (pos.line < this.start.line) return false;
@@ -70,9 +70,9 @@ enum AreaType {
 
 let nextAreaId = 0; //start value for the area id
 
-/*
+/**
  * Function to increase nextAreaId and return the new value
-  * @returns: the new value of nextAreaId
+ * @returns - the new value of nextAreaId
  */ 
 function getNextAreaId(): number {
   return nextAreaId++;
@@ -98,19 +98,19 @@ class Area {
     this.content = content;
   }
 
-  /*
+  /**
    * Function to convert the area to a string
-   * @param config: OutputConfig object containing the configuration for the output
-   * @returns: string representation of the area
+   * @param {OutputConfig} config - OutputConfig object containing the configuration for the output
+   * @returns - string representation of the area
    */ 
   toString(config: OutputConfig): string {
     return config[this.type][0] + this.content + config[this.type][1];
   }
 
-  /*
+  /**
    * Function to get the position of the area in the document
-   * @param offset: Offset of the position in the document
-   * @returns: Position of the area in the document
+   * @param {number} offset - Offset of the position in the document
+   * @returns - Position of the area in the document
    */  
   getPosition(offset: number): Position {
     let localPos = indexToPosition(offset, this.content);
@@ -122,10 +122,10 @@ class Area {
     };
   }
 
-  /*
+  /**
    * Function to get the offset of a position in the area
-   * @param pos: Position in the document
-   * @returns: Offset of the position in the area
+   * @param {Position} pos - Position in the document
+   * @returns - Offset of the position in the area
    */
   getOffset(pos: Position): number | undefined {
     if (!this.range?.contains(pos)) return undefined; // If the position is not in the range, return undefined
@@ -150,7 +150,11 @@ class CollapsibleArea extends Area {
     this.type = AreaType.Collapsible;
   }
 
-  // Function to add an area to the collapsible area
+  /**
+   * Function to add an area to the collapsible area
+   * @param {Area} area - to be added to the collapsible area
+   * @returns - boolean value indicating if the area was added successfully
+   */
   addArea(area: Area): boolean {
     if ([AreaType.Collapsible, AreaType.Input].includes(area.type))
       return false;
@@ -159,10 +163,10 @@ class CollapsibleArea extends Area {
     return true;
   }
 
-  /*
+  /**
    * Function to remove an area from the collapsible area
-   * @param area: Area to be removed from the collapsible area
-   * @returns: boolean value indicating if the area was removed successfully
+   * @param {Area} area - Area to be removed from the collapsible area
+   * @returns - boolean value indicating if the area was removed successfully
    */
   removeArea(area: Area): boolean {
     if (this.subAreas.includes(area)) {
@@ -172,10 +176,10 @@ class CollapsibleArea extends Area {
     return false;
   }
 
-  /*
+  /**
    * Function to convert the collapsible area to a string
-   * @param config: OutputConfig object containing the configuration for the output
-   * @returns: string representation of the collapsible area
+   * @param {OutputConfig} config - OutputConfig object containing the configuration for the output
+   * @returns - string representation of the collapsible area
    */ 
   toString(config: OutputConfig): string {
     let inner = "";
@@ -200,10 +204,10 @@ class InputArea extends Area {
     this.type = AreaType.Input;
   }
 
-  /*
+  /**
    * Function to add an area to the input area
-   * @param area: Area to be added to the input area
-   * @returns: boolean value indicating if the area was added successfully
+   * @param {Area} area - Area to be added to the input area
+   * @returns - boolean value indicating if the area was added successfully
    */
   addArea(area: Area): boolean {
     if ([AreaType.Collapsible, AreaType.Input].includes(area.type))
@@ -213,10 +217,10 @@ class InputArea extends Area {
     return true;
   }
 
-  /*
+  /**
    * Function to remove an area from the input area
-   * @param area: Area to be removed from the input area
-   * @returns: boolean value indicating if the area was removed successfully
+   * @param {Area} area - Area to be removed from the input area
+   * @returns - boolean value indicating if the area was removed successfully
    */
   removeArea(area: Area): boolean {
     if (this.subAreas.includes(area)) {
@@ -226,10 +230,10 @@ class InputArea extends Area {
     return false;
   }
 
-  /* 
+  /** 
    * Function to convert the input area to a string
-   * @param config: OutputConfig object containing the configuration for the output
-   * @returns: string representation of the input area
+   * @param {OutputConfig} config - OutputConfig object containing the configuration for the output
+   * @returns - string representation of the input area
    */
   toString(config: OutputConfig): string {
     let inner = "";
@@ -269,19 +273,19 @@ class ProofFlowDocument {
     this.areas = areas;
   }
 
-  /*
+  /**
    * Function to add an area to the document
-   * @param area: Area to be added to the document
-   * @returns: boolean value indicating if the area was added successfully
+   * @param {Area} area - Area to be added to the document
+   * @returns - boolean value indicating if the area was added successfully
    */
   addArea(area: Area): boolean {
     this.areas.push(area);
     return true;
   }
 
-  /*
+  /**
    * Function to convert the document to a string
-   * @returns: string representation of the document
+   * @returns - string representation of the document
    */
   toString(): string {
     let sum = "";
@@ -361,11 +365,11 @@ class ProofFlowDocument {
     }
   }
 
-  /*
+  /** 
    * Function to add an area before another area in the document
-   * @param area: Area to be added to the document
-   * @param beforeId: Id of the area before which the new area is to be added
-   * @returns: boolean value indicating if the area was added successfully
+   * @param {Area} area - Area to be added to the document
+   * @param {number} beforeId - Id of the area before which the new area is to be added
+   * @returns - boolean value indicating if the area was added successfully
    */
   addAreaBefore(area: Area, beforeId: number): boolean {
     let beforeArea = this.getAreaById(beforeId);
@@ -384,11 +388,11 @@ class ProofFlowDocument {
     return true;
   }
 
-  /*
+  /**
    * Function to add an area after another area in the document
-   * @param area: Area to be added to the document
-   * @param afterId: Id of the area after which the new area is to be added
-   * @returns: boolean value indicating if the area was added successfully
+   * @param {Area} area - Area to be added to the document
+   * @param {number} afterId - Id of the area after which the new area is to be added
+   * @returns - boolean value indicating if the area was added successfully
    */
   addAreaAfter(area: Area, afterId: number): boolean {
     let afterArea = this.getAreaById(afterId);
@@ -406,11 +410,11 @@ class ProofFlowDocument {
     return true;
   }
 
-  /*
+  /**
    * Function to replace an area in the document with another area
-   * @param newArea: Area to replace the existing area
-   * @param replaceId: Id of the area to be replaced
-   * @returns: boolean value indicating if the area was replaced successfully
+   * @param {Area} newArea - Area to replace the existing area
+   * @param {number} replaceId - Id of the area to be replaced
+   * @returns - boolean value indicating if the area was replaced successfully
    */
   replaceArea(newArea: Area, replaceId: number): boolean {
     let replacedArea = this.getAreaById(replaceId);
@@ -428,10 +432,10 @@ class ProofFlowDocument {
     return true;
   }
 
-  /*
+  /**
    * Function to remove an area from the document
-   * @param id: Id of the area to be removed
-   * @returns: boolean value indicating if the area was removed successfully
+   * @param {number} id - Id of the area to be removed
+   * @returns - boolean value indicating if the area was removed successfully
    */
   removeAreaById(id: number): boolean {
     for (let area of this.areas) {
@@ -461,10 +465,10 @@ class ProofFlowDocument {
     return false;
   }
 
-  /*
+  /**
    * Function to get an area by its id
-   * @param id: Id of the area to be retrieved
-   * @returns: Area with the given id
+   * @param {number} id - Id of the area to be retrieved
+   * @returns - Area with the given id or undefined if the area is not found
    */
   getAreaById(id: number): Area | undefined {
     for (let area of this.areas) {
@@ -491,10 +495,10 @@ class ProofFlowDocument {
     return undefined;
   }
 
-  /*
+  /**
    * Function to get an area by its position in the document
-   * @param pos: Position of the area to be retrieved
-   * @returns: Area at the given position
+   * @param {Position} pos - Position of the area to be retrieved
+   * @returns - Area at the given position or undefined if the area is not found
    */
   getAreayByPosition(pos: Position): [Area, number] | undefined {
     for (let area of this.areas) {
@@ -524,11 +528,11 @@ class ProofFlowDocument {
   }
 }
 
-/*
+/**
  * Function to convert a ProseMirror document to a ProofFlowDocument
- * @param uri: URI of the document
- * @param doc: ProseMirror document to be converted
- * @returns: ProofFlowDocument object
+ * @param {string} uri - URI of the document
+ * @param {Node} doc - ProseMirror document to be converted
+ * @returns - ProofFlowDocument object
  */
 function docToPFDocument(uri: string, doc: Node): ProofFlowDocument {
   let pfDocument = new ProofFlowDocument(uri, []);
@@ -549,10 +553,10 @@ function docToPFDocument(uri: string, doc: Node): ProofFlowDocument {
   return pfDocument;
 }
 
-/*
+/**
  * Function to convert a ProseMirror node to an area
- * @param node: ProseMirror node to be converted
- * @returns: Area object
+ * @param node - ProseMirror node to be converted
+ * @returns - Area object or undefined if the node type is not supported
  */
 function nodeToArea(node: Node): Area | undefined {
   let area: Area;
