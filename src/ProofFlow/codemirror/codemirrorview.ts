@@ -476,7 +476,7 @@ export class CodeMirrorView implements NodeView {
     this.diagnostics.push(diagnostic);
     let tr = setDiagnostics(this.cm.state, this.diagnostics);
 
-    if (this.checkQEDError(start)) {
+    if (severity == "error" && this.checkQEDError(start)) {
       this.isQEDError = true;
     }
     this.isError = true;
