@@ -17,8 +17,13 @@ def wrongfive : Nat := 6
 
 :::
 # Correct Proof
+:::input
+.
+
 ```lean
 -- Prove that five equals 5
 theorem five_eq_5 : five = 5 := by
   rfl
 ```
+
+:::

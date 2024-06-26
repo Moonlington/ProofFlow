@@ -26,7 +26,7 @@ const LeanOutput: OutputConfig = {
   math: ["\n:::math\n", "\n:::\n"],
   collapsible: ["\n:::collapsible\n", "\n:::\n"],
   collapsibletitle: ["\n:::collapsible\n#TITLE\n", "\n:::\n"],
-  input: ["\n:::input\n", "\n:::\n"],
+  input: ["\n:::input\n.\n", "\n:::\n"],
 };
 
 const PureLeanOutput: OutputConfig = {

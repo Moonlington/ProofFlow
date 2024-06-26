@@ -23,7 +23,7 @@ const LeanParser = new SimpleParser({
   code: [/\n```lean\n/, /\n```\n/],
   math: [/\n:::math\n/, /\n:::\n/],
   collapsible: [/\n:::collapsible\n(?:#(.*?)\n)?/, /\n:::\n/],
-  input: [/\n:::input\n/, /\n:::\n/],
+  input: [/\n:::input\n\.\n/, /\n:::\n/],
 });
 
 const PureLeanParser = new SimpleParser({
