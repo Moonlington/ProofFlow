@@ -22,11 +22,11 @@ const CoqMDOutput: OutputConfig = {
 
 const LeanOutput: OutputConfig = {
   text: ["", ""],
-  code: ["```lean\n", "```\n"],
-  math: [":::math\n", ":::\n"],
-  collapsible: [":::collapsible\n", ":::\n"],
-  collapsibletitle: [":::collapsible\n# TITLE\n", ":::\n"],
-  input: [":::input\n", ":::\n"],
+  code: ["\n```lean\n", "\n```\n"],
+  math: ["\n:::math\n", "\n:::\n"],
+  collapsible: ["\n:::collapsible\n", "\n:::\n"],
+  collapsibletitle: ["\n:::collapsible\n#TITLE\n", "\n:::\n"],
+  input: ["\n:::input\n.\n", "\n:::\n"],
 };
 
 const PureLeanOutput: OutputConfig = {
