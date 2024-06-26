@@ -106,15 +106,3 @@ function lockCollapsible(area: Element, lock: boolean) {
     });
   }
 }
-
-// Test function for color changing
-// function switchAllInput() {
-//   const state = proofFlow.getState();
-//   const doc = state.doc;
-
-//   doc.descendants((node, pos) => {
-//     if (node.type.name === "input") {
-//       inputProof(node, proof.correct, pos);
-//     }
-//   });
-// }

@@ -8,6 +8,7 @@ import {
   Transaction,
   Selection,
   NodeSelection,
+  TextSelection,
 } from "prosemirror-state";
 import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { ProofFlowPlugins } from "./plugins.ts";
@@ -887,9 +888,28 @@ export class ProofFlow {
     });
   }
 
+  /**
+   * Resets the button bar by destroying the existing button bar instance, creating a new one,
+   * and rendering it in the specified container element.
+   */
   public resetButtonBar() {
     this._buttonBar?.destroy();
     this._buttonBar = new ButtonBar(this._schema, this.editorView);
     this._buttonBar.render(this._containerElem);
+  }
+
+  /**
+   * Deselects all currently selected text in the editor.
+   */
+  public deselectAll() {
+    const tr = this.editorView.state.tr;
+    this.editorView.dispatch(
+      tr.setSelection(
+        new TextSelection(
+          this.editorView.state.doc.resolve(0),
+          this.editorView.state.doc.resolve(0),
+        ),
+      ),
+    );
   }
 }
