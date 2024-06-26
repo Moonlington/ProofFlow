@@ -194,7 +194,7 @@ class ProofFlowLSPClient implements LSPClientHandler {
         text: pfDocument.toString(),
       },
     };
-    
+
     this.lastPfDocument = pfDocument;
     pfDocument.documentProgressed = false;
     this.expectNoResponse("didOpen", params);

@@ -101,10 +101,12 @@ class SimpleParser implements Parser {
       }
       containedAreas.forEach((sub) => {
         if ([AreaType.Collapsible, AreaType.Input].includes(area.type)) {
-          area.addArea(new Area(AreaType.Text, sub.toString(this.outputConfig)))
-          return
+          area.addArea(
+            new Area(AreaType.Text, sub.toString(this.outputConfig)),
+          );
+          return;
         }
-        area.addArea(sub)
+        area.addArea(sub);
       });
       doc.addArea(area);
       return this.recurParse(doc, rest);
@@ -206,10 +208,12 @@ class SimpleParser implements Parser {
       }
       containedAreas.forEach((sub) => {
         if ([AreaType.Collapsible, AreaType.Input].includes(area.type)) {
-          area.addArea(new Area(AreaType.Text, sub.toString(this.outputConfig)))
-          return
+          area.addArea(
+            new Area(AreaType.Text, sub.toString(this.outputConfig)),
+          );
+          return;
         }
-        area.addArea(sub)
+        area.addArea(sub);
       });
       areas.push(area);
       return this.recurContainedAreas(areas, type, rest);
