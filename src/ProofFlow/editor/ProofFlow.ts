@@ -228,7 +228,7 @@ export class ProofFlow {
     this.updateTimeoutID = undefined;
     if (parsed.toString() === this._pfDocument.toString()) return;
     this._pfDocument = parsed;
-
+    console.log(parsed);
     this.lspClient?.didChange(parsed);
   }
 

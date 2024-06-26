@@ -100,7 +100,7 @@ class SimpleParser implements Parser {
           break;
       }
       containedAreas.forEach((sub) => {
-        if ([AreaType.Collapsible, AreaType.Input].includes(area.type)) {
+        if ([AreaType.Collapsible, AreaType.Input].includes(sub.type)) {
           area.addArea(
             new Area(AreaType.Text, sub.toString(this.outputConfig)),
           );
@@ -207,7 +207,7 @@ class SimpleParser implements Parser {
           break;
       }
       containedAreas.forEach((sub) => {
-        if ([AreaType.Collapsible, AreaType.Input].includes(area.type)) {
+        if ([AreaType.Collapsible, AreaType.Input].includes(sub.type)) {
           area.addArea(
             new Area(AreaType.Text, sub.toString(this.outputConfig)),
           );
