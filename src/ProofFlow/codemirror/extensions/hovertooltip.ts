@@ -14,6 +14,8 @@ export function wordHover(cmview: CodeMirrorView) {
         const lsp = cmview.proofflow.getLSPClient();
         if (!lsp) return resolve(null);
 
+        if (!cmview.proofflow.pfDocument.documentProgressed) return resolve(null);
+
         let found = cmview.proofflow.findNode(
           (_, pos) => pos === cmview.getPos(),
         );
