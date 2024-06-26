@@ -94,7 +94,7 @@ export class ButtonBar {
       this.addButton(
         above,
         () =>
-          cmd(this._schema, InsertionPlace.Above)(
+          cmd(InsertionPlace.Above)(
             this._editorView.state,
             this._editorView.dispatch,
           ),
@@ -103,7 +103,7 @@ export class ButtonBar {
       this.addButton(
         below,
         () =>
-          cmd(this._schema, InsertionPlace.Underneath)(
+          cmd(InsertionPlace.Underneath)(
             this._editorView.state,
             this._editorView.dispatch,
           ),

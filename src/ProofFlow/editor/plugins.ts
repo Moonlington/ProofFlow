@@ -1,6 +1,5 @@
 import { deleteSelection, newlineInCode } from "prosemirror-commands";
 import { keymap } from "prosemirror-keymap";
-import { Schema } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
 import { mathPlugin } from "@benrbray/prosemirror-math";
 import { history } from "prosemirror-history";
@@ -10,16 +9,11 @@ import {
   REGEX_BLOCK_MATH_DOLLARS,
 } from "@benrbray/prosemirror-math";
 import { ProofFlowSchema } from "./proofFlowSchema.ts";
-import {
-  cmdInsertCode,
-  cmdInsertMarkdown,
-  cmdInsertMath,
-} from "../commands/commands.ts";
-import { InsertionPlace } from "../commands/helpers.ts";
 import { collapsibleAreaPlugin } from "../plugins/plugin-collapsible.ts";
 import { markdownPlugin } from "../plugins/plugin-markdown.ts";
 import { arrowKeyHandler } from "../commands/arrowKeyHandler.ts";
 import { preventDropPlugin } from "../plugins/prevent-drop.ts";
+import { preventEmptyNodeSelection } from "../plugins/plugin-emptySelection.ts";
 
 // Create input rules using default regex
 const blockMathInputRule = makeBlockMathInputRule(
@@ -35,9 +29,10 @@ const blockMathInputRule = makeBlockMathInputRule(
 export const ProofFlowPlugins: Plugin[] = [
   mathPlugin,
   collapsibleAreaPlugin,
+  preventEmptyNodeSelection,
   markdownPlugin,
   preventDropPlugin,
-  keymapPlugin(ProofFlowSchema),
+  keymapPlugin(),
   inputRules({ rules: [blockMathInputRule] }),
   history(),
 ];
@@ -45,10 +40,9 @@ export const ProofFlowPlugins: Plugin[] = [
 /**
  * Creates a keymap plugin for the given schema.
  *
- * @param schema The schema to create plugins for.
  * @returns A keymap plugin.
  */
-function keymapPlugin(schema: Schema): Plugin {
+function keymapPlugin(): Plugin {
   return keymap({
     Tab: (state, dispatch) => {
       // Insert a tab character
@@ -60,12 +54,6 @@ function keymapPlugin(schema: Schema): Plugin {
     Backspace: deleteSelection,
     Delete: deleteSelection,
     Enter: newlineInCode, // This only works in code sections
-    "Mod-m": cmdInsertMarkdown(schema, InsertionPlace.Underneath),
-    "Mod-M": cmdInsertMarkdown(schema, InsertionPlace.Above),
-    "Mod-q": cmdInsertCode(schema, InsertionPlace.Underneath),
-    "Mod-Q": cmdInsertCode(schema, InsertionPlace.Above),
-    "Mod-l": cmdInsertMath(schema, InsertionPlace.Underneath),
-    "Mod-L": cmdInsertMath(schema, InsertionPlace.Above),
     ArrowLeft: arrowKeyHandler("left"),
     ArrowUp: arrowKeyHandler("up"),
     ArrowRight: arrowKeyHandler("right"),
