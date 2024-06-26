@@ -109,6 +109,7 @@ export class ProofFlow {
 
   private undoTrackStack: Node[] = [];
   private redoTrackStack: Node[] = [];
+  public hasFileOpen: boolean = false;
 
   /**
    * Represents the ProofFlow class.
@@ -363,6 +364,7 @@ export class ProofFlow {
    * @param fileType - The type of the file.
    */
   public async openFile(text: string, fileType: AcceptedFileType) {
+    this.hasFileOpen = true;
     this.fileType = fileType;
     text = text.replace(/\r/gi, ""); // Windows uses Carriage feeds but we don't like that.
 
@@ -651,6 +653,8 @@ export class ProofFlow {
     this.lspClient?.shutdown();
     this.lspClient = undefined;
 
+    this.hasFileOpen = false;
+
     this.minimap?.destroy();
     this.removeGlobalKeyBindings();
 
@@ -817,6 +821,15 @@ export class ProofFlow {
       redo(this.editorView.state, this.editorView.dispatch);
       this.addRedoTrack();
     }
+  }
+
+  /**
+   * Sets the outputConfig of the pfDocument
+   * @param outputConfig the output config
+   */
+  public setOutputConfig(outputConfig: OutputConfig) {
+    this.pfDocument.outputConfig = outputConfig;
+    this.outputConfig = outputConfig;
   }
 
   /**
