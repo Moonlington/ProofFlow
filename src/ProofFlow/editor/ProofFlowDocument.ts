@@ -439,7 +439,7 @@ function nodeToArea(node: Node): Area | undefined {
           let area = nodeToArea(n);
           if (area) input.addArea(area);
         });
-      input.status = node.attrs.proof
+      input.status = node.attrs.proof;
       area = input;
       break;
     case "collapsible":

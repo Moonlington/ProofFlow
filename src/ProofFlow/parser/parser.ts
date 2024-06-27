@@ -23,7 +23,8 @@ export type ParserConfig = {
 class SimpleParser implements Parser {
   config: ParserConfig;
   outputConfig: OutputConfig;
-  defaultAreaType: AreaType = AreaType.Text;
+  defaultAreaType: Exclude<AreaType, AreaType.Collapsible | AreaType.Input> =
+    AreaType.Text;
 
   constructor(config: ParserConfig, outputConfig: OutputConfig) {
     this.config = config;
@@ -102,7 +103,7 @@ class SimpleParser implements Parser {
       containedAreas.forEach((sub) => {
         if ([AreaType.Collapsible, AreaType.Input].includes(sub.type)) {
           area.addArea(
-            new Area(AreaType.Text, sub.toString(this.outputConfig)),
+            new Area(this.defaultAreaType, sub.toString(this.outputConfig)),
           );
           return;
         }
@@ -209,7 +210,7 @@ class SimpleParser implements Parser {
       containedAreas.forEach((sub) => {
         if ([AreaType.Collapsible, AreaType.Input].includes(sub.type)) {
           area.addArea(
-            new Area(AreaType.Text, sub.toString(this.outputConfig)),
+            new Area(this.defaultAreaType, sub.toString(this.outputConfig)),
           );
           return;
         }
