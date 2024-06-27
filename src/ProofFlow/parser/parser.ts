@@ -6,6 +6,7 @@ import {
   Area,
   CollapsibleArea,
   InputArea,
+  OutputConfig,
 } from "../editor/ProofFlowDocument";
 
 export interface Parser {
@@ -21,10 +22,13 @@ export type ParserConfig = {
 
 class SimpleParser implements Parser {
   config: ParserConfig;
-  defaultAreaType: AreaType = AreaType.Text;
+  outputConfig: OutputConfig;
+  defaultAreaType: Exclude<AreaType, AreaType.Collapsible | AreaType.Input> =
+    AreaType.Text;
 
-  constructor(config: ParserConfig) {
+  constructor(config: ParserConfig, outputConfig: OutputConfig) {
     this.config = config;
+    this.outputConfig = outputConfig;
   }
 
   createArea(type: AreaType, content: string): Area {
@@ -42,6 +46,7 @@ class SimpleParser implements Parser {
 
   parse(document: string): ProofFlowDocument {
     let pfDocument = new ProofFlowDocument("", []);
+    pfDocument.outputConfig = this.outputConfig;
     return this.recurParse(pfDocument, document);
   }
 
@@ -95,7 +100,15 @@ class SimpleParser implements Parser {
           area = new InputArea();
           break;
       }
-      containedAreas.forEach((sub) => area.addArea(sub));
+      containedAreas.forEach((sub) => {
+        if ([AreaType.Collapsible, AreaType.Input].includes(sub.type)) {
+          area.addArea(
+            new Area(this.defaultAreaType, sub.toString(this.outputConfig)),
+          );
+          return;
+        }
+        area.addArea(sub);
+      });
       doc.addArea(area);
       return this.recurParse(doc, rest);
     }
@@ -168,6 +181,43 @@ class SimpleParser implements Parser {
       areas.push(
         this.createArea(this.defaultAreaType, rest.slice(0, startRegex.index)),
       );
+    }
+
+    if (
+      nextAreaType === AreaType.Collapsible ||
+      nextAreaType === AreaType.Input
+    ) {
+      let out = this.recurContainedAreas(
+        [],
+        nextAreaType,
+        rest.slice(startRegex.index + startRegex[0].length),
+      );
+      let containedAreas: Area[] = out[0];
+      rest = out[1];
+      let area: CollapsibleArea | InputArea;
+      switch (nextAreaType) {
+        case AreaType.Collapsible:
+          let title = "";
+          if (startRegex[1] !== undefined) {
+            title = startRegex[1];
+          }
+          area = new CollapsibleArea(title);
+          break;
+        case AreaType.Input:
+          area = new InputArea();
+          break;
+      }
+      containedAreas.forEach((sub) => {
+        if ([AreaType.Collapsible, AreaType.Input].includes(sub.type)) {
+          area.addArea(
+            new Area(this.defaultAreaType, sub.toString(this.outputConfig)),
+          );
+          return;
+        }
+        area.addArea(sub);
+      });
+      areas.push(area);
+      return this.recurContainedAreas(areas, type, rest);
     }
 
     let endRegex = this.config[nextAreaType][1].exec(

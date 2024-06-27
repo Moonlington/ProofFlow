@@ -228,7 +228,7 @@ export class ProofFlow {
     this.updateTimeoutID = undefined;
     if (parsed.toString() === this._pfDocument.toString()) return;
     this._pfDocument = parsed;
-
+    console.log(parsed);
     this.lspClient?.didChange(parsed);
   }
 
@@ -867,7 +867,7 @@ export class ProofFlow {
   }
 
   public requestConfirm(question: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
       // Button container showing below settings buttons, overlay over the editor
       // When clicking outside or on no, do not reset, if clicking on yes, reset
       const overlay = document.createElement("div");

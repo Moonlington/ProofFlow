@@ -3,7 +3,10 @@ import {
   ProofFlowDocument,
   Range,
 } from "../editor/ProofFlowDocument.ts";
-import { diagnosticsHandler, documentProgressHandler } from "./ProofFlowLSPClient.ts";
+import {
+  diagnosticsHandler,
+  documentProgressHandler,
+} from "./ProofFlowLSPClient.ts";
 import {
   CompletionItem,
   CompletionList,
