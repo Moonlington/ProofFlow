@@ -1,5 +1,9 @@
 import { proofFlow } from "../../main";
-import { CoqMDOutput, LeanOutput, PureLeanOutput } from "../parser/outputconfigs";
+import {
+  CoqMDOutput,
+  LeanOutput,
+  PureLeanOutput,
+} from "../parser/outputconfigs";
 import { updateColors } from "./updateColors";
 import { colorSchemesKeys } from "./updateColors";
 

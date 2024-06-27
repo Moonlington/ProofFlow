@@ -4,9 +4,7 @@ import { vscode } from "../extension/vscode";
 import { ProofFlowSaver } from "./proofFlowSaver";
 import { AcceptedFileType } from "../parser/accepted-file-types";
 class VSCodeSaver implements ProofFlowSaver {
-  constructor() {
-
-  }
+  constructor() {}
 
   save(pf: ProofFlow): void {
     const result = pf.pfDocument.toString();
@@ -19,12 +17,10 @@ class VSCodeSaver implements ProofFlowSaver {
 
   // Make sure the proofflow document is synced with VSCode,
   // so the state can be restored when accidentally closed by the user
-  syncPfDoc(pf: ProofFlow) {   
+  syncPfDoc(pf: ProofFlow) {
     sync(pf);
     addLoadFileListener(pf);
   }
-
-
 }
 
 function sync(pf: ProofFlow) {
@@ -34,14 +30,16 @@ function sync(pf: ProofFlow) {
     text: pf.fileName,
   });
   setTimeout(sync, 1000, pf);
-  
 }
 
 function addLoadFileListener(pf: ProofFlow) {
   window.addEventListener("message", (event) => {
     const message = event.data;
     if (message.command === "loadFile") {
-      pf.openFile(message.content, message.text.split('.').pop() as AcceptedFileType);
+      pf.openFile(
+        message.content,
+        message.text.split(".").pop() as AcceptedFileType,
+      );
     }
   });
 }
