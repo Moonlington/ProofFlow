@@ -72,6 +72,11 @@ export class CodeMirrorView implements NodeView {
   static instances: CodeMirrorView[] = [];
   static focused: CodeMirrorView | null = null;
 
+  /**
+   * Constructs a new instance of the CodeMirrorView class.
+   * @param proofflow The ProofFlow instance.
+   * @param options The options for configuring the CodeMirrorView.
+   */
   constructor(proofflow: ProofFlow, options: CodeMirrorViewOptions) {
     this.proofflow = proofflow;
     // Store for later
@@ -163,10 +168,35 @@ export class CodeMirrorView implements NodeView {
     // Add the newest instance to the list of instances
     CodeMirrorView.instances.push(this);
 
-    // Ensure the selection is synchronized from ProseMirror to codemirror
-    this._outerView.dom.addEventListener("focus", () =>
-      this.forwardSelection(),
-    );
+    // Add a click event listener to the outer view to ensure the selection is synchronized
+    // and we can blur the CodeMirror editor, making it non-editable.
+    this._outerView.dom.addEventListener("click", (event: MouseEvent) => {
+      const clickedInsideCodeMirror = this.cm.dom.contains(
+        event.target as Node,
+      );
+
+      if (clickedInsideCodeMirror) {
+        // If we clicked inside a locked CodeMirror editor, deselect all nodes to prevent editing.
+        if (this.cm.contentDOM.contentEditable === "false") {
+          proofFlow.deselectAll();
+        }
+        return;
+      }
+
+      // Synchronize the selection from ProseMirror to CodeMirror.
+      this.forwardSelection();
+
+      // Clear the selection by setting the anchor and head to the same position,
+      // then blur the contentDOM to prevent editing.
+      this.cm.dispatch({
+        selection: {
+          anchor: this.cm.state.selection.main.head,
+          head: this.cm.state.selection.main.head,
+        },
+      });
+      this.cm.contentDOM.blur();
+      CodeMirrorView.focused = null;
+    });
   }
 
   /**
@@ -192,6 +222,7 @@ export class CodeMirrorView implements NodeView {
 
     if (!selection.eq(state.selection)) {
       this._outerView.dispatch(state.tr.setSelection(selection));
+      this._outerView.dispatchEvent;
     }
 
     // Ensure only one cursor is active
@@ -380,7 +411,6 @@ export class CodeMirrorView implements NodeView {
   focus() {
     this.cm.focus();
     this.forwardSelection();
-    console.log("focused", this);
     CodeMirrorView.focused = this;
   }
 
@@ -446,7 +476,7 @@ export class CodeMirrorView implements NodeView {
     this.diagnostics.push(diagnostic);
     let tr = setDiagnostics(this.cm.state, this.diagnostics);
 
-    if (this.checkQEDError(start)) {
+    if (severity == "error" && this.checkQEDError(start)) {
       this.isQEDError = true;
     }
     this.isError = true;

@@ -65,6 +65,7 @@
     background-color: var(--secondary-color);
     color: var(--button-text-color);
     margin-top: 5px;
+    border: 1px solid var(--tertiary-color);
 }
 
 .dropdown:hover, .dropdown option {

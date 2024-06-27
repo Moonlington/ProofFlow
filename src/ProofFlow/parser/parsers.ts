@@ -20,15 +20,15 @@ const CoqMDParser = new SimpleParser({
 });
 
 const LeanParser = new SimpleParser({
-  code: [/```lean\n/, /```\n/],
-  math: [/:::math\n/, /:::\n/],
-  collapsible: [/:::collapsible\n(?:# (.*?)\n)?/, /:::\n/],
-  input: [/:::input\n/, /:::\n/],
+  code: [/\n```lean\n/, /\n```\n/],
+  math: [/\n:::math\n/, /\n:::\n/],
+  collapsible: [/\n:::collapsible\n(?:#(.*?)\n)?/, /\n:::\n/],
+  input: [/\n:::input\n\.\n/, /\n:::\n/],
 });
 
 const PureLeanParser = new SimpleParser({
   text: [/\n\/-\n/, /\n-\/\n/],
-  math: [/\n\/-\$\$\n/, /\n-\/\$\$\n/],
+  math: [/\n\/-\$\$\n/, /\n\$\$-\/\n/],
   collapsible: [/\n-- <hint(?: title="(.*?)")?>\n?/, /\n-- <\/hint>\n/],
   input: [/\n-- <input-area>\n/, /\n-- <\/input-area>\n/],
 });

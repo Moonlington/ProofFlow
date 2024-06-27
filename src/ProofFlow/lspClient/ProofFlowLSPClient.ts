@@ -27,6 +27,7 @@ import {
   DeclarationParams,
   CompletionParams,
   CompletionTriggerKind,
+  DocumentProgressMessage,
 } from "./models";
 
 type LSPServerResponse<ResponseType> = {
@@ -40,6 +41,7 @@ enum ProofFlowLSPClientFileType {
 }
 
 export type diagnosticsHandler = (diag: DiagnosticsMessageData) => void;
+export type documentProgressHandler = () => void;
 
 class ProofFlowLSPClient implements LSPClientHandler {
   private wsUrl: string; // URL of the websocket
@@ -89,6 +91,16 @@ class ProofFlowLSPClient implements LSPClientHandler {
       if (message.type === "diagnostics") {
         console.log("Received diagnostics:", message.data);
         handler(message.data);
+      }
+    });
+  }
+
+  setDocumentProgressHandler(handler: documentProgressHandler): void {
+    this.socket.addEventListener("message", (event) => {
+      const message: DocumentProgressMessage = JSON.parse(event.data);
+      if (message.type === "documentChecked") {
+        console.log("Received document progress:", message.data);
+        handler();
       }
     });
   }
@@ -184,9 +196,9 @@ class ProofFlowLSPClient implements LSPClientHandler {
         text: pfDocument.toString(),
       },
     };
-
+    
     this.lastPfDocument = pfDocument;
-
+    pfDocument.documentProgressed = false;
     this.expectNoResponse("didOpen", params);
   }
 
@@ -204,7 +216,7 @@ class ProofFlowLSPClient implements LSPClientHandler {
     };
 
     this.lastPfDocument = pfDocument;
-
+    pfDocument.documentProgressed = false;
     this.expectNoResponse("didChange", params);
   }
 

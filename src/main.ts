@@ -34,14 +34,9 @@ export let firefoxUsed =
   navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
 
 // Check if we are in a VSCode Extension Environment; base filesaver on that
-let fileSaver: ProofFlowSaver;
-if (vscode.isVSCodeEnvironment()) {
-  console.log("Running in VSCode Extension Environment");
-  fileSaver = new VSCodeSaver();
-} else {
-  console.log("Running in Web Application Environment");
-  fileSaver = new WebApplicationSaver();
-}
+let fileSaver: any; // Need any type to be able to call syncPfDoc for the VSCodeSaver
+let inVSCode = vscode.isVSCodeEnvironment();
+fileSaver = inVSCode ? new VSCodeSaver() : new WebApplicationSaver(); 
 
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow({
@@ -53,6 +48,9 @@ let proofFlow: ProofFlow = new ProofFlow({
     window.localStorage,
   ),
 });
+
+// Sync the PF document with VSCode (if we are in VSCode)
+if (inVSCode) fileSaver.syncPfDoc(proofFlow);
 
 // Create the settings overlay
 const settingsOverlay = new SettingsOverlay(container);
@@ -126,6 +124,7 @@ export async function readSingleFile(e: Event) {
       proofFlow.reset();
       proofFlow.setFileName(file.name);
       proofFlow.openFile(result, fileType);
+      handleUserModeSwitch();
     }
   };
 }

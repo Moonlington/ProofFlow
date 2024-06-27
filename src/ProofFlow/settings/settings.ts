@@ -1,4 +1,5 @@
 import { proofFlow } from "../../main";
+import { CoqMDOutput, LeanOutput, PureLeanOutput } from "../parser/outputconfigs";
 import { updateColors } from "./updateColors";
 import { colorSchemesKeys } from "./updateColors";
 
@@ -337,6 +338,20 @@ export class SettingsOverlay {
     lspButton.addEventListener("click", () => {
       console.log("LSP Path: " + lspPath.value); //TODO Add lspPath functionality
       // proofFlow.setLspPath(lspPath.value);
+      if (!proofFlow.hasFileOpen) {
+        switch (lspSelect.value) {
+          case "lean":
+            proofFlow.setOutputConfig(PureLeanOutput);
+            proofFlow.fileName = "file.lean";
+            break;
+          case "coq":
+            proofFlow.setOutputConfig(CoqMDOutput);
+            proofFlow.fileName = "file.mv";
+            break;
+          default:
+            break;
+        }
+      }
       let lsp = {
         path: lspPath.value,
         type: lspSelect.value,
