@@ -117,10 +117,11 @@ export function renderAllMarkdown(proofFlow: ProofFlow) {
   // Replace the old document with the new nodes
   trans.replaceWith(0, view.state.doc.content.size, newNodes);
 
-  const resolvedPos = trans.doc.resolve(pos);
   // Ensure the selection remains correct
+  const resolvedPos = trans.doc.resolve(pos);
   trans.setSelection(TextSelection.near(resolvedPos, -1));
 
+  // Dispatch the transaction
   view.dispatch(trans);
 
   // Ensure undo tracking is added

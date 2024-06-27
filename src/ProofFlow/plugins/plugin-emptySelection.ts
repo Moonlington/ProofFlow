@@ -14,7 +14,11 @@ function customTextInput(state: EditorState) {
   let selectionType = getSelectionType(state.selection);
 
   // Check if a node is selected
-  if (selectionType.isNodeSelection && $from.sameParent($to) && $from.nodeAfter) {
+  if (
+    selectionType.isNodeSelection &&
+    $from.sameParent($to) &&
+    $from.nodeAfter
+  ) {
     return true;
   }
 
