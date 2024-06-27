@@ -119,7 +119,7 @@ export function renderAllMarkdown(proofFlow: ProofFlow) {
 
   // Ensure the selection remains correct
   const resolvedPos = trans.doc.resolve(pos);
-  trans.setSelection(TextSelection.near(resolvedPos, -1));
+  trans.setSelection(TextSelection.near(resolvedPos, 1));
 
   // Dispatch the transaction
   view.dispatch(trans);
