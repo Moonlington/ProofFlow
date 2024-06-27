@@ -36,7 +36,7 @@ export let firefoxUsed =
 // Check if we are in a VSCode Extension Environment; base filesaver on that
 let fileSaver: any; // Need any type to be able to call syncPfDoc for the VSCodeSaver
 let inVSCode = vscode.isVSCodeEnvironment();
-fileSaver = inVSCode ? new VSCodeSaver() : new WebApplicationSaver(); 
+fileSaver = inVSCode ? new VSCodeSaver() : new WebApplicationSaver();
 
 // Create a new instance of the ProofFlow class
 let proofFlow: ProofFlow = new ProofFlow({
