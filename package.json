@@ -18,6 +18,7 @@
     "@babel/preset-typescript": "^7.24.7",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.12",
+    "@types/ws": "^8.5.10",
     "@vitest/coverage-v8": "^1.6.0",
     "babel-jest": "^29.7.0",
     "supertest": "^6.2.4",
@@ -27,6 +28,7 @@
   },
   "dependencies": {
     "@benrbray/prosemirror-math": "^1.0.0",
+    "@codemirror/autocomplete": "^6.16.3",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/matchbrackets": "^0.19.4",
     "@types/vscode-webview": "^1.57.5",

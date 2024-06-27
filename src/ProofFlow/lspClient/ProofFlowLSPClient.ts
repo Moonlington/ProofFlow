@@ -69,6 +69,8 @@ class ProofFlowLSPClient implements LSPClientHandler {
       this.socket.send(
         JSON.stringify({ type: "init", data: "Client initialized" }),
       );
+      console.log("HEllo");
+      console.log(JSON.stringify({ type: "init", data: "Client initialized" }));
     });
 
     this.socket.addEventListener("message", async (event) => {

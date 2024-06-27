@@ -49,3 +49,5 @@ export function autocomplete(view: CodeMirrorView) {
     ],
   });
 }
+
+autocomplete;
