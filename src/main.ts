@@ -14,6 +14,7 @@ import { WebApplicationLSPManager } from "./ProofFlow/lspClient/webApplicationMa
 import { ProofFlowSaver } from "./ProofFlow/fileHandlers/proofFlowSaver.ts";
 import { VSCodeSaver } from "./ProofFlow/fileHandlers/vscodeSaver.ts";
 import { vscode } from "./ProofFlow/extension/vscode.ts";
+import { renderAllMarkdown } from "./ProofFlow/plugins/markdown-extra.ts";
 const app = document.createElement("div");
 app.id = "app";
 
@@ -63,6 +64,11 @@ handleUserModeSwitch();
 
 // Update the color scheme
 reloadColorScheme();
+
+// Add event listener to the editor to render all markdown nodes
+editor.addEventListener("click", () => {
+  renderAllMarkdown(proofFlow);
+});
 
 // prevent user from leaving the page without saving
 window.onbeforeunload = function () {
