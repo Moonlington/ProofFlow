@@ -116,6 +116,7 @@ export function renderAllMarkdown(proofFlow: ProofFlow) {
   trans.replaceWith(0, view.state.doc.content.size, newNodes);
 
   // Ensure the selection remains correct
+  // Yes gives error, yes is needed
   const selection = view.state.selection;
   trans.setSelection(selection);
 
