@@ -17,6 +17,10 @@ markdown, math-display {
   width: 100%;
 }
 
+.markdown {
+  padding: 0px;
+}
+
 
 .input-correct {
   border-left: 5px solid #0FFF50;
@@ -34,6 +38,15 @@ markdown, math-display {
   pointer-events: none;
   user-select: text;
 }
+
+.markdown-rendered-child {
+  padding: 1px 4px 5px 4px;
+}
+
+.markdown-rendered-child > * {
+  padding: 1px 4px 5px 4px;
+}
+
 
 .unlocked,
 .unlocked>* {

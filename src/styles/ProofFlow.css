@@ -380,30 +380,36 @@ p {
 
 .ProseMirror h1 {
   margin: 0;
-  padding: 0.67em 0;
+  padding-top: 0.67em;
+  padding-bottom: 0.67em;
 }
 
 .ProseMirror h2 {
   margin: 0;
-  padding: 0.83em 0;
+  padding-top: 0.83em;
+  padding-bottom: 0.83em;
 }
 
 .ProseMirror h3 {
   margin: 0;
-  padding: 1em 0;
+  padding-top: 1em;
+  padding-bottom: 1em;
 }
 
 .ProseMirror h4 {
   margin: 0;
-  padding: 1.33em 0;
+  padding-top: 1.33em;
+  padding-bottom: 1.33em;
 }
 
 .ProseMirror h5 {
   margin: 0;
-  padding: 1.67em 0;
+  padding-top: 1.67em;
+  padding-bottom: 1.67em;
 }
 
 .ProseMirror h6 {
   margin: 0;
-  padding: 2.33em 0;
+  padding-top: 2.33em;
+  padding-bottom: 2.33em;
 }
