@@ -168,6 +168,19 @@ export class CodeMirrorView implements NodeView {
     // Add the newest instance to the list of instances
     CodeMirrorView.instances.push(this);
 
+    this.cm.contentDOM.addEventListener("blur", () => {
+      // Clear the selection by setting the anchor and head to the same position,
+      // then blur the contentDOM to prevent editing.
+      this.cm.dispatch({
+        selection: {
+          anchor: this.cm.state.selection.main.head,
+          head: this.cm.state.selection.main.head,
+        },
+      });
+      this.cm.contentDOM.blur();
+      CodeMirrorView.focused = null;
+    });
+
     // Add a click event listener to the outer view to ensure the selection is synchronized
     // and we can blur the CodeMirror editor, making it non-editable.
     this._outerView.dom.addEventListener("click", (event: MouseEvent) => {
@@ -185,17 +198,6 @@ export class CodeMirrorView implements NodeView {
 
       // Synchronize the selection from ProseMirror to CodeMirror.
       this.forwardSelection();
-
-      // Clear the selection by setting the anchor and head to the same position,
-      // then blur the contentDOM to prevent editing.
-      this.cm.dispatch({
-        selection: {
-          anchor: this.cm.state.selection.main.head,
-          head: this.cm.state.selection.main.head,
-        },
-      });
-      this.cm.contentDOM.blur();
-      CodeMirrorView.focused = null;
     });
   }
 

@@ -20,6 +20,7 @@ import { proofFlow, readSingleFile } from "../../main.ts";
 import { UserMode } from "../UserMode/userMode.ts";
 import { undo, redo, closeHistory } from "prosemirror-history";
 import { showOverlay } from "../../main.ts";
+import { markdownRenderedClickFix } from "../plugins/markdown-extra.ts";
 
 /**
  * Represents a button bar for interacting with an editor.
@@ -298,6 +299,10 @@ export class ButtonBar {
       button.id = label.toLowerCase() + "-button";
     }
     button.addEventListener("click", callback);
+    if (label === "Text ↑" || label === "Text ↓") {
+      // Ensure we can click on rendered markdown nodes without rendering them again
+      button.addEventListener("click", markdownRenderedClickFix);
+    }
     button.title = hoverText;
     button.classList.add("editor-button");
     this._cellBar.appendChild(button);
