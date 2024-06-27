@@ -3,6 +3,7 @@ import { Node } from "prosemirror-model";
 import { ProofFlowSchema } from "../editor/proofFlowSchema";
 import { UserMode, lockEditing } from "../UserMode/userMode";
 import { highLevelCells, markdownToRendered } from "../commands/helpers";
+import { TextSelection } from "prosemirror-state";
 
 /**
  * Renders all markdown nodes in the ProofFlow editor.
@@ -13,6 +14,7 @@ export function renderAllMarkdown(proofFlow: ProofFlow) {
   const view = proofFlow.getEditorView();
   let newNodes = Array<Node>();
   let trans = view.state.tr;
+  const pos = view.state.selection.from;
 
   view.state.doc.descendants((node) => {
     // If the node being clicked is not a valid node or the click is not a user action, return
@@ -115,9 +117,9 @@ export function renderAllMarkdown(proofFlow: ProofFlow) {
   // Replace the old document with the new nodes
   trans.replaceWith(0, view.state.doc.content.size, newNodes);
 
+  const resolvedPos = trans.doc.resolve(pos);
   // Ensure the selection remains correct
-  const selection = view.state.selection;
-  trans.setSelection(selection);
+  trans.setSelection(TextSelection.near(resolvedPos, -1));
 
   view.dispatch(trans);
 
