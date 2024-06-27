@@ -1,6 +1,7 @@
 import { EditorState, Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { ProofFlowSchema } from "../editor/proofFlowSchema.ts";
+import { getSelectionType } from "../commands/helpers.ts";
 
 // Helper function to check if a node type is valid in ProofFlowSchema
 function isValidNodeType(nodeType: string) {
@@ -10,9 +11,10 @@ function isValidNodeType(nodeType: string) {
 // Custom command to handle typing with a node selected
 function customTextInput(state: EditorState) {
   const { $from, $to } = state.selection;
+  let selectionType = getSelectionType(state.selection);
 
   // Check if a node is selected
-  if ($from.sameParent($to) && $from.nodeAfter) {
+  if (selectionType.isNodeSelection && $from.sameParent($to) && $from.nodeAfter) {
     return true;
   }
 

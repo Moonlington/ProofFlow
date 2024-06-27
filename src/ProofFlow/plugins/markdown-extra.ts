@@ -22,7 +22,7 @@ export function renderAllMarkdown(proofFlow: ProofFlow) {
     )
       return false;
 
-    // Default to the new node being the old node
+    // Create a new node to store the new node
     let newNode: Node = node;
 
     // If the node is a markdown node, replace it with a markdown_rendered node
@@ -116,7 +116,6 @@ export function renderAllMarkdown(proofFlow: ProofFlow) {
   trans.replaceWith(0, view.state.doc.content.size, newNodes);
 
   // Ensure the selection remains correct
-  // Yes gives error, yes is needed
   const selection = view.state.selection;
   trans.setSelection(selection);
 
