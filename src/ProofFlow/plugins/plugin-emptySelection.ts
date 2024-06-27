@@ -30,7 +30,7 @@ export let preventEmptyNodeSelection = new Plugin({
       const { selection } = state;
       const node = selection.$from.node();
 
-      // Disallow typing when selecting node
+      // Disallow typing when selecting a node
       if (customTextInput(state)) {
         return true;
       }
