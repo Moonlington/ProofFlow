@@ -228,7 +228,7 @@ export class ProofFlow {
     this.updateTimeoutID = undefined;
     if (parsed.toString() === this._pfDocument.toString()) return;
     this._pfDocument = parsed;
-    console.log(parsed);
+    // console.log(parsed);
     this.lspClient?.didChange(parsed);
   }
 
@@ -366,7 +366,7 @@ export class ProofFlow {
       let node = this.getState().doc.nodeAt(offset);
       if (node == null) return;
       inputProof(node, ProofStatus.Correct, offset);
-    })
+    });
 
     if (focusedInstance != null) {
       if (firefoxUsed) {

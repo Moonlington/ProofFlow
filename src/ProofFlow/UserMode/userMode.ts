@@ -26,13 +26,13 @@ export function handleUserModeSwitch() {
   if (!collapsibleButton) {
     throw new Error("collapse-button not found");
   }
-  
+
   // Set the display of the input and collapsible buttons based on the user mode
   if (userMode === UserMode.Student) {
     inputButton.style.display = "none";
     collapsibleButton.style.display = "none";
     lockEditing(true);
-  } 
+  }
   // If the user mode is teacher, the input and collapsible buttons are displayed
   else {
     inputButton.style.display = "";

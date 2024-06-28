@@ -5,7 +5,6 @@
 import { Selection, TextSelection } from "prosemirror-state";
 import type { EditorView, NodeView } from "prosemirror-view";
 import { Node as ProsemirrorNode } from "prosemirror-model";
-import { exitCode } from "prosemirror-commands";
 import {
   EditorState as CMState,
   Transaction as CMTransaction,
@@ -19,39 +18,13 @@ import { Diagnostic, setDiagnostics } from "@codemirror/lint";
 import { LSPDiagnostic } from "../lspClient/models.ts";
 import { ProofFlow } from "../editor/ProofFlow.ts";
 import { wordHover } from "./extensions/hovertooltip.ts";
+import {
+  computeChange,
+  getOtherKeyMaps,
+  getTabKeyMap,
+} from "./codemirrorHelpers.ts";
 
 type Severity = "hint" | "info" | "warning" | "error";
-
-const computeChange = (
-  oldVal: string,
-  newVal: string,
-): ComputeChange | null => {
-  if (oldVal === newVal) {
-    return null;
-  }
-
-  let start = 0;
-  let oldEnd = oldVal.length;
-  let newEnd = newVal.length;
-
-  while (
-    start < oldEnd &&
-    oldVal.charCodeAt(start) === newVal.charCodeAt(start)
-  ) {
-    start += 1;
-  }
-
-  while (
-    oldEnd > start &&
-    newEnd > start &&
-    oldVal.charCodeAt(oldEnd - 1) === newVal.charCodeAt(newEnd - 1)
-  ) {
-    oldEnd -= 1;
-    newEnd -= 1;
-  }
-
-  return { from: start, to: oldEnd, text: newVal.slice(start, newEnd) };
-};
 
 /**
  * A node view for codemirror nodes, used for implementing the codemirror editor
@@ -104,17 +77,8 @@ export class CodeMirrorView implements NodeView {
     this.dom.style.backgroundColor = "#00000002";
 
     // Keymaps for the codemirror editor
-    const tabKeymap = keymap.of([
-      {
-        key: "Tab",
-        run: () => {
-          const state = this.cm.state;
-          this.cm.dispatch(state.update(state.replaceSelection("\t")));
-          return true;
-        },
-        preventDefault: true,
-      },
-    ]);
+    const tabKeymap = getTabKeyMap(this.cm);
+    const otherKeymaps = getOtherKeyMaps(this._outerView);
 
     const cmState = CMState.create({
       doc: this.node.textContent,
@@ -122,42 +86,9 @@ export class CodeMirrorView implements NodeView {
       // Defining keymaps for codemirror
       extensions: [
         changeFilter,
-        keymap.of([
-          {
-            key: "ArrowUp",
-            run: this.mayBeEscape("line", -1),
-          },
-          {
-            key: "ArrowLeft",
-            run: this.mayBeEscape("char", -1),
-          },
-          {
-            key: "ArrowDown",
-            run: this.mayBeEscape("line", 1),
-          },
-          {
-            key: "ArrowRight",
-            run: this.mayBeEscape("char", 1),
-          },
-          {
-            key: "Ctrl-Enter",
-            run: () => {
-              if (exitCode(this._outerView.state, this._outerView.dispatch)) {
-                this._outerView.focus();
-                return true;
-              }
-              return false;
-            },
-          },
-          {
-            key: "Ctrl-Shift-m", // Stop linter from calling next diagnostics
-            run: () => {
-              return true;
-            },
-          },
-        ]),
         cmExtensions,
         tabKeymap,
+        otherKeymaps,
         // autocomplete(this),
         wordHover(this),
       ],
@@ -293,86 +224,6 @@ export class CodeMirrorView implements NodeView {
       this._outerView.dispatch(tr);
       this.forwardSelection();
     }
-  }
-
-  /**
-   * Checks if the input leaving should be blocked in the specified direction.
-   * @param dir - The direction to check. Can be -1 for left or 1 for right.
-   * @returns True if the input leaving should be blocked, false otherwise.
-   */
-  disallowInputLeaving(dir: -1 | 1): boolean {
-    const view = proofFlow.getEditorView();
-    const { state } = view;
-    const { selection } = state;
-    const { $from } = selection;
-    const userMode = proofFlow.getUserMode();
-    const node = $from.node($from.depth);
-
-    const inStudentMode = userMode === UserMode.Student;
-
-    const containingNode = getContainingNode(selection);
-    const inInput = containingNode?.type.name === "input_content";
-
-    if (inStudentMode && inInput) {
-      const isFirstChild = containingNode?.firstChild === node;
-      if (dir === -1 && isFirstChild) {
-        return true;
-      }
-      const isLastChild = containingNode?.lastChild === node;
-      if (dir === 1 && isLastChild) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Escape the codemirror editor and move the cursor to the ProseMirror editor
-   * Will return false if the movement will not escape the current view
-   */
-  mayBeEscape(unit: "char" | "line", dir: -1 | 1): Command {
-    return (view) => {
-      const { state } = view;
-      const { selection } = state;
-
-      const offsetToPos = () => {
-        const offset = selection.main.from;
-        const line = state.doc.lineAt(offset);
-        return { line: line.number, ch: offset - line.from };
-      };
-
-      const pos = offsetToPos();
-      const hasSelection = state.selection.ranges.some((r) => !r.empty);
-
-      const firstLine = 1;
-      const lastLine = state.doc.lineAt(state.doc.length).number;
-
-      if (
-        hasSelection ||
-        pos.line !== (dir < 0 ? firstLine : lastLine) ||
-        (unit === "char" &&
-          pos.ch !== (dir < 0 ? 0 : state.doc.line(pos.line).length))
-      ) {
-        return false;
-      }
-
-      const disallowLeaving = this.disallowInputLeaving(dir);
-
-      if (!disallowLeaving) {
-        const targetPos = this.getPos() + (dir < 0 ? 0 : this.node.nodeSize);
-        const pmSelection = Selection.near(
-          this._outerView.state.doc.resolve(targetPos),
-          dir,
-        );
-        this._outerView.dispatch(
-          this._outerView.state.tr.setSelection(pmSelection).scrollIntoView(),
-        );
-        this._outerView.focus();
-      }
-
-      return disallowLeaving;
-    };
   }
 
   /**
