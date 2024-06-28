@@ -472,9 +472,9 @@ export class SettingsOverlay {
     });
 
     // Update with stored values
-    const currentStyle = localStorage.getItem("textStyle");
-    const currentSize = localStorage.getItem("textSize");
-    const currentFont = localStorage.getItem("textFont");
+    const currentStyle = localStorage.getItem("textStyle") || "Sans-serif";
+    const currentSize = localStorage.getItem("textSize") || "Medium";
+    const currentFont = localStorage.getItem("textFont") || "Arial";
 
     if (currentFont && textFontsWithStyles.includes(currentFont)) {
       textStyleSelect.style.display = "";
