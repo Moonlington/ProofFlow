@@ -1,4 +1,5 @@
 import { proofFlow } from "../../main.ts";
+import { renderAllMarkdown } from "../plugins/markdown-extra.ts";
 
 // Enum representing whether a textbox is locked or open to alter
 export enum UserMode {
@@ -10,22 +11,30 @@ export enum UserMode {
  * Handles the user mode switch.
  */
 export function handleUserModeSwitch() {
-  // switchAllInput();
+  // render all Markdown
+  renderAllMarkdown(proofFlow);
+
+  // Get the current user mode and switch it
   const userMode = proofFlow.getUserMode();
   const inputButton = document.getElementById("input-button");
   const collapsibleButton = document.getElementById("collapse-button");
 
+  // Error handling
   if (!inputButton) {
     throw new Error("input-button not found");
   }
   if (!collapsibleButton) {
     throw new Error("collapse-button not found");
   }
+  
+  // Set the display of the input and collapsible buttons based on the user mode
   if (userMode === UserMode.Student) {
     inputButton.style.display = "none";
     collapsibleButton.style.display = "none";
     lockEditing(true);
-  } else {
+  } 
+  // If the user mode is teacher, the input and collapsible buttons are displayed
+  else {
     inputButton.style.display = "";
     collapsibleButton.style.display = "";
     lockEditing(false);
@@ -40,6 +49,7 @@ export function lockEditing(lock: boolean) {
   const editorArea = document.getElementById("ProofFlowEditor");
   editorArea?.classList.toggle("locked", lock);
 
+  // Lock or unlock all areas in the editor
   const allAreas = document.getElementById("ProofFlowEditor")?.children;
 
   if (allAreas) {
@@ -64,8 +74,10 @@ export function lockEditing(lock: boolean) {
  */
 function lockMarkdown(area: Element, lock: boolean) {
   area.setAttribute("contenteditable", lock ? "false" : "true");
+  // Get all elements in the area
   const allMarkdownElements = area.querySelectorAll("*");
 
+  // Lock or unlock all elements
   allMarkdownElements.forEach((element) => {
     element.setAttribute("contenteditable", lock ? "false" : "true");
   });
@@ -95,6 +107,7 @@ function lockCollapsible(area: Element, lock: boolean) {
   const content = area.querySelector(".collapsible_content");
   const contentChildren = content?.children;
 
+  // Lock or unlock all content children present in the collapsible area
   if (contentChildren) {
     Array.from(contentChildren).forEach((area) => {
       if (area.classList.contains("markdown")) {
