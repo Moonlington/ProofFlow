@@ -1,72 +1,41 @@
 import { Command, EditorView as CMView, keymap } from "@codemirror/view";
-import { ComputeChange } from "./types";
 import { EditorView } from "prosemirror-view";
 import { exitCode } from "prosemirror-commands";
-import { ProofFlow } from "../editor/ProofFlow";
-import { getContainingNode } from "../commands/helpers";
-import { Node as ProsemirrorNode } from "prosemirror-model";
-import { Selection, TextSelection } from "prosemirror-state";
 
 // File to keep the helper functions for codemirror
 // Allows to keep codemirrorviews to be modular and maintainabl
 
 /**
- * Computes the change between two strings.
+ * Returns the keymap for handling the Tab key in CodeMirror.
  *
- * @param oldVal - The old string value.
- * @param newVal - The new string value.
- * 
- * @returns The computed change object or null if there is no change.
+ * @param cm The CodeMirror instance.
+ * @returns The keymap object.
  */
-export const computeChange = (
-  oldVal: string,
-  newVal: string,
-): ComputeChange | null => {
-  if (oldVal === newVal) {
-    return null;
-  }
-
-  let start = 0;
-  let oldEnd = oldVal.length;
-  let newEnd = newVal.length;
-
-  while (
-    start < oldEnd &&
-    oldVal.charCodeAt(start) === newVal.charCodeAt(start)
-  ) {
-    start += 1;
-  }
-
-  while (
-    oldEnd > start &&
-    newEnd > start &&
-    oldVal.charCodeAt(oldEnd - 1) === newVal.charCodeAt(newEnd - 1)
-  ) {
-    oldEnd -= 1;
-    newEnd -= 1;
-  }
-
-  return { from: start, to: oldEnd, text: newVal.slice(start, newEnd) };
-};
-
 export function getTabKeyMap(cm: CMView) {
   return keymap.of([
     {
       key: "Tab",
       run: () => {
         const state = cm.state;
+        // If there is a selection, replace it with a tab
         cm.dispatch(state.update(state.replaceSelection("\t")));
         return true;
       },
+      // Prevent the default behavior of the Tab key
       preventDefault: true,
     },
   ]);
 }
 
-export function getOtherKeyMaps(
-  outerView: EditorView,
-) {
+/**
+ * Returns a keymap containing various key bindings for the editor.
+ *
+ * @param outerView The outer editor view.
+ * @returns The keymap with the specified key bindings.
+ */
+export function getOtherKeyMaps(outerView: EditorView) {
   return keymap.of([
+    // Key bindings for using the arrow keys to navigate the CodeMirror editor
     {
       key: "ArrowUp",
       run: mayBeEscape("line", -1),
@@ -85,6 +54,8 @@ export function getOtherKeyMaps(
     },
     {
       key: "Ctrl-Enter",
+      // Exit the code block and move the cursor to the ProseMirror editor
+      // If the cursor is already in the ProseMirror editor, do nothing
       run: () => {
         if (exitCode(outerView.state, outerView.dispatch)) {
           outerView.focus();
@@ -103,17 +74,18 @@ export function getOtherKeyMaps(
 }
 
 /**
- * Escape the codemirror editor and move the cursor to the ProseMirror editor
- * Will return false if the movement will not escape the current view
+ * Checks if the cursor position can be escaped in the specified direction.
+ *
+ * @param unit - The unit of movement ("char" or "line").
+ * @param dir - The direction of movement (-1 for left/up, 1 for right/down).
+ * @returns A command function that checks if the cursor position can be escaped.
  */
-export function mayBeEscape(
-  unit: "char" | "line",
-  dir: -1 | 1,
-): Command {
+export function mayBeEscape(unit: "char" | "line", dir: -1 | 1): Command {
   return (view) => {
     const { state } = view;
     const { selection } = state;
 
+    // Function to convert the offset to a position
     const offsetToPos = () => {
       const offset = selection.main.from;
       const line = state.doc.lineAt(offset);
@@ -126,6 +98,9 @@ export function mayBeEscape(
     const firstLine = 1;
     const lastLine = state.doc.lineAt(state.doc.length).number;
 
+    // If we are at the start or end of the cell
+    // or there is a selection, we can move
+    // Else we cannot move
     if (
       hasSelection ||
       pos.line !== (dir < 0 ? firstLine : lastLine) ||
