@@ -289,40 +289,27 @@ export class SettingsOverlay {
    */
   private lspContainer(): HTMLElement {
     // Get the LSP objects and types from local storage
-    const lspCoq = JSON.parse(localStorage.getItem("coq") || "{}");
-    const lspLean = JSON.parse(localStorage.getItem("lean") || "{}");
+    const lspCoq = JSON.parse(localStorage.getItem("coq") || "{}") || "";
+    const lspLean = JSON.parse(localStorage.getItem("lean") || "{}") || "";
 
     let lspCoqPath = lspCoq.path || "";
     let lspLeanPath = lspLean.path || "";
 
     const currentLspType = localStorage.getItem("currentLspType") || "coq";
 
-    const lspContainer = document.createElement("div");
-    const lspLabel = document.createElement("h4");
-    lspLabel.textContent = "LSP Server Path";
+    const lspContainer = this.createContainer("LSP Server Path");
 
-    const lspSelect = document.createElement("select");
-    lspSelect.id = "lsp-type";
-    lspSelect.className = "dropdown";
-
-    const optionElementCoq = document.createElement("option");
-    optionElementCoq.value = "coq";
-    optionElementCoq.textContent = "Coq";
-    lspSelect.appendChild(optionElementCoq);
-    const optionElementLean = document.createElement("option");
-    optionElementLean.value = "lean";
-    optionElementLean.textContent = "Lean";
-    lspSelect.appendChild(optionElementLean);
-    lspSelect.value = currentLspType || "coq";
+    const lspSelect = this.createDropdown(["Coq", "Lean"]);
+    lspSelect.value = currentLspType;
 
     const lspPath = document.createElement("input");
     lspPath.type = "text";
     lspPath.id = "lsp-path";
     lspPath.placeholder = "Enter the path to the LSP server";
     lspPath.classList.add("settings-text-input");
-    if (currentLspType == "coq") {
+    if (currentLspType == "Coq") {
       lspPath.value = lspCoqPath;
-    } else if (currentLspType == "lean") {
+    } else if (currentLspType == "Lean") {
       lspPath.value = lspLeanPath;
     }
 
@@ -330,25 +317,23 @@ export class SettingsOverlay {
       const target = e.target as HTMLSelectElement;
       const lspType = target.value;
       window.localStorage.setItem("currentLspType", lspType);
-      if (lspType === "coq") {
-        lspPath.value = JSON.parse(localStorage.getItem("coq") || "{}").path;
-      } else if (lspType === "lean") {
-        lspPath.value = JSON.parse(localStorage.getItem("lean") || "{}").path;
+      if (lspType === "Coq") {
+        lspPath.value = JSON.parse(localStorage.getItem("coq") || "{}").path || "";
+      } else if (lspType === "Lean") {
+        lspPath.value = JSON.parse(localStorage.getItem("lean") || "{}").path || "";
       }
     });
 
     const lspButton = document.createElement("button");
     lspButton.textContent = "Apply";
     lspButton.addEventListener("click", () => {
-      console.log("LSP Path: " + lspPath.value); //TODO Add lspPath functionality
-      // proofFlow.setLspPath(lspPath.value);
       if (!proofFlow.hasFileOpen) {
         switch (lspSelect.value) {
-          case "lean":
+          case "Lean":
             proofFlow.setOutputConfig(PureLeanOutput);
             proofFlow.fileName = "file.lean";
             break;
-          case "coq":
+          case "Coq":
             proofFlow.setOutputConfig(CoqMDOutput);
             proofFlow.fileName = "file.mv";
             break;
@@ -362,12 +347,11 @@ export class SettingsOverlay {
       };
       const lspType = lspSelect.value;
 
-      window.localStorage.setItem(lspType, JSON.stringify(lsp));
+      window.localStorage.setItem(lspType.toLowerCase(), JSON.stringify(lsp));
       window.localStorage.setItem("currentLspType", lspType);
     });
     lspButton.classList.add("settings-apply-button");
 
-    lspContainer.appendChild(lspLabel);
     lspContainer.appendChild(lspSelect);
     lspContainer.appendChild(lspPath);
     lspContainer.appendChild(lspButton);
