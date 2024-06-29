@@ -21,7 +21,6 @@ const blockMathInputRule = makeBlockMathInputRule(
   ProofFlowSchema.nodes.math_display,
 );
 
-// TODO: Documentation
 /**
  * Array of plugins used in the ProofFlow editor.
  * @type {Plugin[]}

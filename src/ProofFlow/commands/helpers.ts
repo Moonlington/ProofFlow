@@ -315,6 +315,10 @@ export function inputProof(
 
 let visibleLine = true;
 let indexLine = -1;
+
+/**
+ * Toggles the visibility of line numbers in the editor.
+ */
 export function toggleLineNumbers() {
   let sheet = (document.getElementById("dynamic-styles") as HTMLStyleElement)
     .sheet;
