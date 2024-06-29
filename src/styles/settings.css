@@ -16,7 +16,7 @@
     max-width: 800px;
     padding: 25px;
     text-align: center;
-    margin-bottom: 10%;
+    margin-bottom: 0;
     position: relative;
 }
 
@@ -177,4 +177,10 @@
     background-color: var(--primary-color);
     color: var(--text-color);
     z-index: 1000;
+}
+
+@media (min-width: 1200px) {
+    .popup {
+        margin-bottom: 10%;
+    }
 }
