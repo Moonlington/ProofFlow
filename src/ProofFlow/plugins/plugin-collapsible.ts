@@ -1,6 +1,9 @@
 import { Plugin } from "prosemirror-state";
 import { proofFlow } from "../../main";
 
+/**
+ * Plugin to handle the collapsible area
+ */
 export let collapsibleAreaPlugin = new Plugin({
   props: {
     handleClickOn(view, _pos, node, nodePos, _event, _direct) {

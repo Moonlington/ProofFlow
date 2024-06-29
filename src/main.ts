@@ -75,10 +75,12 @@ window.onbeforeunload = function () {
   return "Are you sure you want to leave? You may have unsaved changes.";
 };
 
+// Add event listener to the editor to render all markdown nodes
 export function showOverlay(bool: boolean) {
   settingsOverlay.showOverlay(bool);
 }
 
+// Add event listener to the editor to render all markdown nodes
 export function adjustLeftDivWidth() {
   const rightDiv = document.getElementById("miniMapContainer")!;
   const leftDiv = document.getElementById("ProofFlowEditor")!;
