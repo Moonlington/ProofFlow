@@ -12,6 +12,7 @@ import {
 import { ProofFlowSchema } from "../editor/proofFlowSchema.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode, lockEditing } from "../UserMode/userMode.ts";
+import { markdownRenderedClickFix } from "./markdown-extra.ts";
 
 /**
  * Plugin that handles the conversion between markdown and rendered markdown nodes.
@@ -145,6 +146,7 @@ export const markdownPlugin = new Plugin({
 
           let innerOffsetToClicked = 0;
 
+          // Go through all the descendants of the input content node
           inputContentNode.descendants((node, pos) => {
             if (!highLevelCells.includes(node.type.name)) return false;
 
@@ -155,20 +157,26 @@ export const markdownPlugin = new Plugin({
               clickedPos,
             );
 
+            // If the child node is the clicked markdown_rendered node, replace it with a markdown node
             if (bIsClickedInputNode && node.type.name === "markdown_rendered") {
               newChildNode = renderedToMarkdown(node, ProofFlowSchema);
-            } else if (!bIsClickedInputNode && node.type.name === "markdown") {
+            }
+            // If it is not the clicked node and it is a markdown node, render it to markdown_rendered
+            else if (!bIsClickedInputNode && node.type.name === "markdown") {
               newChildNode = markdownToRendered(node, ProofFlowSchema);
             }
 
+            // If the node is the clicked node, we need to calculate the correct position
             if (bIsClickedInputNode) {
               offsetToClicked += innerOffsetToClicked + 2;
             }
             innerOffsetToClicked += newChildNode.nodeSize;
 
+            // If it is neither the clicked markdown_rendered node nor a markdown node, add it as is
             newInputChildNodes.push(newChildNode);
           });
 
+          // Create the new input content node with the new child nodes
           let newInputContentNode = ProofFlowSchema.node(
             "input_content",
             { visible: true },
@@ -181,9 +189,11 @@ export const markdownPlugin = new Plugin({
             newInputContentNode,
           );
 
+          // Set the new node to the new input node
           newNode = newInputNode;
         }
 
+        // Correct the position of the cursor
         if (bIsClickedNode) {
           offsetToClicked += cursorOffset - clickedPos;
           correctPos = offsetToClicked;
@@ -193,6 +203,7 @@ export const markdownPlugin = new Plugin({
         newNodes.push(newNode); // Push the new node to the new nodes array
       });
 
+      // Replace the old document with the new one
       trans.replaceWith(0, view.state.doc.content.size, newNodes);
 
       // Set the cursor to the correct position
@@ -202,13 +213,16 @@ export const markdownPlugin = new Plugin({
       };
 
       // Allows to get into math nodes
-      console.log("Node type: ", node.type.name);
       if (node.type.name === "math_display") {
         resolveAndSetSelection(correctPos);
       } else {
+        // Get the new container name to prevent escaping collapsible areas
         const newResolvedPos = trans.doc.resolve(correctPos);
         const newContainerName = newResolvedPos.node(newResolvedPos.depth - 1)
           .type.name;
+
+        // If we are in student mode and not in an input node,
+        // we need to lock the editing of the new nodes
         if (
           newContainerName !== "input_content" &&
           proofFlow.getUserMode() === UserMode.Student
@@ -216,18 +230,24 @@ export const markdownPlugin = new Plugin({
           // Prevents bug for escaping collapsible areas
           resolveAndSetSelection(pos);
         } else {
+          // Set the cursor to the correct position
           resolveAndSetSelection(correctPos);
         }
       }
 
+      // Dispatch the transaction
       view.dispatch(trans);
 
+      // Ensure undo tracking is added
       proofFlow.addUndoTrack();
 
       // If we switch while inside of student Mode, we need to lock the editing of the new nodes
       if (locked) {
         lockEditing(true);
       }
+
+      // Ensure we can click on rendered markdown nodes without rendering them again
+      markdownRenderedClickFix();
     },
   },
 });

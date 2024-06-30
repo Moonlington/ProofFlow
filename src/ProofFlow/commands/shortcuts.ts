@@ -8,6 +8,7 @@ import { proofFlow, showOverlay } from "../../main";
 import { UserMode } from "../UserMode/userMode";
 import { cmdInsertCode, cmdInsertMarkdown, cmdInsertMath } from "./commands";
 import { InsertionPlace } from "./helpers";
+import { markdownRenderedClickFix } from "../plugins/markdown-extra";
 
 // Helper function to generate unique key combination strings
 function getKeyCombination(event: KeyboardEvent) {
@@ -72,10 +73,12 @@ export function applyGlobalKeyBindings(editorView: EditorView): () => void {
     "Ctrl+m": () => {
       let command = cmdInsertMarkdown(InsertionPlace.Underneath);
       command(editorView.state, editorView.dispatch);
+      markdownRenderedClickFix();
     },
     "Ctrl+Shift+m": () => {
       let command = cmdInsertMarkdown(InsertionPlace.Above);
       command(editorView.state, editorView.dispatch);
+      markdownRenderedClickFix();
     },
     "Ctrl+p": () => {
       selectParentNode(editorView.state, editorView.dispatch);
