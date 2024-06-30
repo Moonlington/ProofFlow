@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import { EditorView } from 'prosemirror-view';
 import { applyGlobalKeyBindings } from '../src/ProofFlow/commands/shortcuts';
 import { Minimap } from '../src/ProofFlow/minimap';
-import { undo, redo, selectParentNode, getCollapsibleInsertCommand, getInputInsertCommand, proofFlow, UserMode } from './commands'; // Adjust import path as necessary
+import { undo, redo, selectParentNode, getCollapsibleInsertCommand, getInputInsertCommand, proofFlow, UserMode } from '../src/ProofFlow/commands/commands.ts';
 
 jest.mock('prosemirror-view', () => {
     return {
@@ -33,9 +33,9 @@ describe('applyGlobalKeyBindings', () => {
   let minimapMock;
 
   beforeEach(() => {
-    editorViewMock = new EditorView();
+    editorViewMock = new EditorView({} as any, {} as any);
     minimapMock = new Minimap();
-    cleanupFunction = applyGlobalKeyBindings(editorViewMock, minimapMock);
+    cleanupFunction = applyGlobalKeyBindings(editorViewMock);
   });
 
   afterEach(() => {
