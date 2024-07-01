@@ -9,6 +9,9 @@ import {
   OutputConfig,
 } from "../editor/ProofFlowDocument";
 
+/**
+ * Interface for a parser.
+ */
 export interface Parser {
   parse(document: string): ProofFlowDocument;
 }
@@ -20,6 +23,10 @@ export type ParserConfig = {
   [key: string]: AreaConfig;
 };
 
+/**
+ * A simple parser to parse a document.
+ * The parser creates areas following the ProofFlow schema
+ */
 class SimpleParser implements Parser {
   config: ParserConfig;
   outputConfig: OutputConfig;

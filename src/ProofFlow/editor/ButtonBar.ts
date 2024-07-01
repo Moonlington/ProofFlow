@@ -168,7 +168,7 @@ export class ButtonBar {
         command: () => {
           toggleLineNumbers();
         },
-        hoverText: "Toggle line numbers", 
+        hoverText: "Toggle line numbers",
       },
       {
         name: "Parent",

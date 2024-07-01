@@ -20,8 +20,14 @@ import { LSPDiagnostic } from "../lspClient/models.ts";
 import { ProofFlow } from "../editor/ProofFlow.ts";
 import { wordHover } from "./extensions/hovertooltip.ts";
 
+// Severity of the diagnostic
 type Severity = "hint" | "info" | "warning" | "error";
 
+/**
+ * Compute the change between two strings
+ * @param oldVal
+ * @param newVal
+ */
 const computeChange = (
   oldVal: string,
   newVal: string,

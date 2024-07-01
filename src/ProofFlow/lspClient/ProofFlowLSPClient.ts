@@ -46,9 +46,8 @@ enum ProofFlowLSPClientFileType {
   Lean = "lean",
 }
 
-
-export type diagnosticsHandler = (diag: DiagnosticsMessageData) => void; 
-export type documentProgressHandler = () => void; 
+export type diagnosticsHandler = (diag: DiagnosticsMessageData) => void;
+export type documentProgressHandler = () => void;
 
 /**
  * The ProofFlow LSP client

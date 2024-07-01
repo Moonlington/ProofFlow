@@ -77,7 +77,7 @@ let nextAreaId = 0; //start value for the area id
 /**
  * Function to increase nextAreaId and return the new value
  * @returns - the new value of nextAreaId
- */ 
+ */
 function getNextAreaId(): number {
   return nextAreaId++;
 }
@@ -91,7 +91,7 @@ class Area {
   content: string; // Content of the area
   parent: undefined | CollapsibleArea | InputArea; // Parent of the area
   range: Range | undefined; // Range of the area in the document
- 
+
   /**
    * Constructor for the Area class
    * @param {AreaType} type - Type of the area
@@ -326,15 +326,17 @@ class ProofFlowDocument {
   updateBounds() {
     let fullstring = this.toString(); // Get the string representation of the document
     let lastIndex = 0; // Initialize the last index
-    for (let area of this.areas) { 
+    for (let area of this.areas) {
       let areaString = area.toString(this.outputConfig); // Get the string representation of the area
-      let startPosition = indexToPosition( // Get the start position of the area
+      let startPosition = indexToPosition(
+        // Get the start position of the area
         fullstring.indexOf(areaString, lastIndex) +
           this.outputConfig[area.type][0].length,
         fullstring,
       );
       if (startPosition.line > 0) startPosition.character--;
-      let endPosition = indexToPosition( // Get the end position of the area
+      let endPosition = indexToPosition(
+        // Get the end position of the area
         fullstring.indexOf(areaString, lastIndex) +
           areaString.length -
           this.outputConfig[area.type][1].length -
@@ -345,7 +347,7 @@ class ProofFlowDocument {
       let newLastIndex = // Get the new last index
         fullstring.indexOf(areaString, lastIndex) + areaString.length;
       // If the area is a collapsible or input area, set the bounds of the subareas
-      if (area.type === AreaType.Collapsible || area.type === AreaType.Input) { 
+      if (area.type === AreaType.Collapsible || area.type === AreaType.Input) {
         let innerAreas: Area[];
         switch (area.type) {
           case AreaType.Collapsible:

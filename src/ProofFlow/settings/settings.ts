@@ -340,7 +340,7 @@ export class SettingsOverlay {
     const lspButton = document.createElement("button");
     lspButton.textContent = "Apply";
     lspButton.addEventListener("click", () => {
-      console.log("LSP Path: " + lspPath.value); 
+      console.log("LSP Path: " + lspPath.value);
       if (!proofFlow.hasFileOpen) {
         switch (lspSelect.value) {
           case "lean":

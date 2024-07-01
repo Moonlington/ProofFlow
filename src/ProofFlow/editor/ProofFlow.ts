@@ -66,6 +66,9 @@ export type ProofFlowOptions = {
   lspManager?: LSPClientManager;
 };
 
+/**
+ * Main class for the ProofFlow editor.
+ */
 export class ProofFlow {
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
   private _containerElem: HTMLElement; // The HTML element that contains the initial content for the editor
@@ -162,10 +165,7 @@ export class ProofFlow {
             view,
             getPos,
             cmOptions: {
-              extensions: [
-                basicSetupNoHistory,
-                linter(null),
-              ],
+              extensions: [basicSetupNoHistory, linter(null)],
             },
           }),
       },
@@ -238,7 +238,7 @@ export class ProofFlow {
     this.lspClient?.didChange(parsed);
   }
 
-  /** 
+  /**
    * Retrieves the LSP client handler associated with the ProofFlow instance.
    * @returns The LSP client handler.
    */
@@ -394,7 +394,7 @@ export class ProofFlow {
       let node = this.getState().doc.nodeAt(offset);
       if (node == null) return;
       inputProof(node, ProofStatus.Correct, offset);
-    })
+    });
 
     if (focusedInstance != null) {
       if (firefoxUsed) {
@@ -443,7 +443,8 @@ export class ProofFlow {
         if (text.indexOf("import VersoProofFlow") !== -1) {
           parser = LeanParser;
           this.outputConfig = LeanOutput;
-        } else { //If the file is a Pure Lean file
+        } else {
+          //If the file is a Pure Lean file
           parser = PureLeanParser;
           this.outputConfig = PureLeanOutput;
           let proxy = parser as SimpleParser;

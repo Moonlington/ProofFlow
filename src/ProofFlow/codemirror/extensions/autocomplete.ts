@@ -13,7 +13,8 @@ import CodeMirrorView from "../codemirrorview.ts";
  */
 export function autocomplete(view: CodeMirrorView) {
   return autocompletion({
-    override: [ // Override the default autocompletion function
+    override: [
+      // Override the default autocompletion function
       async (context: CompletionContext): Promise<CompletionResult | null> => {
         return new Promise(async (resolve, _) => {
           const { state, pos } = context;
@@ -28,7 +29,7 @@ export function autocomplete(view: CodeMirrorView) {
           if (!found) {
             return;
           }
-          
+
           // Get the area at the current position
           let area = view.proofflow.pfDocument.getAreaById(found[0].attrs.id);
           if (!area) {
