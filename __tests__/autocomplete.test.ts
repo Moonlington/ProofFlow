@@ -6,53 +6,70 @@
 //   import { CompletionList } from "../src/ProofFlow/lspClient/models.ts";
 import { autocomplete } from "../src/ProofFlow/codemirror/extensions/autocomplete.ts";
 import { CodeMirrorView } from "../src/ProofFlow/codemirror/codemirrorview.ts";
+import { ProofFlow } from "../src/ProofFlow/editor/ProofFlow.ts";
+import { Schema } from "prosemirror-model";
+import { ProofFlowSchema } from "../src/ProofFlow/editor/proofFlowSchema.ts";
 
-jest.mock('@codemirror/autocomplete', () => ({
-  autocompletion: jest.fn().mockImplementation((config) => config),
-}));
-
+// Tests the autocomplete function
 describe('autocomplete', () => {
-  it('should return completion items', async () => {
-    // Mock CodeMirrorView and its methods
-    const mockView = {
-      proofflow: {
-        getLSPClient: jest.fn().mockReturnValue({
-          completion: jest.fn().mockResolvedValue({
-            items: [{ label: 'testCompletion' }],
-          }),
-        }),
-        findNode: jest.fn().mockReturnValue([{ attrs: { id: 'node1' } }]),
-        pfDocument: {
-          getAreaById: jest.fn().mockReturnValue({
-            getPosition: jest.fn().mockReturnValue({ line: 1, character: 5 }),
-          }),
-        },
-      },
-      getPos: jest.fn().mockReturnValue(10),
-    } as unknown as CodeMirrorView;
-
-    // Mock CompletionContext
-    const mockContext = {
-      state: {
-        doc: {
-          lineAt: jest.fn().mockReturnValue({ text: 'test', from: 0 }),
-        },
-      },
-      pos: 10,
+  // Returns completion results when LSP client provides valid data
+  it('should return completion results when LSP client provides valid data', async () => {
+    const mockLSPClient: LSPClientHandler = {
+      initialize: jest.fn(),
+      initialized: true,
+      shutdown: jest.fn(),
+      exit: jest.fn(),
+      // Add other required properties here
+      completion: jest.fn().mockResolvedValue({
+        isIncomplete: false,
+        items: [{ label: 'testCompletion' }],
+      }),
     };
+    const mockProofFlow: ProofFlow = {
+      _editorElem: new HTMLElement(),
+      _containerElem: new HTMLElement(),
+      _schema: new Schema({}),
+      editorStateConfig: {},
+      getLSPClient: () => mockLSPClient,
+      findNode: jest.fn().mockReturnValue([{ attrs: { id: 'testId' } }]),
+      pfDocument: {
+        _outputConfig: {},
+        uri: ''
+      },
+    };
+    const view = new CodeMirrorView(mockProofFlow, { node: {}, view: {}, getPos: () => 0 });
+    const context = {
+      state: { doc: { lineAt: jest.fn().mockReturnValue({ text: 'test', from: 0 }) } },
+      pos: 1,
+    };
+    const result = await autocomplete(view).override[0](context);
+    expect(result).toEqual({ from: 1, options: [{ label: 'testCompletion' }] });
+  });
 
-    // Call the autocomplete function with the mocked view
-    const result = autocomplete(mockView);
-
-    // Assert the override function is defined
-    expect(result.override).toBeDefined();
-
-    // Execute the override function and assert the result
-    const overrideFn = result.override[0];
-    const completionResult = await overrideFn(mockContext);
-    expect(completionResult).toEqual({
-      from: 10,
-      options: [{ label: 'testCompletion' }],
-    });
+  // Handles cases where the trigger character is at the start of the line
+  it('should handle cases where the trigger character is at the start of the line', async () => {
+    const mockLSPClient = {
+      completion: jest.fn().mockResolvedValue({
+        isIncomplete: false,
+        items: [{ label: 'testCompletion' }],
+      }),
+    };
+    const mockProofFlow = {
+      getLSPClient: () => mockLSPClient,
+      findNode: jest.fn().mockReturnValue([{ attrs: { id: 'testId' } }]),
+      pfDocument: {
+        areas: {},
+        _outputConfig: {},
+        uri: '',
+        documentProgressed: jest.fn(),
+      },
+    };
+    const view = new CodeMirrorView(mockProofFlow, { node: {}, view: {}, getPos: () => 0 });
+    const context = {
+      state: { doc: { lineAt: jest.fn().mockReturnValue({ text: 't', from: 0 }) } },
+      pos: 1,
+    };
+    const result = await autocomplete(view).override[0](context);
+    expect(result).toEqual({ from: 1, options: [{ label: 'testCompletion' }] });
   });
 });

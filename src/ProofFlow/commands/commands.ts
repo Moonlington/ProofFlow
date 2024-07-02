@@ -12,7 +12,7 @@ import { ProofFlowSchema } from "../editor/proofFlowSchema";
  * @param place - The insertion place.
  * @returns The insertion function.
  */
-function getInsertionFunction(place: InsertionPlace) {
+export function getInsertionFunction(place: InsertionPlace) {
   return place == InsertionPlace.Above ? insertAbove : insertUnder;
 }
 

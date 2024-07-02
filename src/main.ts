@@ -11,7 +11,7 @@ import { SettingsOverlay } from "./ProofFlow/settings/settings.ts";
 import { handleUserModeSwitch } from "./ProofFlow/UserMode/userMode.ts";
 import { WebApplicationSaver } from "./ProofFlow/fileHandlers/webApplicationSaver.ts";
 import { WebApplicationLSPManager } from "./ProofFlow/lspClient/webApplicationManager.ts";
-import { ProofFlowSaver } from "./ProofFlow/fileHandlers/proofFlowSaver.ts";
+// import { ProofFlowSaver } from "./ProofFlow/fileHandlers/proofFlowSaver.ts";
 import { VSCodeSaver } from "./ProofFlow/fileHandlers/vscodeSaver.ts";
 import { vscode } from "./ProofFlow/extension/vscode.ts";
 import { renderAllMarkdown } from "./ProofFlow/plugins/markdown-extra.ts";

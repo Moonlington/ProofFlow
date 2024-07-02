@@ -62,7 +62,7 @@ export function lockEditing(lock: boolean) {
  * @param area - The markdown area element.
  * @param lock - A boolean value indicating whether to lock or unlock the area.
  */
-function lockMarkdown(area: Element, lock: boolean) {
+export function lockMarkdown(area: Element, lock: boolean) {
   area.setAttribute("contenteditable", lock ? "false" : "true");
   const allMarkdownElements = area.querySelectorAll("*");
 
@@ -76,7 +76,7 @@ function lockMarkdown(area: Element, lock: boolean) {
  * @param area - The element containing the content to be locked or unlocked.
  * @param lock - A boolean value indicating whether to lock or unlock the content.
  */
-function lockCode(area: Element, lock: boolean) {
+export function lockCode(area: Element, lock: boolean) {
   const content = area.querySelector(".cm-content");
   content?.setAttribute("contenteditable", lock ? "false" : "true");
 }
@@ -87,7 +87,7 @@ function lockCode(area: Element, lock: boolean) {
  * @param area - The collapsible area element.
  * @param lock - A boolean value indicating whether to lock or unlock the area.
  */
-function lockCollapsible(area: Element, lock: boolean) {
+export function lockCollapsible(area: Element, lock: boolean) {
   const title = area.querySelector("collapsible_title");
   title?.setAttribute("contenteditable", lock ? "false" : "true");
 
