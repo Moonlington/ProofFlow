@@ -366,7 +366,7 @@ export class ProofFlow {
       let node = this.getState().doc.nodeAt(offset);
       if (node == null) return;
       inputProof(node, ProofStatus.Correct, offset);
-    })
+    });
 
     if (focusedInstance != null) {
       if (firefoxUsed) {
