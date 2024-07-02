@@ -1,5 +1,5 @@
-import { SimpleParser, ParserConfig, AreaType } from '../src/ProofFlow/parser/parser';
-import { ProofFlowDocument, Area, CollapsibleArea, InputArea } from '../src/ProofFlow/editor/ProofFlowDocument';
+import { SimpleParser, AreaType } from '../src/ProofFlow/parser/parser';
+import { Area } from '../src/ProofFlow/editor/ProofFlowDocument';
 
 jest.mock('../src/ProofFlow/editor/ProofFlowDocument', () => {
   return {
