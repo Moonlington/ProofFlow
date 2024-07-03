@@ -11,7 +11,7 @@ import {
   toggleLineNumbers,
 } from "../commands/helpers.ts";
 import { EditorView } from "prosemirror-view";
-import { NodeSelection, TextSelection } from "prosemirror-state";
+import { NodeSelection } from "prosemirror-state";
 import { deleteSelection, selectParentNode } from "prosemirror-commands";
 import {
   getCollapsibleInsertCommand,
@@ -27,7 +27,6 @@ import { markdownRenderedClickFix } from "../plugins/markdown-extra.ts";
  * Represents a button bar for interacting with an editor.
  */
 export class ButtonBar {
-  private _schema: Schema;
   private _editorView: EditorView;
   public _bar: HTMLElement;
   private _cellBar: HTMLElement;
@@ -37,8 +36,7 @@ export class ButtonBar {
    * @param {Schema} schema - The schema used by the editor.
    * @param {EditorView} editorView - The EditorView instance.
    */
-  constructor(schema: Schema, editorView: EditorView) {
-    this._schema = schema;
+  constructor( editorView: EditorView ) {
     this._editorView = editorView;
     this._bar = document.createElement("div");
     this._cellBar = document.createElement("div");
