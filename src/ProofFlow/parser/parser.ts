@@ -107,6 +107,9 @@ class SimpleParser implements Parser {
           area = new InputArea();
           break;
       }
+      if (containedAreas.length === 0) {
+        containedAreas = [new Area(this.defaultAreaType, "")];
+      }
       containedAreas.forEach((sub) => {
         if ([AreaType.Collapsible, AreaType.Input].includes(sub.type)) {
           area.addArea(
@@ -213,6 +216,9 @@ class SimpleParser implements Parser {
         case AreaType.Input:
           area = new InputArea();
           break;
+      }
+      if (containedAreas.length === 0) {
+        containedAreas = [new Area(this.defaultAreaType, "")];
       }
       containedAreas.forEach((sub) => {
         if ([AreaType.Collapsible, AreaType.Input].includes(sub.type)) {
