@@ -76,11 +76,3 @@ export function createDropdown(
 
   return dropdown;
 }
-
-export function addOnClickEventListener(
-  element: HTMLElement,
-  cmd: (e: Event) => void,
-): HTMLElement {
-  element.addEventListener("click", (e) => cmd(e));
-  return element;
-}

@@ -7,7 +7,6 @@ import {
   createContainer,
   createDropdown,
   createLabel,
-  addOnClickEventListener,
 } from "./elementCreation";
 
 /**
