@@ -243,26 +243,10 @@ export class SettingsOverlay {
     const currentLspType = localStorage.getItem("currentLspType") || "coq";
 
     // Create the container and header
-    const lspContainer = this.createContainer("LSP Server Path");
+    const lspContainer = createContainer("LSP Server Path");
 
-    // Create the dropdown for the LSP type
-    const lspSelect = this.createDropdown(["Coq", "Lean"]);
-    lspSelect.value = currentLspType;
-
-    // Create the input field for the LSP path
-    const lspPath = document.createElement("input");
-    lspPath.type = "text";
-    lspPath.id = "lsp-path";
-    lspPath.placeholder = "Enter the path to the LSP server";
-    lspPath.classList.add("settings-text-input");
-    if (currentLspType == "Coq") {
-      lspPath.value = lspCoqPath;
-    } else if (currentLspType == "Lean") {
-      lspPath.value = lspLeanPath;
-    }
-
-    // Add event listener to the dropdown
-    lspSelect.addEventListener("change", (e) => {
+    // Handle the LSP type change
+    const handleLspTypeChange = (e: Event) => {
       // Get the selected LSP type
       const target = e.target as HTMLSelectElement;
       const lspType = target.value;
@@ -278,7 +262,23 @@ export class SettingsOverlay {
         lspPath.value =
           JSON.parse(localStorage.getItem("lean") || "{}").path || "";
       }
-    });
+    };
+
+    // Create the dropdown for the LSP type
+    const lspSelect = createDropdown(["Coq", "Lean"], handleLspTypeChange);
+    lspSelect.value = currentLspType;
+
+    // Create the input field for the LSP path
+    const lspPath = document.createElement("input");
+    lspPath.type = "text";
+    lspPath.id = "lsp-path";
+    lspPath.placeholder = "Enter the path to the LSP server";
+    lspPath.classList.add("settings-text-input");
+    if (currentLspType == "Coq") {
+      lspPath.value = lspCoqPath;
+    } else if (currentLspType == "Lean") {
+      lspPath.value = lspLeanPath;
+    }
 
     // Create the apply button for the LSP path
     const lspButton = document.createElement("button");
