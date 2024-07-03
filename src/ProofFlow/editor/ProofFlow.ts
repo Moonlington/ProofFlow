@@ -14,7 +14,7 @@ import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { ProofFlowPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 // import { AreaType } from "../parser/area.ts";
-import { ButtonBar } from "./ButtonBar.ts";
+import { ButtonBar } from "../buttonbar/ButtonBar.ts";
 import { linter } from "@codemirror/lint";
 
 import { applyGlobalKeyBindings } from "../commands/shortcuts";
