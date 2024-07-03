@@ -47,19 +47,6 @@ describe('cmdInsertMarkdown', () => {
     expect(command).toBe(insertAbove);
   });
 
-  // Dont think we need this one
-  // Handles undefined or null insertionPlace
-  // it('should handle undefined or null insertionPlace gracefully', () => {
-  //   const commandUndefined = cmdInsertMarkdown(undefined as any);
-  //   const commandNull = cmdInsertMarkdown(null as any);
-
-  //   expect(commandUndefined).toBeDefined();
-  //   expect(commandUndefined).toBeInstanceOf(Function);
-
-  //   expect(commandNull).toBeDefined();
-  //   expect(commandNull).toBeInstanceOf(Function);
-  // });
-
   // Returns a valid Command object for insertion
   it('should return a valid Command object for insertion when insertionPlace is Above', () => {
     const insertionPlace = InsertionPlace.Above;
