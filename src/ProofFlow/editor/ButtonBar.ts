@@ -7,6 +7,7 @@ import {
 import {
   InsertionPlace,
   getContainingNode,
+  requestConfirm,
   toggleLineNumbers,
 } from "../commands/helpers.ts";
 import { EditorView } from "prosemirror-view";
@@ -216,7 +217,7 @@ export class ButtonBar {
         symbol: "&#x21bb;",
         cmd: async () => {
           if (
-            await proofFlow.requestConfirm(
+            await requestConfirm(
               "Are you sure you want to clear the file?",
             )
           ) {
