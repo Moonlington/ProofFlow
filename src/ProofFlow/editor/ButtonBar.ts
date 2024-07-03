@@ -1,4 +1,3 @@
-import { Schema } from "prosemirror-model";
 import {
   cmdInsertCode,
   cmdInsertMarkdown,
@@ -33,7 +32,6 @@ export class ButtonBar {
 
   /**
    * Creates an instance of ButtonBar.
-   * @param {Schema} schema - The schema used by the editor.
    * @param {EditorView} editorView - The EditorView instance.
    */
   constructor( editorView: EditorView ) {
