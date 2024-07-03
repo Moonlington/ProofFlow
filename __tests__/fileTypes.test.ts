@@ -26,13 +26,6 @@ describe('isCorrectFileType', () => {
     expect(isCorrectFileType(mockFile)).toBe(AcceptedFileType.Unknown);
   });
 
-  // Do we want this test to be able to pass
-  // it('should handle files with uppercase extensions correctly', () => {
-  //   const mockFile = new File([""], "example.COQ", { type: "text/plain" });
-  //   // Assuming the function or AcceptedFileType enum handles case sensitivity
-  //   expect(isCorrectFileType(mockFile)).toBe(AcceptedFileType.COQ);
-  // });
-
   it('should return Unknown for a file with a name that includes periods but no extension', () => {
     const mockFile = new File([""], "example.file.with.no.extension", { type: "application/octet-stream" });
     expect(isCorrectFileType(mockFile)).toBe(AcceptedFileType.Unknown);
