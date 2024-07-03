@@ -1,0 +1,18 @@
+.settings-apply-button, .editor-button {
+    border: 1px solid var(--button-text-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    width: 50px;
+    min-width: 40px;
+    height: 20px;
+    padding: 4px 0;
+    margin: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    background-color: var(--secondary-color);
+}
