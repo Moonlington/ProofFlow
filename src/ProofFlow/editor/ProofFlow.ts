@@ -130,9 +130,6 @@ export class ProofFlow {
     // Create the editor
     this.editorView = this.createEditorView();
 
-    window.addEventListener("beforeunload", (_) => {
-      this.lspClient?.shutdown();
-    });
     // Apply global key bindings
     this.removeGlobalKeyBindings = applyGlobalKeyBindings(this.editorView);
   }
@@ -234,7 +231,7 @@ export class ProofFlow {
     this.updateTimeoutID = undefined;
     if (parsed.toString() === this._pfDocument.toString()) return;
     this._pfDocument = parsed;
-    console.log(parsed);
+    // console.log(parsed);
     this.lspClient?.didChange(parsed);
   }
 
@@ -251,8 +248,7 @@ export class ProofFlow {
    * Helps with navigating from code mirror to other node types
    */
   syncProseMirrorToCodeMirror() {
-    const { state } = this.editorView;
-    const { selection } = state;
+    const { selection } = this.editorView.state;
 
     // Check if the current selection is within a code_mirror node
     if (
@@ -918,52 +914,6 @@ export class ProofFlow {
     if (this.redoTrackStack[this.redoTrackStack.length - 1] === currenRedoDepth)
       return;
     this.redoTrackStack.push(currenRedoDepth);
-  }
-
-  /**
-   * Requests a confirmation from the user.
-   *
-   * @param question - The question to ask the user.
-   * @returns A promise that resolves to a boolean indicating whether the user confirmed the action.
-   */
-  public requestConfirm(question: string): Promise<boolean> {
-    return new Promise((resolve, _) => {
-      // Button container showing below settings buttons, overlay over the editor
-      // When clicking outside or on no, do not reset, if clicking on yes, reset
-      const overlay = document.createElement("div");
-      overlay.className = "overlay";
-
-      const container = document.createElement("div");
-      container.className = "reset-confirm-container";
-      const message = document.createElement("p");
-      message.textContent = question;
-      container.appendChild(message);
-      const buttons = document.createElement("div");
-      buttons.className = "reset-confirm-buttons";
-      const yes = document.createElement("button");
-      yes.textContent = "Yes";
-      yes.onclick = () => {
-        overlay.remove();
-        resolve(true);
-      };
-      const no = document.createElement("button");
-      no.textContent = "No";
-      no.onclick = () => {
-        overlay.remove();
-        resolve(false);
-      };
-      overlay.onclick = (e) => {
-        if (e.target === overlay) {
-          overlay.remove();
-          resolve(false);
-        }
-      };
-      buttons.appendChild(yes);
-      buttons.appendChild(no);
-      container.appendChild(buttons);
-      overlay.appendChild(container);
-      document.getElementById("container")!.appendChild(overlay);
-    });
   }
 
   /**

@@ -15,6 +15,7 @@ import { ProofFlowSaver } from "./ProofFlow/fileHandlers/proofFlowSaver.ts";
 import { VSCodeSaver } from "./ProofFlow/fileHandlers/vscodeSaver.ts";
 import { vscode } from "./ProofFlow/extension/vscode.ts";
 import { renderAllMarkdown } from "./ProofFlow/plugins/markdown-extra.ts";
+import { requestConfirm } from "./ProofFlow/commands/helpers.ts";
 const app = document.createElement("div");
 app.id = "app";
 
@@ -98,7 +99,7 @@ window.addEventListener("load", adjustLeftDivWidth);
  */
 export async function readSingleFile(e: Event) {
   // Wait for user confirmation
-  const confirmed = await proofFlow.requestConfirm(
+  const confirmed = await requestConfirm(
     "Are you sure you want to load a new file, this will delete the current instance.",
   );
   if (!confirmed) {
