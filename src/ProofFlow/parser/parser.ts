@@ -15,7 +15,6 @@ import {
 export interface Parser {
   parse(document: string): ProofFlowDocument;
 }
-
 // TODO: NEEDS DOCUMENTATION key = AreaType: [begin, end]
 type AreaConfig = [RegExp, RegExp];
 
@@ -33,11 +32,21 @@ class SimpleParser implements Parser {
   defaultAreaType: Exclude<AreaType, AreaType.Collapsible | AreaType.Input> =
     AreaType.Text;
 
+  /**
+   * Constructor for this SimpleParser class
+   * @param config
+   * @param outputConfig
+   */
   constructor(config: ParserConfig, outputConfig: OutputConfig) {
     this.config = config;
     this.outputConfig = outputConfig;
   }
 
+  /**
+   * Creates an area of the given type with the given content.
+   * @param type
+   * @param content
+   */
   createArea(type: AreaType, content: string): Area {
     switch (type) {
       case AreaType.Text:
@@ -51,12 +60,21 @@ class SimpleParser implements Parser {
     }
   }
 
+  /**
+   * Parses the given document and returns a ProofFlowDocument.
+   * @param document
+   */
   parse(document: string): ProofFlowDocument {
     let pfDocument = new ProofFlowDocument("", []);
     pfDocument.outputConfig = this.outputConfig;
     return this.recurParse(pfDocument, document);
   }
 
+  /**
+   * Continually parses the document until there is no more content to parse.
+   * @param doc
+   * @param rest
+   */
   recurParse(doc: ProofFlowDocument, rest: string): ProofFlowDocument {
     if (rest === "") return doc;
 
@@ -72,6 +90,7 @@ class SimpleParser implements Parser {
       }
     }
 
+    // Stop the recursion if there are no more areas to parse
     if (startRegex === null) {
       doc.addArea(this.createArea(this.defaultAreaType, rest));
       return doc;
@@ -141,6 +160,7 @@ class SimpleParser implements Parser {
       ),
     );
 
+    // Recur with the rest of the document
     return this.recurParse(
       doc,
       rest.slice(
@@ -152,6 +172,12 @@ class SimpleParser implements Parser {
     );
   }
 
+  /**
+   * Continually parses contained areas
+   * @param areas
+   * @param type
+   * @param rest
+   */
   recurContainedAreas(
     areas: Area[],
     type: AreaType,
@@ -159,6 +185,7 @@ class SimpleParser implements Parser {
   ): [Area[], string] {
     let closingRegex = this.config[type][1].exec(rest);
 
+    // If there are no more areas, return the areas and this means there is no more content to parse
     if (closingRegex === null) {
       areas.push(this.createArea(this.defaultAreaType, rest));
       return [areas, ""];
@@ -253,6 +280,7 @@ class SimpleParser implements Parser {
       ),
     );
 
+    // recur with the rest of the contained areas
     return this.recurContainedAreas(
       areas,
       type,
