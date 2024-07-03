@@ -13,6 +13,7 @@ import { UserMode } from "../UserMode/userMode";
 import { ProofStatus } from "../editor/Schema/proofFlowSchema.ts";
 import { getNextAreaId } from "../editor/ProofFlowArea.ts";
 //import { mathSerializer } from "@benrbray/prosemirror-math";
+
 /**
  * Represents the possible places where an insertion can occur.
  */
