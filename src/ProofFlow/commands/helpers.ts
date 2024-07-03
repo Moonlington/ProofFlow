@@ -144,7 +144,6 @@ export function insertUnder(
     let counter = pos;
 
     trans = insertion(trans, nodeType, counter);
-
   }
 
   // Close the history event to prevent further steps from being appended to it
@@ -155,7 +154,7 @@ export function insertUnder(
 
 /**
  * Inserts nodes of specified types into a transaction at a given position.
- * 
+ *
  * @param trans - The transaction to insert nodes into.
  * @param nodeType - An array of node types to insert.
  * @param counter - The starting position for insertion.
