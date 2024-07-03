@@ -16,8 +16,6 @@ export function renderAllMarkdown(proofFlow: ProofFlow) {
   let trans = view.state.tr;
   const pos = view.state.selection.from;
 
-  console.log("Clicked pos: ", pos);
-
   view.state.doc.descendants((node) => {
     // If the node being clicked is not a valid node or the click is not a user action, return
     if (

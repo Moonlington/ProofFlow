@@ -329,9 +329,11 @@ export class SettingsOverlay {
 
       // Update the LSP path input field with the path for the selected LSP type
       if (lspType === "Coq") {
-        lspPath.value = JSON.parse(localStorage.getItem("coq") || "{}").path || "";
+        lspPath.value =
+          JSON.parse(localStorage.getItem("coq") || "{}").path || "";
       } else if (lspType === "Lean") {
-        lspPath.value = JSON.parse(localStorage.getItem("lean") || "{}").path || "";
+        lspPath.value =
+          JSON.parse(localStorage.getItem("lean") || "{}").path || "";
       }
     });
 

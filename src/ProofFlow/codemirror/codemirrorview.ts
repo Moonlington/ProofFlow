@@ -97,14 +97,7 @@ export class CodeMirrorView implements NodeView {
     this.cm.contentDOM.addEventListener("blur", () => {
       // Clear the selection by setting the anchor and head to the same position,
       // then blur the contentDOM to prevent editing.
-      this.cm.dispatch({
-        selection: {
-          anchor: this.cm.state.selection.main.head,
-          head: this.cm.state.selection.main.head,
-        },
-      });
-      this.cm.contentDOM.blur();
-      CodeMirrorView.focused = null;
+      this.deselectNode();
     });
 
     // Add a click event listener to the outer view to ensure the selection is synchronized
@@ -124,6 +117,10 @@ export class CodeMirrorView implements NodeView {
 
       // Synchronize the selection from ProseMirror to CodeMirror.
       this.forwardSelection();
+
+      // Clear the selection by setting the anchor and head to the same position,
+      // then blur the contentDOM to prevent editing.
+      this.deselectNode();
     });
   }
 
@@ -164,6 +161,21 @@ export class CodeMirrorView implements NodeView {
     }
 
     CodeMirrorView.focused = this;
+  }
+
+  /**
+   * Clear the selection by setting the anchor and head to the same position,
+   * then blur the contentDOM to prevent editing.
+   */
+  deselectNode() {
+    this.cm.dispatch({
+      selection: {
+        anchor: this.cm.state.selection.main.head,
+        head: this.cm.state.selection.main.head,
+      },
+    });
+    this.cm.contentDOM.blur();
+    CodeMirrorView.focused = null;
   }
 
   /**
@@ -234,7 +246,7 @@ export class CodeMirrorView implements NodeView {
 
   /**
    * Updates the Codemirror view with the provided Prosemirror node.
-   * 
+   *
    * @param node - The Prosemirror node to update the view with.
    * @returns Returns `true` if the update was successful, `false` otherwise.
    */
@@ -266,7 +278,7 @@ export class CodeMirrorView implements NodeView {
 
   /**
    * Sets the selection in the CodeMirror editor.
-   * 
+   *
    * @param anchor - The position of the anchor of the selection.
    * @param head - The position of the head of the selection.
    */
@@ -314,7 +326,7 @@ export class CodeMirrorView implements NodeView {
 
   /**
    * Checks if there is a QEDError at the specified start position.
-   * 
+   *
    * @param start - The start position to check.
    * @returns True if there is a QEDError at the specified start position, false otherwise.
    */
@@ -325,7 +337,7 @@ export class CodeMirrorView implements NodeView {
 
   /**
    * Handles a diagnostic message and updates the CodeMirror editor accordingly.
-   * 
+   *
    * @param diag - The diagnostic message to handle.
    * @param start - The start position of the diagnostic range.
    * @param end - The end position of the diagnostic range.
