@@ -44,7 +44,6 @@ import { LSPClientHandler } from "../lspClient/lspClientHandler.ts";
 import { DiagnosticsMessageData } from "../lspClient/models.ts";
 import { ProofFlowLSPClientFileType } from "../lspClient/ProofFlowLSPClient.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
-import { markdownToRendered } from "../commands/helpers.ts";
 import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
 import { inputProof } from "../commands/helpers.ts";
 import { ProofFlowSaver } from "../fileHandlers/proofFlowSaver.ts";
@@ -52,6 +51,7 @@ import { adjustLeftDivWidth, firefoxUsed } from "../../main.ts";
 import { LSPClientManager } from "../lspClient/lspClientManager.ts";
 import { undo, redo, undoDepth, redoDepth } from "prosemirror-history";
 import {AreaType, docToPFDocument, InputArea, CollapsibleArea, Area} from "./ProofFlowArea.ts";
+import { markdownToRendered } from "../plugins/markdown-extra.ts";
 // CSS
 
 export type ProofFlowOptions = {
