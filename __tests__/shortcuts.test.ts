@@ -376,21 +376,20 @@ it('should trigger redo command when "Ctrl+Y" is pressed when in Teacher mode', 
   removeKeyBindings();
 });
 
-// Can not find the code for the escape key
-// // "Escape" for closing the settings overlay (Teacher mode)
-// it('should trigger closing settings overlat command when "Escape" is pressed when in Teacher mode', () => {
-//   const editorView = new EditorView(document.createElement('div'), { state: EditorState.create(new EditorState()) });
-//   const mockDispatch = jest.fn();
-//   editorView.dispatch = mockDispatch;
+// "Escape" for closing the settings overlay (Teacher mode)
+it('should trigger closing settings overlat command when "Escape" is pressed when in Teacher mode', () => {
+  const editorView = new EditorView(document.createElement('div'), { state: EditorState.create(new EditorState()) });
+  const mockDispatch = jest.fn();
+  editorView.dispatch = mockDispatch;
 
-//   proofFlow.getUserMode = jest.fn(() => UserMode.Teacher);
-//   const removeKeyBindings = applyGlobalKeyBindings(editorView);
+  proofFlow.getUserMode = jest.fn(() => UserMode.Teacher);
+  const removeKeyBindings = applyGlobalKeyBindings(editorView);
 
-//   const event = new KeyboardEvent('keydown', {  });
-//   document.dispatchEvent(event);
+  const event = new KeyboardEvent('keydown', { 'key': 'Escape' });
+  document.dispatchEvent(event);
 
-//   expect(mockDispatch).toHaveBeenCalled();
-//   removeKeyBindings();
-// });
+  expect(mockDispatch).toHaveBeenCalled();
+  removeKeyBindings();
+});
 
 });
