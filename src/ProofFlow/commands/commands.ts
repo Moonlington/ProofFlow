@@ -5,7 +5,7 @@ import {
   getMathInsertCommand,
   getMdInsertCommand,
 } from "./insert-commands";
-import { ProofFlowSchema } from "../editor/proofFlowSchema";
+import { ProofFlowSchema } from "../editor/Schema/proofFlowSchema";
 
 /**
  * Returns the appropriate insertion function based on the specified place.

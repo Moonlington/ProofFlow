@@ -1,7 +1,4 @@
-import {
-  ProofFlowDocument,
-  Range,
-} from "../editor/ProofFlowDocument.ts";
+import { ProofFlowDocument, Range } from "../editor/ProofFlowDocument.ts";
 import {
   diagnosticsHandler,
   documentProgressHandler,
@@ -13,7 +10,7 @@ import {
   InitializeResult,
   SignatureHelp,
 } from "./models.ts";
-import {Position} from "../editor/ProofFlowPosition.ts";
+import { Position } from "../editor/ProofFlowPosition.ts";
 
 type RangeResponse = Range | Range[];
 

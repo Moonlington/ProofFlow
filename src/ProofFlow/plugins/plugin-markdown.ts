@@ -7,10 +7,14 @@ import {
   highLevelCells,
   getContainingNode,
 } from "../commands/helpers.ts";
-import { ProofFlowSchema } from "../editor/proofFlowSchema.ts";
+import { ProofFlowSchema } from "../editor/Schema/proofFlowSchema.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode, lockEditing } from "../UserMode/userMode.ts";
-import { markdownRenderedClickFix, markdownToRendered, renderedToMarkdown } from "./markdown-extra.ts";
+import {
+  markdownRenderedClickFix,
+  markdownToRendered,
+  renderedToMarkdown,
+} from "./markdown-extra.ts";
 
 /**
  * Plugin that handles the conversion between markdown and rendered markdown nodes.

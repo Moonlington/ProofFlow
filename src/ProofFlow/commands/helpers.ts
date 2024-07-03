@@ -1,4 +1,4 @@
-import { NodeType, Node, Schema } from "prosemirror-model";
+import { NodeType, Node } from "prosemirror-model";
 import {
   EditorState,
   NodeSelection,
@@ -7,10 +7,9 @@ import {
   Transaction,
 } from "prosemirror-state";
 import { closeHistory } from "prosemirror-history";
-import { defaultMarkdownParser } from "prosemirror-markdown";
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
-import { ProofStatus } from "../editor/proofFlowSchema";
+import { ProofStatus } from "../editor/Schema/proofFlowSchema.ts";
 import { getNextAreaId } from "../editor/ProofFlowArea.ts";
 //import { mathSerializer } from "@benrbray/prosemirror-math";
 /**

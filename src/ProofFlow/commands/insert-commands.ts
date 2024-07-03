@@ -14,7 +14,7 @@ import {
   Selection,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { ProofFlowSchema } from "../editor/proofFlowSchema";
+import { ProofFlowSchema } from "../editor/Schema/proofFlowSchema.ts";
 import { getNextAreaId } from "../editor/ProofFlowArea.ts";
 
 /**

@@ -1,6 +1,6 @@
 import { ProofFlow } from "../editor/ProofFlow";
 import { Node, Schema } from "prosemirror-model";
-import { ProofFlowSchema } from "../editor/proofFlowSchema";
+import { ProofFlowSchema } from "../editor/Schema/proofFlowSchema";
 import { UserMode, lockEditing } from "../UserMode/userMode";
 import { highLevelCells } from "../commands/helpers";
 import { TextSelection } from "prosemirror-state";

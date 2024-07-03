@@ -73,24 +73,28 @@ export function createButtonsList(editorView: EditorView) {
 
   // Return the list of buttons
   return [
-    { // Create the button for deleting content
+    {
+      // Create the button for deleting content
       name: "Delete",
       command: deleteFunction,
       hoverText: "Delete the selected node or content.",
     },
-    { // Create the button for toggling line numbers
+    {
+      // Create the button for toggling line numbers
       name: "Line nr",
       command: () => {
         toggleLineNumbers();
       },
       hoverText: "Toggle line numbers",
     },
-    { // Create the button for selecting the parent node
+    {
+      // Create the button for selecting the parent node
       name: "Parent",
       command: () => selectParentNode(editorView.state, editorView.dispatch),
       hoverText: "Select the parent node(Ctrl-p)",
     },
-    { // Create the button for inserting an input node
+    {
+      // Create the button for inserting an input node
       name: "Input",
       command: () => {
         let command = getInputInsertCommand();
@@ -98,7 +102,8 @@ export function createButtonsList(editorView: EditorView) {
       },
       hoverText: "Place the current node in an input node(Ctrl-i)",
     },
-    { // Create the button for inserting a collapsible node
+    {
+      // Create the button for inserting a collapsible node
       name: "Collapse",
       command: () => {
         let command = getCollapsibleInsertCommand();
@@ -116,12 +121,14 @@ export function createButtonsList(editorView: EditorView) {
  */
 export function createSettingCommands(editorView: EditorView) {
   return [
-    { // Create the button for showing the settings menu
+    {
+      // Create the button for showing the settings menu
       symbol: "&#9881;",
       cmd: () => showOverlay(true),
       hoverText: "Show Settings Menu",
     },
-    { // Create the button for clearing the file
+    {
+      // Create the button for clearing the file
       symbol: "&#x21bb;",
       cmd: async () => {
         if (await requestConfirm("Are you sure you want to clear the file?")) {
@@ -132,20 +139,26 @@ export function createSettingCommands(editorView: EditorView) {
       },
       hoverText: "Clear File",
     },
-    { // Create the button for saving the file
+    {
+      // Create the button for saving the file
       symbol: "&#x1F5AB;",
       cmd: () => proofFlow.saveFile(),
       hoverText: "Save File",
     },
-    { // Create the button for opening the file
-      symbol: "&#x1f5c1;", cmd: () => NaN, hoverText: "Open File" 
+    {
+      // Create the button for opening the file
+      symbol: "&#x1f5c1;",
+      cmd: () => NaN,
+      hoverText: "Open File",
     },
-    { // Create the button for undoing the last action
+    {
+      // Create the button for undoing the last action
       symbol: "&#8617;",
       cmd: () => undo(editorView.state, editorView.dispatch),
       hoverText: "Undo Last Action(Ctrl-z)",
     },
-    { // Create the button for redoing the last action
+    {
+      // Create the button for redoing the last action
       symbol: "&#8618;",
       cmd: () => redo(editorView.state, editorView.dispatch),
       hoverText: "Redo Last Action(Ctrl-y)",

@@ -1,11 +1,8 @@
 export { SimpleParser };
 
-import {
-  ProofFlowDocument,
-  OutputConfig,
-} from "../editor/ProofFlowDocument";
+import { ProofFlowDocument, OutputConfig } from "../editor/ProofFlowDocument";
 
-import{
+import {
   AreaType,
   Area,
   CollapsibleArea,
