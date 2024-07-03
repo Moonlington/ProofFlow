@@ -1,5 +1,4 @@
 import {
-  Position,
   ProofFlowDocument,
   Range,
 } from "../editor/ProofFlowDocument.ts";
@@ -14,6 +13,7 @@ import {
   InitializeResult,
   SignatureHelp,
 } from "./models.ts";
+import {Position} from "../editor/ProofFlowPosition.ts";
 
 type RangeResponse = Range | Range[];
 
