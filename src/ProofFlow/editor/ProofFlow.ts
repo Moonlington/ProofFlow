@@ -130,9 +130,6 @@ export class ProofFlow {
     // Create the editor
     this.editorView = this.createEditorView();
 
-    window.addEventListener("beforeunload", (_) => {
-      this.lspClient?.shutdown();
-    });
     // Apply global key bindings
     this.removeGlobalKeyBindings = applyGlobalKeyBindings(this.editorView);
   }
