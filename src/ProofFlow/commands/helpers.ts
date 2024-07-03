@@ -150,6 +150,14 @@ export function insertUnder(
   return trans;
 }
 
+/**
+ * Inserts nodes of specified types into a transaction at a given position.
+ * 
+ * @param trans - The transaction to insert nodes into.
+ * @param nodeType - An array of node types to insert.
+ * @param counter - The starting position for insertion.
+ * @returns The updated transaction after insertion.
+ */
 function insertion(
   trans: Transaction,
   nodeType: NodeType[],
