@@ -71,13 +71,11 @@ class SimpleParser implements Parser {
   }
 
   /**
-   * Continually parses the document until there is no more content to parse.
-   * @param doc
-   * @param rest
+   * Parses the given `rest` string and returns the next area type and the matched regular expression array.
+   * @param rest - The string to be parsed.
+   * @returns A tuple containing the next area type and the matched regular expression array.
    */
-  recurParse(doc: ProofFlowDocument, rest: string): ProofFlowDocument {
-    if (rest === "") return doc;
-
+  getNextAreaRegex(rest: string): [AreaType, RegExpExecArray] {
     let nextAreaType: AreaType = this.defaultAreaType;
     let startRegex: RegExpExecArray = null!;
     for (let type of Object.values(AreaType)) {
@@ -89,6 +87,19 @@ class SimpleParser implements Parser {
         nextAreaType = type;
       }
     }
+    return [nextAreaType, startRegex];
+  }
+
+  /**
+   * Continually parses the document until there is no more content to parse.
+   * @param doc
+   * @param rest
+   */
+  recurParse(doc: ProofFlowDocument, rest: string): ProofFlowDocument {
+    if (rest === "") return doc;
+
+    // Find the next area to parse and the matched regular expression
+    const [nextAreaType, startRegex] = this.getNextAreaRegex(rest);
 
     // Stop the recursion if there are no more areas to parse
     if (startRegex === null) {
@@ -191,17 +202,8 @@ class SimpleParser implements Parser {
       return [areas, ""];
     }
 
-    let nextAreaType: AreaType = this.defaultAreaType;
-    let startRegex: RegExpExecArray = null!;
-    for (let type of Object.values(AreaType)) {
-      if (type === this.defaultAreaType) continue;
-      let regex = this.config[type][0].exec(rest);
-      if (regex === null) continue;
-      if (startRegex === null || startRegex.index > regex.index) {
-        startRegex = regex;
-        nextAreaType = type;
-      }
-    }
+    // Find the next area to parse and the matched regular expression
+    const [nextAreaType, startRegex] = this.getNextAreaRegex(rest);
 
     if (startRegex === null || closingRegex.index < startRegex.index) {
       if (closingRegex.index !== 0)
