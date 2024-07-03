@@ -6,6 +6,9 @@ import {
 } from "./outputconfigs";
 import { SimpleParser } from "./parser";
 
+/**
+ * regexes for parsing Coq and Lean documents with ProofFlow
+ */
 export { CoqParser, CoqMDParser, LeanParser, PureLeanParser };
 
 const CoqParser = new SimpleParser(

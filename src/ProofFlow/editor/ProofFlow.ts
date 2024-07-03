@@ -66,6 +66,9 @@ export type ProofFlowOptions = {
   lspManager?: LSPClientManager;
 };
 
+/**
+ * Main class for the ProofFlow editor.
+ */
 export class ProofFlow {
   private _editorElem: HTMLElement; // The HTML element that serves as the editor container
   private _containerElem: HTMLElement; // The HTML element that contains the initial content for the editor
@@ -162,14 +165,7 @@ export class ProofFlow {
             view,
             getPos,
             cmOptions: {
-              extensions: [
-                // will be changed, and later code from basic setup will be added to the codebase
-                basicSetupNoHistory,
-                linter(null),
-                // javascript(),
-                // autocomplete(this),
-                // wordHover(this),
-              ],
+              extensions: [basicSetupNoHistory, linter(null)],
             },
           }),
       },
@@ -194,6 +190,11 @@ export class ProofFlow {
     return editorView;
   }
 
+  /**
+   * Updates the ProofFlow document with the given buffer.
+   * @param {Node} doc - The document to update the ProofFlow document with.
+   * @returns {void}
+   */
   updateWithBuffer(doc: Node) {
     let now = Date.now();
     if (!this.lastUpdate) this.lastUpdate = now;
@@ -219,6 +220,11 @@ export class ProofFlow {
     }
   }
 
+  /**
+   * Updates the ProofFlow document with the given document.
+   * @param {Node} doc - The document to update the ProofFlow document with.
+   * @returns {void}
+   */
   updateProofFlowDocument(doc: Node) {
     clearTimeout(this.updateTimeoutID);
     let parsed = docToPFDocument(this.fileName, doc);
@@ -232,6 +238,10 @@ export class ProofFlow {
     this.lspClient?.didChange(parsed);
   }
 
+  /**
+   * Retrieves the LSP client handler associated with the ProofFlow instance.
+   * @returns The LSP client handler.
+   */
   getLSPClient(): LSPClientHandler | undefined {
     return this.lspClient;
   }
@@ -259,11 +269,19 @@ export class ProofFlow {
     }
   }
 
+  /**
+   * Retrieves the ProofFlow document associated with the ProofFlow instance.
+   * @returns The ProofFlow document.
+   */
   public get pfDocument(): ProofFlowDocument {
     this.updateProofFlowDocument(this.editorView.state.doc);
     return this._pfDocument;
   }
 
+  /**
+   * Retrieves the schema associated with the ProofFlow instance.
+   * @returns The schema.
+   */
   public findNode(
     predicate: (node: Node, pos: number) => boolean,
   ): [Node, number] | undefined {
@@ -275,6 +293,10 @@ export class ProofFlow {
     return found;
   }
 
+  /**
+   * Retrieves the schema associated with the ProofFlow instance.
+   * @returns The schema.
+   */
   public handleDiagnostics(message: DiagnosticsMessageData) {
     CodeMirrorView.resetDiagnostics();
     for (let diag of message.diagnostics) {
@@ -299,10 +321,16 @@ export class ProofFlow {
     this.setProofColors();
   }
 
+  /**
+   * Handles the progress of the document.
+   */
   public handleProgress() {
     this.pfDocument.documentProgressed = true;
   }
 
+  /**
+   * Sets the proof colors of the input areas based on the diagnostics.
+   */
   private setProofColors() {
     // Previous input area node and its offset
     let prevInput: Node | null = null;
@@ -366,7 +394,7 @@ export class ProofFlow {
       let node = this.getState().doc.nodeAt(offset);
       if (node == null) return;
       inputProof(node, ProofStatus.Correct, offset);
-    })
+    });
 
     if (focusedInstance != null) {
       if (firefoxUsed) {
@@ -398,7 +426,7 @@ export class ProofFlow {
     let parser: Parser;
     let lspClientFileType: ProofFlowLSPClientFileType;
     switch (this.fileType) {
-      case AcceptedFileType.Coq:
+      case AcceptedFileType.Coq: //If the file is a Coq file
         window.localStorage.setItem("currentLspType", "Coq");
         parser = CoqParser;
         this.outputConfig = CoqOutput;
@@ -406,16 +434,17 @@ export class ProofFlow {
         proxy.defaultAreaType = AreaType.Code;
         lspClientFileType = ProofFlowLSPClientFileType.Coq;
         break;
-      case AcceptedFileType.CoqMD:
+      case AcceptedFileType.CoqMD: //If the file is a CoqMD file
         parser = CoqMDParser;
         this.outputConfig = CoqMDOutput;
         lspClientFileType = ProofFlowLSPClientFileType.Coq;
         break;
-      case AcceptedFileType.Lean:
+      case AcceptedFileType.Lean: //If the file is a Lean file
         if (text.indexOf("import VersoProofFlow") !== -1) {
           parser = LeanParser;
           this.outputConfig = LeanOutput;
         } else {
+          //If the file is a Pure Lean file
           parser = PureLeanParser;
           this.outputConfig = PureLeanOutput;
           let proxy = parser as SimpleParser;
@@ -442,6 +471,10 @@ export class ProofFlow {
     this.lspClient.didOpen(pfDocument);
   }
 
+  /**
+   * Sets the ProofFlow document associated with the ProofFlow instance.
+   * @param {ProofFlowDocument} pfDocument - The ProofFlow document to set.
+   */
   public setProofFlowDocument(pfDocument: ProofFlowDocument) {
     this._pfDocument = pfDocument;
     if (this.outputConfig) this._pfDocument.outputConfig = this.outputConfig;
@@ -887,6 +920,12 @@ export class ProofFlow {
     this.redoTrackStack.push(currenRedoDepth);
   }
 
+  /**
+   * Requests a confirmation from the user.
+   *
+   * @param question - The question to ask the user.
+   * @returns A promise that resolves to a boolean indicating whether the user confirmed the action.
+   */
   public requestConfirm(question: string): Promise<boolean> {
     return new Promise((resolve, _) => {
       // Button container showing below settings buttons, overlay over the editor

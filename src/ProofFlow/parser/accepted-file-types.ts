@@ -1,5 +1,6 @@
 /**
  * The file types that ProofFlow recognizes.
+ * Can be added or changed as needed.
  */
 export enum AcceptedFileType {
   Unknown = "",
