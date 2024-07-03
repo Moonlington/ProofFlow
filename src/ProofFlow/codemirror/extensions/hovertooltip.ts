@@ -3,6 +3,11 @@ import CodeMirrorView from "../codemirrorview";
 import { MarkupContent } from "../../lspClient/models";
 import { marked } from "marked";
 
+/**
+ * Hover tooltip function for the CodeMirrorView
+ * @param {CodeMirrorView} cmview - The CodeMirrorView instance
+ * @returns - The hover tooltip function
+ */
 export function wordHover(cmview: CodeMirrorView) {
   return hoverTooltip(
     async (
@@ -12,7 +17,8 @@ export function wordHover(cmview: CodeMirrorView) {
     ): Promise<Tooltip | null> => {
       return new Promise(async (resolve, _) => {
         const lsp = cmview.proofflow.getLSPClient();
-        if (!lsp) return resolve(null);
+        // Get the LSP client
+        if (!lsp) return resolve(null); // If the LSP client is not available, return null
 
         if (!cmview.proofflow.pfDocument.documentProgressed)
           return resolve(null);

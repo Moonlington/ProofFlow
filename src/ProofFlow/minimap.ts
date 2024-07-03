@@ -1,21 +1,27 @@
 import { adjustLeftDivWidth } from "../main";
 
+/**
+ * Minimap class
+ */
 export class Minimap {
-  private _minimapDiv: HTMLDivElement;
-  private _minimapSizeDiv: HTMLDivElement;
-  private _minimapViewerDiv: HTMLDivElement;
-  private _minimapContentDiv: HTMLIFrameElement;
-  private _bodyScale = 0;
-  private _realScale = 0;
-  private _config = { attributes: true, childList: true, subtree: true };
-  private observer: MutationObserver;
+  private _minimapDiv: HTMLDivElement; // The minimap container
+  private _minimapSizeDiv: HTMLDivElement; // The minimap size div
+  private _minimapViewerDiv: HTMLDivElement; // The minimap viewer div
+  private _minimapContentDiv: HTMLIFrameElement; // The minimap content div
+  private _bodyScale = 0; // The scale of the body
+  private _realScale = 0; // The real scale of the minimap
+  private _config = { attributes: true, childList: true, subtree: true }; // The config for the observer
+  private observer: MutationObserver; // The observer
 
-  private timeoutIdHTML: NodeJS.Timeout | null = null;
-  private timeoutIdScroll: NodeJS.Timeout | null = null;
-  private timeoutIdResize: NodeJS.Timeout | null = null;
+  private timeoutIdHTML: NodeJS.Timeout | null = null; // The timeout for the HTML update
+  private timeoutIdScroll: NodeJS.Timeout | null = null; // The timeout for the scroll update
+  private timeoutIdResize: NodeJS.Timeout | null = null; // The timeout for the resize update
   private debounceDelay = 1000; // Adjust delay as needed
-  private on = false;
+  private on = false; // The state of the minimap
 
+  /**
+   * Constructor for the minimap
+   */
   constructor() {
     this._minimapDiv = document.createElement("div");
     this._minimapSizeDiv = document.createElement("div");
@@ -41,6 +47,9 @@ export class Minimap {
     this.start();
   }
 
+  /**
+   * Destroy the minimap
+   */
   public destroy() {
     this.stop();
     const elements = document.body.getElementsByClassName(
@@ -52,6 +61,9 @@ export class Minimap {
     }
   }
 
+  /**
+   * Switch the minimap on or off
+   */
   public switch() {
     if (this.on) this.stop();
     else this.start();
@@ -59,6 +71,9 @@ export class Minimap {
     adjustLeftDivWidth();
   }
 
+  /**
+   * Start the minimap
+   */
   public start() {
     this._minimapDiv.setAttribute("visible", "true");
     this.updateHTML();
@@ -84,6 +99,7 @@ export class Minimap {
     this.on = true;
   }
 
+  // Stop the minimap
   public stop() {
     this._minimapDiv.setAttribute("visible", "false");
     this.timeoutIdHTML = null;
@@ -96,6 +112,7 @@ export class Minimap {
     this.on = false;
   }
 
+  // The callback for the observer
   private callback = (
     _mutationList: MutationRecord[],
     _bservero: MutationObserver,
@@ -107,6 +124,7 @@ export class Minimap {
     );
   };
 
+  // Update the HTML of the minimap
   public updateHTML() {
     // console.log("updateHTML");
     this.timeoutIdHTML = null;
@@ -131,6 +149,7 @@ export class Minimap {
     this.trackScroll();
   }
 
+  // Get the dimensions of the minimap
   private getDimensions() {
     this.timeoutIdResize = null;
     const editor = document.getElementById("editor");
@@ -155,6 +174,7 @@ export class Minimap {
     this._minimapContentDiv.style.height = `${bodyHeight / this._realScale}%`;
   }
 
+  // Track the scroll of the minimap
   private trackScroll() {
     this.timeoutIdScroll = null;
 

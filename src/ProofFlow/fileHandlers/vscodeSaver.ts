@@ -3,6 +3,10 @@ import { ProofFlow } from "../editor/ProofFlow";
 import { vscode } from "../extension/vscode";
 import { ProofFlowSaver } from "./proofFlowSaver";
 import { AcceptedFileType } from "../parser/accepted-file-types";
+
+/**
+ * A class that saves proof flows to the VSCode editor.
+ */
 class VSCodeSaver implements ProofFlowSaver {
   constructor() {}
 
@@ -23,6 +27,10 @@ class VSCodeSaver implements ProofFlowSaver {
   }
 }
 
+/**
+ * Synchronizes the ProofFlow document with the VSCode editor.
+ * @param pf The ProofFlow instance.
+ */
 function sync(pf: ProofFlow) {
   vscode.postMessage({
     command: "syncFile",
@@ -32,6 +40,10 @@ function sync(pf: ProofFlow) {
   setTimeout(sync, 1000, pf);
 }
 
+/**
+ * Adds a listener for loading files.
+ * @param pf The ProofFlow instance.
+ */
 function addLoadFileListener(pf: ProofFlow) {
   window.addEventListener("message", (event) => {
     const message = event.data;

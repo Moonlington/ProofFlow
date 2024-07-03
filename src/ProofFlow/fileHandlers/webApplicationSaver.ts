@@ -2,6 +2,9 @@ export { WebApplicationSaver };
 import { ProofFlow } from "../editor/ProofFlow";
 import { ProofFlowSaver } from "./proofFlowSaver";
 
+/**
+ * A class that saves proof flows to the web application.
+ */
 class WebApplicationSaver implements ProofFlowSaver {
   constructor() {}
   save(pf: ProofFlow): void {

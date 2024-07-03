@@ -4,7 +4,6 @@ import { Node, Schema } from "prosemirror-model";
  * The cell types available in ProofFlow.
  * Can be markdown, math_display, or codecell.
  */
-
 export enum ProofStatus {
   Correct,
   Incorrect,
@@ -24,6 +23,10 @@ export const ProofFlowSchema: Schema = new Schema({
       content: `(area | container)*`,
     },
 
+    /**
+     * The area node.
+     * Represents a block of content.
+     */
     input: {
       attrs: {
         id: {},
@@ -51,6 +54,9 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The input_content node.
+     */
     input_content: {
       content: `area+`,
       parseDOM: [
@@ -63,6 +69,10 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The area node.
+     * Represents a block of content.
+     */
     collapsible: {
       attrs: {
         id: {},
@@ -75,6 +85,9 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * Node for the title of a collapsible area.
+     */
     collapsible_title: {
       content: "text*",
       parseDOM: [
@@ -86,6 +99,9 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * Node for the content of a collapsible area.
+     */
     collapsible_content: {
       content: `area+`,
       attrs: {
@@ -164,6 +180,10 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The code_mirror node.
+     * Represents a block of code.
+     */
     code_mirror: {
       attrs: {
         id: { default: null },
@@ -245,6 +265,9 @@ export const ProofFlowSchema: Schema = new Schema({
     /**
      * ============== Markdown specific nodes ===============
      */
+    /**
+     * The paragraph node.
+     */
     paragraph: {
       content: "inline*",
       group: "block",
@@ -254,6 +277,9 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The blockquote node.
+     */
     blockquote: {
       content: "block+",
       group: "block",
@@ -263,6 +289,9 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The horizontal rule node.
+     */
     horizontal_rule: {
       group: "block",
       parseDOM: [{ tag: "hr" }],
@@ -271,6 +300,9 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The heading node.
+     */
     heading: {
       attrs: { level: { default: 1 } },
       content: "(text | image)*",
@@ -289,6 +321,9 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The code_block node.
+     */
     code_block: {
       content: "text*",
       group: "block",
@@ -317,6 +352,9 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The ordered_list node.
+     */
     ordered_list: {
       content: "list_item+",
       group: "block",
@@ -346,6 +384,9 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The list_item node.
+     */
     bullet_list: {
       content: "list_item+",
       group: "block",
@@ -363,6 +404,9 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The list_item node.
+     */
     list_item: {
       content: "block+",
       defining: true,
@@ -372,6 +416,9 @@ export const ProofFlowSchema: Schema = new Schema({
       },
     },
 
+    /**
+     * The table node.
+     */
     image: {
       inline: true,
       attrs: {

@@ -344,6 +344,7 @@ export class SettingsOverlay {
 
     // Add event listener to the apply button
     lspButton.addEventListener("click", () => {
+      console.log("LSP Path: " + lspPath.value);
       // if the file is not open, set the output config and file name based on the LSP type
       if (!proofFlow.hasFileOpen) {
         switch (lspSelect.value) {
@@ -471,6 +472,9 @@ export class SettingsOverlay {
     const textFontSelect = this.createDropdown(textFontOptions);
 
     // Add event listeners
+    /**
+     * Update the font family when the select Font element is changed and store the value in local storage.
+     */
     textFontSelect.addEventListener("change", () => {
       // Set the font family for the editor
       const fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
@@ -489,6 +493,9 @@ export class SettingsOverlay {
       }
     });
 
+    /**
+     * Update the font family when the select style element is changed and store the value in local storage.
+     */
     textStyleSelect.addEventListener("change", () => {
       // Set the font family for the editor
       const fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
@@ -498,6 +505,9 @@ export class SettingsOverlay {
       localStorage.setItem("textStyle", textStyleSelect.value);
     });
 
+    /**
+     * Update the font size when the select text size element is changed and store the value in local storage.
+     */
     textSize.addEventListener("change", () => {
       // Set the font size for the editor
       editor.style.fontSize = textSize.value;

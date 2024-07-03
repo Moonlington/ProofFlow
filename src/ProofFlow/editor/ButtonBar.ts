@@ -168,7 +168,7 @@ export class ButtonBar {
         command: () => {
           toggleLineNumbers();
         },
-        hoverText: "Toggle line numbers", //TODO Add functionality and shortcut
+        hoverText: "Toggle line numbers",
       },
       {
         name: "Parent",
@@ -199,6 +199,9 @@ export class ButtonBar {
     });
   }
 
+  /**
+   * Adds settings buttons to the button bar.
+   */
   private addSettingsButtons() {
     const settingsBar = document.createElement("div");
     settingsBar.classList.add("settings-bar");
@@ -249,6 +252,13 @@ export class ButtonBar {
     this._bar.appendChild(settingsBar);
   }
 
+  /**
+   * Creates a button element.
+   * @param {string} symbol - The symbol to display on the button.
+   * @param {() => void} cmd - The callback function to execute when the button is clicked.
+   * @param {string} hoverText - The hover text of the button.
+   * @returns The created button element.
+   */
   private CreateButton(symbol: string, cmd: () => void, hoverText: string) {
     let button;
     if (symbol === "&#x1f5c1;") {
@@ -308,6 +318,9 @@ export class ButtonBar {
     this._cellBar.appendChild(button);
   }
 
+  /**
+   * Destroys the button bar.
+   */
   public destroy() {
     this._bar.remove();
   }

@@ -18,6 +18,7 @@ import { ProofFlow } from "../editor/ProofFlow.ts";
 import { wordHover } from "./extensions/hovertooltip.ts";
 import { getOtherKeyMaps, getTabKeyMap } from "./extensions/keyMapping.ts";
 
+// Severity of the diagnostic
 type Severity = "hint" | "info" | "warning" | "error";
 
 /**
