@@ -336,11 +336,11 @@ export function toggleLineNumbers() {
 }
 
 /**
-   * Requests a confirmation from the user.
-   *
-   * @param question - The question to ask the user.
-   * @returns A promise that resolves to a boolean indicating whether the user confirmed the action.
-   */
+ * Requests a confirmation from the user.
+ *
+ * @param question - The question to ask the user.
+ * @returns A promise that resolves to a boolean indicating whether the user confirmed the action.
+ */
 export function requestConfirm(question: string): Promise<boolean> {
   return new Promise((resolve, _) => {
     // Button container showing below settings buttons, overlay over the editor

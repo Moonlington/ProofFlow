@@ -217,9 +217,7 @@ export class ButtonBar {
         symbol: "&#x21bb;",
         cmd: async () => {
           if (
-            await requestConfirm(
-              "Are you sure you want to clear the file?",
-            )
+            await requestConfirm("Are you sure you want to clear the file?")
           ) {
             proofFlow.reset();
             proofFlow.setFileName("File.mv");
