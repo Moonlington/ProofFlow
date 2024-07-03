@@ -16,7 +16,6 @@ export interface ComputeChange {
   text: string;
 }
 
-
 /**
  * Computes the change between two strings.
  *
@@ -26,8 +25,8 @@ export interface ComputeChange {
  * @returns The computed change object or null if there is no change.
  */
 export const computeChange = (
-    oldVal: string,
-    newVal: string,
+  oldVal: string,
+  newVal: string,
 ): ComputeChange | null => {
   // If the old and new values are the same, return null
   if (oldVal === newVal) {
@@ -41,18 +40,18 @@ export const computeChange = (
 
   // Find the start position of the change
   while (
-      start < oldEnd &&
-      oldVal.charCodeAt(start) === newVal.charCodeAt(start)
-      ) {
+    start < oldEnd &&
+    oldVal.charCodeAt(start) === newVal.charCodeAt(start)
+  ) {
     start += 1;
   }
 
   // Find the end position of the change
   while (
-      oldEnd > start &&
-      newEnd > start &&
-      oldVal.charCodeAt(oldEnd - 1) === newVal.charCodeAt(newEnd - 1)
-      ) {
+    oldEnd > start &&
+    newEnd > start &&
+    oldVal.charCodeAt(oldEnd - 1) === newVal.charCodeAt(newEnd - 1)
+  ) {
     oldEnd -= 1;
     newEnd -= 1;
   }
@@ -60,8 +59,6 @@ export const computeChange = (
   // Return the change object
   return { from: start, to: oldEnd, text: newVal.slice(start, newEnd) };
 };
-
-
 
 /**
  * Interface for extension options passed to the CodeMirrorView

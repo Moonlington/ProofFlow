@@ -85,15 +85,8 @@ export class Area {
   }
 }
 
-/*
- * CollapsibleArea class is a subclass of Area class which represents a collapsible area in the ProofFlowDocument.
- */
-export class CollapsibleArea extends Area {
-  subAreas: Area[] = []; // Subareas of the collapsible area
-  constructor(title: string) {
-    super(null!, title);
-    this.type = AreaType.Collapsible;
-  }
+export class WrapperArea extends Area {
+  subAreas: Area[] = []; // Subareas of the wrapper area
 
   /**
    * Function to add an area to the collapsible area
@@ -106,6 +99,17 @@ export class CollapsibleArea extends Area {
     this.subAreas.push(area);
     area.parent = this;
     return true;
+  }
+}
+
+/*
+ * CollapsibleArea class is a subclass of Area class which represents a collapsible area in the ProofFlowDocument.
+ */
+export class CollapsibleArea extends WrapperArea {
+  subAreas: Area[] = []; // Subareas of the collapsible area
+  constructor(title: string) {
+    super(null!, title);
+    this.type = AreaType.Collapsible;
   }
 
   /**
@@ -129,25 +133,11 @@ export class CollapsibleArea extends Area {
 /*
  * InputArea class is a subclass of Area class which represents an input area in the ProofFlowDocument.
  */
-export class InputArea extends Area {
-  subAreas: Area[] = [];
+export class InputArea extends WrapperArea {
   status: ProofStatus = ProofStatus.Unattempted;
   constructor() {
     super(null!, "");
     this.type = AreaType.Input;
-  }
-
-  /**
-   * Function to add an area to the input area
-   * @param {Area} area - Area to be added to the input area
-   * @returns - boolean value indicating if the area was added successfully
-   */
-  addArea(area: Area): boolean {
-    if ([AreaType.Collapsible, AreaType.Input].includes(area.type))
-      return false;
-    this.subAreas.push(area);
-    area.parent = this;
-    return true;
   }
 
   /**

@@ -10,7 +10,7 @@ import {
   Transaction as CMTransaction,
 } from "@codemirror/state";
 import { EditorView as CMView } from "@codemirror/view";
-import {CodeMirrorViewOptions, computeChange} from "./types.ts";
+import { CodeMirrorViewOptions, computeChange } from "./types.ts";
 import { proofFlow } from "../../main.ts";
 import { Diagnostic, setDiagnostics } from "@codemirror/lint";
 import { LSPDiagnostic } from "../lspClient/models.ts";
