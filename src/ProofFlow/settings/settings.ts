@@ -232,65 +232,72 @@ export class SettingsOverlay {
    */
   private lspContainer(): HTMLElement {
     // Get the LSP objects and types from local storage
-    const lspCoq = JSON.parse(localStorage.getItem("coq") || "{}");
-    const lspLean = JSON.parse(localStorage.getItem("lean") || "{}");
+    const lspCoq = JSON.parse(localStorage.getItem("coq") || "{}") || "";
+    const lspLean = JSON.parse(localStorage.getItem("lean") || "{}") || "";
 
+    // Get the LSP paths from the LSP objects
     let lspCoqPath = lspCoq.path || "";
     let lspLeanPath = lspLean.path || "";
 
+    // Get the current LSP type from local storage
     const currentLspType = localStorage.getItem("currentLspType") || "coq";
 
-    const lspContainer = document.createElement("div");
-    const lspLabel = document.createElement("h4");
-    lspLabel.textContent = "LSP Server Path";
+    // Create the container and header
+    const lspContainer = this.createContainer("LSP Server Path");
 
-    const lspSelect = document.createElement("select");
-    lspSelect.id = "lsp-type";
-    lspSelect.className = "dropdown";
+    // Create the dropdown for the LSP type
+    const lspSelect = this.createDropdown(["Coq", "Lean"]);
+    lspSelect.value = currentLspType;
 
-    const optionElementCoq = document.createElement("option");
-    optionElementCoq.value = "coq";
-    optionElementCoq.textContent = "Coq";
-    lspSelect.appendChild(optionElementCoq);
-    const optionElementLean = document.createElement("option");
-    optionElementLean.value = "lean";
-    optionElementLean.textContent = "Lean";
-    lspSelect.appendChild(optionElementLean);
-    lspSelect.value = currentLspType || "coq";
-
+    // Create the input field for the LSP path
     const lspPath = document.createElement("input");
     lspPath.type = "text";
     lspPath.id = "lsp-path";
     lspPath.placeholder = "Enter the path to the LSP server";
     lspPath.classList.add("settings-text-input");
-    if (currentLspType == "coq") {
+    if (currentLspType == "Coq") {
       lspPath.value = lspCoqPath;
-    } else if (currentLspType == "lean") {
+    } else if (currentLspType == "Lean") {
       lspPath.value = lspLeanPath;
     }
 
+    // Add event listener to the dropdown
     lspSelect.addEventListener("change", (e) => {
+      // Get the selected LSP type
       const target = e.target as HTMLSelectElement;
       const lspType = target.value;
+
+      // Update the local storage with the current LSP type
       window.localStorage.setItem("currentLspType", lspType);
-      if (lspType === "coq") {
-        lspPath.value = JSON.parse(localStorage.getItem("coq") || "{}").path;
-      } else if (lspType === "lean") {
-        lspPath.value = JSON.parse(localStorage.getItem("lean") || "{}").path;
+
+      // Update the LSP path input field with the path for the selected LSP type
+      if (lspType === "Coq") {
+        lspPath.value =
+          JSON.parse(localStorage.getItem("coq") || "{}").path || "";
+      } else if (lspType === "Lean") {
+        lspPath.value =
+          JSON.parse(localStorage.getItem("lean") || "{}").path || "";
       }
     });
 
+    // Create the apply button for the LSP path
     const lspButton = document.createElement("button");
     lspButton.textContent = "Apply";
+    lspButton.classList.add("settings-apply-button");
+
+    // Add event listener to the apply button
     lspButton.addEventListener("click", () => {
       console.log("LSP Path: " + lspPath.value);
+      // if the file is not open, set the output config and file name based on the LSP type
       if (!proofFlow.hasFileOpen) {
         switch (lspSelect.value) {
-          case "lean":
+          case "Lean":
+            // Set the output config and file name for Lean
             proofFlow.setOutputConfig(PureLeanOutput);
             proofFlow.fileName = "file.lean";
             break;
-          case "coq":
+          case "Coq":
+            // Set the output config and file name for Coq
             proofFlow.setOutputConfig(CoqMDOutput);
             proofFlow.fileName = "file.mv";
             break;
@@ -298,23 +305,25 @@ export class SettingsOverlay {
             break;
         }
       }
+      // Create the LSP object with the path and type
       let lsp = {
         path: lspPath.value,
         type: lspSelect.value,
       };
       const lspType = lspSelect.value;
 
-      window.localStorage.setItem(lspType, JSON.stringify(lsp));
+      // Update the LSP path in local storage
+      window.localStorage.setItem(lspType.toLowerCase(), JSON.stringify(lsp));
       window.localStorage.setItem("currentLspType", lspType);
     });
-    lspButton.classList.add("settings-apply-button");
 
-    lspContainer.appendChild(lspLabel);
+    // Append all to the container
     lspContainer.appendChild(lspSelect);
     lspContainer.appendChild(lspPath);
     lspContainer.appendChild(lspButton);
-
     lspContainer.classList.add("settings-container");
+
+    // return the container
     return lspContainer;
   }
 
@@ -448,32 +457,40 @@ export class SettingsOverlay {
     );
 
     // Update with stored values
-    const currentStyle = localStorage.getItem("textStyle");
-    const currentSize = localStorage.getItem("textSize");
-    const currentFont = localStorage.getItem("textFont");
+    const currentStyle = localStorage.getItem("textStyle") || "Sans-serif";
+    const currentSize = localStorage.getItem("textSize") || "Medium";
+    const currentFont = localStorage.getItem("textFont") || "Arial";
 
+    // if the font is Comic Sans, Palatino, or Trebuchet, show the text style dropdown
+    // otherwise, hide it.
+    // As other fonts do not have styles, the text style dropdown is hidden.
     if (currentFont && textFontsWithStyles.includes(currentFont)) {
       textStyleSelect.style.display = "";
     } else {
       textStyleSelect.style.display = "none";
     }
 
+    // Initialize the font family string
     let fontFamily = "";
 
+    // Set the font for the editor
     if (currentFont) {
       textFontSelect.value = currentFont;
       fontFamily += currentFont;
     }
 
+    // Set the text style for the editor
     if (currentStyle) {
       textStyleSelect.value = currentStyle;
       fontFamily += currentFont ? `, ${currentStyle}` : currentStyle;
     }
 
+    // Set the font family for the editor
     if (currentFont || currentStyle) {
       document.documentElement.style.setProperty(`--font-family`, fontFamily);
     }
 
+    // Set the font size for the editor
     if (currentSize) {
       textSize.value = currentSize;
       editor.style.fontSize = currentSize;
@@ -484,6 +501,7 @@ export class SettingsOverlay {
     textStyleContainer.appendChild(textFontSelect);
     textStyleContainer.appendChild(textStyleSelect);
 
+    // return the container
     return textStyleContainer;
   }
 }
