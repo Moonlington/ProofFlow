@@ -1,8 +1,4 @@
-import { EditorView } from "prosemirror-view";
 import { markdownRenderedClickFix } from "../plugins/markdown-extra";
-import { toggleLineNumbers } from "../commands/helpers";
-import { selectParentNode } from "prosemirror-commands";
-import { getCollapsibleInsertCommand, getInputInsertCommand } from "../commands/insert-commands";
 
 /**
  * Adds a button to the button bar.
@@ -74,4 +70,3 @@ export function CreateButton(
 
   return button;
 }
-

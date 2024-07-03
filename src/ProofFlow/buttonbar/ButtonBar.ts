@@ -3,14 +3,9 @@ import {
   cmdInsertMarkdown,
   cmdInsertMath,
 } from "../commands/commands.ts";
-import {
-  InsertionPlace,
-  requestConfirm,
-} from "../commands/helpers.ts";
+import { InsertionPlace } from "../commands/helpers.ts";
 import { EditorView } from "prosemirror-view";
-import { proofFlow, readSingleFile } from "../../main.ts";
-import { undo, redo } from "prosemirror-history";
-import { showOverlay } from "../../main.ts";
+import { readSingleFile } from "../../main.ts";
 import { createAddButton, CreateButton } from "./elementCreation.ts";
 import { createButtonsList, createSettingCommands } from "./constants.ts";
 
