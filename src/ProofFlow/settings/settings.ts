@@ -1,11 +1,14 @@
 import { proofFlow } from "../../main";
-import {
-  CoqMDOutput,
-  LeanOutput,
-  PureLeanOutput,
-} from "../parser/outputconfigs";
+import { CoqMDOutput, PureLeanOutput } from "../parser/outputconfigs";
 import { updateColors } from "./updateColors";
 import { colorSchemesKeys } from "./updateColors";
+import {
+  createCheckbox,
+  createContainer,
+  createDropdown,
+  createLabel,
+  addOnClickEventListener,
+} from "./elementCreation";
 
 /**
  * Represents the settings overlay class.
@@ -113,74 +116,6 @@ export class SettingsOverlay {
   }
 
   /**
-   * Creates a container element with the specified header.
-   *
-   * @param header - The text content for the container header.
-   * @returns The created container element.
-   */
-  private createContainer(header: string): HTMLElement {
-    const container = document.createElement("div");
-    container.className = "settings-container";
-
-    const containerHeader = document.createElement("h4");
-    containerHeader.textContent = header;
-
-    container.appendChild(containerHeader);
-
-    return container;
-  }
-
-  /**
-   * Creates a dropdown element with the specified header and options.
-   *
-   * @param header - The header text for the dropdown.
-   * @param options - An array of strings representing the options for the dropdown.
-   * @returns The created dropdown element.
-   */
-  private createDropdown(options: string[]): HTMLSelectElement {
-    const dropdown = document.createElement("select");
-    dropdown.className = "dropdown";
-
-    options.forEach((option) => {
-      const optionElement = document.createElement("option");
-      optionElement.value = option;
-      optionElement.textContent = option;
-      dropdown.appendChild(optionElement);
-    });
-
-    return dropdown;
-  }
-
-  /**
-   * Creates a checkbox element.
-   *
-   * @returns The created checkbox element.
-   */
-  private createCheckbox(id: string): HTMLInputElement {
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.id = id;
-    checkbox.classList.add("checkbox");
-
-    return checkbox;
-  }
-
-  /**
-   * Creates an HTML label element with the specified text and "for" attribute.
-   * @param text - The text content of the label.
-   * @param htmlFor - The value of the "for" attribute, specifying the ID of the associated form element.
-   * @returns The created HTML label element.
-   */
-  private createLabel(text: string, htmlFor: string): HTMLLabelElement {
-    const label = document.createElement("label");
-    label.textContent = text;
-    label.htmlFor = htmlFor;
-    label.classList.add("checkbox");
-
-    return label;
-  }
-
-  /**
    * Creates and returns an HTML element representing the user mode container.
    * This container includes a label, checkbox, and description for the teacher mode.
    * The checkbox has an event listener attached to it.
@@ -189,14 +124,18 @@ export class SettingsOverlay {
    */
   private userModeContainer(): HTMLElement {
     // Create the container and header
-    const userModeContainer = this.createContainer("Teacher Mode");
+    const userModeContainer = createContainer("Teacher Mode");
+
+    // Handle the user mode change
+    const handleUserModeClick = (e: Event) => {
+      proofFlow.switchUserMode();
+    };
 
     // Create the checkbox for the usermode
-    const userModeCheckbox = this.createCheckbox("user-mode-checkbox");
-
-    userModeCheckbox.addEventListener("click", () => {
-      proofFlow.switchUserMode();
-    });
+    const userModeCheckbox = createCheckbox(
+      "user-mode-checkbox",
+      handleUserModeClick,
+    );
 
     // Get the current user mode from local storage
     const modeSet: boolean = Boolean(
@@ -209,7 +148,7 @@ export class SettingsOverlay {
     }
 
     // Add a label to the checkbox
-    const userModeDescription = this.createLabel(
+    const userModeDescription = createLabel(
       "Enable teacher mode; if true, allows the user to edit outside of input areas",
       "user-mode-checkbox",
     );
@@ -228,31 +167,36 @@ export class SettingsOverlay {
    */
   private colorSchemeContainer(): HTMLElement {
     // Create the container and header
-    const colorSchemeContainer = this.createContainer("Color Scheme");
+    const colorSchemeContainer = createContainer("Color Scheme");
 
-    // Create the checkbox for darkmode
-    const darkModeCheckbox = this.createCheckbox("dark-checkbox");
-
-    // Add a label to the checkbox
-    const darkDescription = this.createLabel("Dark mode", "dark-checkbox");
-
-    // update the colors when the checkbox is clicked
-    darkModeCheckbox.addEventListener("click", () => {
+    // Handle the color scheme change
+    const handleColorSchemeChange = (e: Event) => {
       updateColors(colorSchemeSelect.value, darkModeCheckbox.checked);
       window.localStorage.setItem(
         "darkMode",
         darkModeCheckbox.checked.toString(),
       );
-    });
+    };
+    // Create the checkbox for darkmode
+    const darkModeCheckbox = createCheckbox(
+      "dark-checkbox",
+      handleColorSchemeChange,
+    );
 
-    // Create the dropdown for the color scheme
-    const colorSchemeSelect = this.createDropdown(colorSchemesKeys);
+    // Add a label to the checkbox
+    const darkDescription = createLabel("Dark mode", "dark-checkbox");
 
-    // update the colors when the select element is changed
-    colorSchemeSelect.addEventListener("change", () => {
+    // Handle the dark mode change
+    const handleDarkModeClick = (e: Event) => {
       updateColors(colorSchemeSelect.value, darkModeCheckbox.checked);
       window.localStorage.setItem("colorScheme", colorSchemeSelect.value);
-    });
+    };
+
+    // Create the dropdown for the color scheme
+    const colorSchemeSelect = createDropdown(
+      colorSchemesKeys,
+      handleDarkModeClick,
+    );
 
     // Get the current color scheme from local storage
     const darkMode: boolean = Boolean(
@@ -382,25 +326,28 @@ export class SettingsOverlay {
    */
   private miniMapContainer(): HTMLElement {
     // Create the container and header
-    const miniMapContainer = this.createContainer("Minimap");
+    const miniMapContainer = createContainer("Minimap");
 
-    // Create the checkbox for the minimap
-    const miniMapCheckbox = this.createCheckbox("mini-map-checkbox");
-
-    // Create the label for the checkbox
-    const miniMapDescription = this.createLabel(
-      "Enable minimap",
-      "mini-map-checkbox",
-    );
-
-    // Add event listener
-    miniMapCheckbox.addEventListener("click", () => {
+    // Handle the minimap change
+    const handleMinimapClick = (e: Event) => {
       proofFlow.switchMinimap();
       window.localStorage.setItem(
         "minimap",
-        miniMapCheckbox.checked.toString(),
+        (e.target as HTMLInputElement).checked.toString(),
       );
-    });
+    };
+
+    // Create the checkbox for the minimap
+    const miniMapCheckbox = createCheckbox(
+      "mini-map-checkbox",
+      handleMinimapClick,
+    );
+
+    // Create the label for the checkbox
+    const miniMapDescription = createLabel(
+      "Enable minimap",
+      "mini-map-checkbox",
+    );
 
     // Update from storage
     const on = localStorage.getItem("minimap") === "true";
@@ -429,11 +376,32 @@ export class SettingsOverlay {
     const editor = document.getElementById("editor")!;
 
     // Create the container and header
-    const textStyleContainer = this.createContainer("Text Style");
+    const textStyleContainer = createContainer("Text Style");
+
+    // Handle the text style change
+    const handleTextStyleChange = (e: Event) => {
+      // Update the font family when the select style element is changed
+      // and store the value in local storage.
+
+      const fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
+      document.documentElement.style.setProperty(`--font-family`, fontFamily);
+      localStorage.setItem("textStyle", textStyleSelect.value);
+    };
 
     // Dropdown for the text style
     const textStyleOptions = ["Serif", "Sans-serif", "Monospace"];
-    const textStyleSelect = this.createDropdown(textStyleOptions);
+    const textStyleSelect = createDropdown(
+      textStyleOptions,
+      handleTextStyleChange,
+    );
+
+    // Handle the text size change
+    const handleTextSizeChange = (e: Event) => {
+      // Update the font size when the select text size element is changed
+      // and store the value in local storage.
+      editor.style.fontSize = textSize.value;
+      localStorage.setItem("textSize", textSize.value);
+    };
 
     // Dropdown for the text size
     const textSizeOptions = [
@@ -445,7 +413,21 @@ export class SettingsOverlay {
       "Larger",
       "X-Large",
     ];
-    const textSize = this.createDropdown(textSizeOptions);
+    const textSize = createDropdown(textSizeOptions, handleTextSizeChange);
+
+    // Handle the text font change
+    const handleTextFontChange = (e: Event) => {
+      // Update the font family when the select Font element is changed
+      // and store the value in local storage.
+      const fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
+      document.documentElement.style.setProperty(`--font-family`, fontFamily);
+      localStorage.setItem("textFont", textFontSelect.value);
+      if (textFontsWithStyles.includes(textFontSelect.value)) {
+        textStyleSelect.style.display = "";
+      } else {
+        textStyleSelect.style.display = "none";
+      }
+    };
 
     // Dropdown for the text font
     const textFontOptions = [
@@ -461,39 +443,10 @@ export class SettingsOverlay {
     ];
     const textFontsWithStyles = ["Comic Sans", "Palatino", "Trebuchet"];
 
-    const textFontSelect = this.createDropdown(textFontOptions);
-
-    // Add event listeners
-    /**
-     * Update the font family when the select Font element is changed and store the value in local storage.
-     */
-    textFontSelect.addEventListener("change", () => {
-      const fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
-      document.documentElement.style.setProperty(`--font-family`, fontFamily);
-      localStorage.setItem("textFont", textFontSelect.value);
-      if (textFontsWithStyles.includes(textFontSelect.value)) {
-        textStyleSelect.style.display = "";
-      } else {
-        textStyleSelect.style.display = "none";
-      }
-    });
-
-    /**
-     * Update the font family when the select style element is changed and store the value in local storage.
-     */
-    textStyleSelect.addEventListener("change", () => {
-      const fontFamily = `${textFontSelect.value}, ${textStyleSelect.value}`;
-      document.documentElement.style.setProperty(`--font-family`, fontFamily);
-      localStorage.setItem("textStyle", textStyleSelect.value);
-    });
-
-    /**
-     * Update the font size when the select text size element is changed and store the value in local storage.
-     */
-    textSize.addEventListener("change", () => {
-      editor.style.fontSize = textSize.value;
-      localStorage.setItem("textSize", textSize.value);
-    });
+    const textFontSelect = createDropdown(
+      textFontOptions,
+      handleTextFontChange,
+    );
 
     // Update with stored values
     const currentStyle = localStorage.getItem("textStyle");
