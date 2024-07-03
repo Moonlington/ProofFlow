@@ -1,9 +1,10 @@
 import { ProofFlow } from "../editor/ProofFlow";
-import { Node } from "prosemirror-model";
+import { Node, Schema } from "prosemirror-model";
 import { ProofFlowSchema } from "../editor/proofFlowSchema";
 import { UserMode, lockEditing } from "../UserMode/userMode";
-import { highLevelCells, markdownToRendered } from "../commands/helpers";
+import { highLevelCells } from "../commands/helpers";
 import { TextSelection } from "prosemirror-state";
+import { defaultMarkdownParser } from "prosemirror-markdown";
 
 /**
  * Renders all markdown nodes in the ProofFlow editor.
@@ -144,4 +145,75 @@ export function markdownRenderedClickFix() {
     element.removeEventListener("click", (e) => e.stopPropagation()); // Remove existing listeners to avoid duplication
     element.addEventListener("click", (e) => e.stopPropagation());
   });
+}
+
+/**
+ * Turns a markdown node into a rendered markdown node.
+ * @param node The node to transform.
+ * @param schema The schema that the node belongs to.
+ * @returns The transformed node.
+ */
+export function markdownToRendered(node: Node, schema: Schema) {
+  const parsedContent = defaultMarkdownParser.parse(node.textContent);
+  const mathInlineBlockNodeType = schema.nodes["math_inline_block"];
+  const mathInlineNodeType = schema.nodes["math_inline"];
+  const markdownRenderedNodeType = schema.nodes["markdown_rendered"];
+  const markdownRenderedChildNodeType = schema.nodes["markdown_rendered_child"];
+
+  let renderedNode: Node = node; // Default to the original node if parsing fails
+  let parsedParts: Node[] = Array<Node>();
+
+  const regex = /\$(.*?)\$/g; // The regex string for getting the math content
+  const result = node.textContent.split(regex);
+  for (let i = 0; i < result.length; i++) {
+    // Since the regex is capturing the math content, the odd indexes will contain the math content
+    if (i % 2 == 1) {
+      // Make a math_inline node with the math content
+      let mathNode = mathInlineNodeType.create(null, schema.text(result[i]));
+      let wrappedMathNode = mathInlineBlockNodeType.create(null, mathNode);
+      parsedParts.push(wrappedMathNode);
+    } else {
+      // Make a markdown child node with the text content
+      if (result[i] == "") continue; // If the content is empty, skip it (the last element of result[] is always empty)
+      let parsedChildContent = defaultMarkdownParser.parse(result[i]);
+      if (parsedChildContent)
+        parsedParts.push(
+          markdownRenderedChildNodeType.create(
+            null,
+            parsedChildContent.content,
+          ),
+        );
+    }
+  }
+
+  if (parsedContent) {
+    renderedNode = markdownRenderedNodeType.create(
+      { id: node.attrs.id, original_text: node.textContent },
+      // If the content was splittable into parts, used the parsed parts, otherwise use the original content
+      parsedParts.length != 0 ? parsedParts : parsedContent.content,
+    );
+  }
+
+  return renderedNode;
+}
+
+/**
+ * Turns a rendered markdown node into a markdown (plain text) node.
+ * @param node The node to transform.
+ * @param schema The schema that the node belongs to.
+ * @returns The transformed node.
+ */
+export function renderedToMarkdown(node: Node, schema: Schema) {
+  // const serializedContent = defaultMarkdownSerializer.serialize(node);
+
+  // Create a new markdown node with the serialized content (a.k.a the raw text)
+  // Make sure the text is not empty, since creating an empty text cell is not allowed
+
+  let text =
+    node.attrs.original_text == ""
+      ? undefined
+      : schema.text(node.attrs.original_text);
+  let markdownNode: Node = schema.node("markdown", { id: node.attrs.id }, text);
+
+  return markdownNode;
 }
