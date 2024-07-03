@@ -1,3 +1,5 @@
+import { showOverlay } from "../../main";
+
 /**
  * Creates an HTML label element with the specified text and "for" attribute.
  * @param text - The text content of the label.
@@ -75,4 +77,43 @@ export function createDropdown(
   dropdown.addEventListener("change", (e) => commandHandler(e));
 
   return dropdown;
+}
+
+/**
+ * Creates and returns a close button element.
+ * The close button is used to close the settings overlay.
+ *
+ * @returns The close button element.
+ */
+export function createCloseButton(): HTMLButtonElement {
+  const closeButton = document.createElement("button");
+  closeButton.className = "close-button";
+  closeButton.id = "close-settings";
+  closeButton.innerHTML = "&#x2715;";
+
+  closeButton.addEventListener("click", () => showOverlay(false));
+
+  return closeButton;
+}
+
+/**
+ * Creates and returns the settings menu element.
+ *
+ * @returns The settings menu element as an HTMLElement.
+ */
+export function createSettingsMenu(): HTMLElement {
+  // Create the popup
+  const popup = document.createElement("div");
+  popup.className = "popup";
+
+  // Add close button
+  const closeButton = createCloseButton();
+  popup.appendChild(closeButton);
+
+  // Add text header
+  const header = document.createElement("h2");
+  header.textContent = "Settings Menu";
+  popup.appendChild(header);
+
+  return popup;
 }
