@@ -25,6 +25,9 @@ export function getNextAreaId(): number {
   return nextAreaId++;
 }
 
+/**
+ * Represents an area in the ProofFlow editor.
+ */
 export class Area {
   id: number; // Unique identifier for the area
   type: AreaType; // Type of the area
@@ -85,6 +88,9 @@ export class Area {
   }
 }
 
+/**
+ * Represents a wrapper area that contains subareas.
+ */
 export class WrapperArea extends Area {
   subAreas: Area[] = []; // Subareas of the wrapper area
 

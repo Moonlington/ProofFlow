@@ -22,6 +22,10 @@ export enum InsertionPlace {
   Underneath, // Insert underneath the current selection
 }
 
+/**
+ * Array of high-level cells.
+ * These cells represent different types of content in ProofFlow.
+ */
 export const highLevelCells: string[] = new Array(
   "code_mirror",
   "math_display",
@@ -222,10 +226,24 @@ export function allowedToInsert(state: EditorState): boolean {
   return true;
 }
 
+/**
+ * Checks if a position is within the range of a node.
+ * @param node - The node to check.
+ * @param nodePos - The starting position of the node.
+ * @param clickedPos - The position to check.
+ * @returns True if the position is within the range of the node, false otherwise.
+ */
 export function isClickedNode(node: Node, nodePos: number, clickedPos: number) {
   return nodePos <= clickedPos && clickedPos <= nodePos + node.nodeSize - 1;
 }
 
+/**
+ * Updates the proof status of an input node in the editor.
+ *
+ * @param inputNode - The input node to update.
+ * @param newProof - The new proof status to set.
+ * @param pos - The position of the input node in the document.
+ */
 export function inputProof(
   inputNode: Node,
   newProof: ProofStatus,
