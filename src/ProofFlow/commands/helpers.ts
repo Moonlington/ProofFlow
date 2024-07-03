@@ -83,19 +83,15 @@ export function insertAbove(
     const pos = sel.from; // Get the position of the selection
     let counter = pos;
 
-    trans = insertion(trans, nodeType, counter);
+    trans = insertionTrans(trans, nodeType, counter);
   } else if (isTextSelection) {
     // If the selection is a text selection, insert above the parent node
     const parentPos = sel.$from.depth ? sel.$from.before(sel.$from.depth) : 0; // Get the position of the parent node or 0 if it doesn't exist
     let counter = parentPos;
 
-    trans = insertion(trans, nodeType, counter);
+    trans = insertionTrans(trans, nodeType, counter);
   } else {
-    // If the selection is invalid, add a node at the end of the document
-    const pos = state.doc.content.size;
-    let counter = pos;
-
-    trans = insertion(trans, nodeType, counter);
+    trans = invalidSelectionTrans(state, trans, nodeType);
   }
 
   // Close the history event to prevent further steps from being appended to it
@@ -129,7 +125,7 @@ export function insertUnder(
     const pos = sel.to;
     let counter = pos;
 
-    trans = insertion(trans, nodeType, counter);
+    trans = insertionTrans(trans, nodeType, counter);
   } else if (isTextSelection) {
     // If the selection is a text selection, insert the specified node types under the current selection
     const textSel = sel as TextSelection;
@@ -142,13 +138,9 @@ export function insertUnder(
     }
     let counter = to;
 
-    trans = insertion(trans, nodeType, counter);
+    trans = insertionTrans(trans, nodeType, counter);
   } else {
-    // If the selection is invalid, add a node at the end of the document
-    const pos = state.doc.content.size;
-    let counter = pos;
-
-    trans = insertion(trans, nodeType, counter);
+    trans = invalidSelectionTrans(state, trans, nodeType);
   }
 
   // Close the history event to prevent further steps from being appended to it
@@ -165,7 +157,7 @@ export function insertUnder(
  * @param counter - The starting position for insertion.
  * @returns The updated transaction after insertion.
  */
-function insertion(
+function insertionTrans(
   trans: Transaction,
   nodeType: NodeType[],
   counter: number,
@@ -175,6 +167,24 @@ function insertion(
     counter++;
   });
   return trans;
+}
+
+/**
+ * Adds a node at the end of the document if the selection is invalid.
+ * 
+ * @param state - The current editor state.
+ * @param trans - The transaction to modify.
+ * @param nodeType - An array of node types.
+ * @returns The modified transaction.
+ */
+function invalidSelectionTrans(state: EditorState, trans: Transaction, nodeType: NodeType[]): Transaction {
+    // If the selection is invalid, add a node at the end of the document
+    const pos = state.doc.content.size;
+    let counter = pos;
+
+    trans = insertionTrans(trans, nodeType, counter);
+
+    return trans;
 }
 
 /**
