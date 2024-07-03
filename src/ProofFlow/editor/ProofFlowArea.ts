@@ -3,7 +3,7 @@
  */
 import { indexToPosition, Position } from "./ProofFlowPosition.ts";
 import { OutputConfig, ProofFlowDocument, Range } from "./ProofFlowDocument.ts";
-import { ProofStatus } from "./proofFlowSchema.ts";
+import { ProofStatus } from "./Schema/proofFlowSchema.ts";
 import { Node } from "prosemirror-model";
 
 // Enumeration for the type of area

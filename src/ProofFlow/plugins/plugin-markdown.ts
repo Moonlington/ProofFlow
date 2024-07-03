@@ -7,7 +7,7 @@ import {
   highLevelCells,
   getContainingNode,
 } from "../commands/helpers.ts";
-import { ProofFlowSchema } from "../editor/proofFlowSchema.ts";
+import { ProofFlowSchema } from "../editor/Schema/proofFlowSchema.ts";
 import { proofFlow } from "../../main.ts";
 import { UserMode, lockEditing } from "../UserMode/userMode.ts";
 import {

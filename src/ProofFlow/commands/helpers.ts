@@ -10,7 +10,7 @@ import { closeHistory } from "prosemirror-history";
 
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
-import { ProofStatus } from "../editor/proofFlowSchema";
+import { ProofStatus } from "../editor/Schema/proofFlowSchema.ts";
 import { getNextAreaId } from "../editor/ProofFlowArea.ts";
 //import { mathSerializer } from "@benrbray/prosemirror-math";
 /**
