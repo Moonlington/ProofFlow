@@ -169,19 +169,6 @@ class CollapsibleArea extends Area {
   }
 
   /**
-   * Function to remove an area from the collapsible area
-   * @param {Area} area - Area to be removed
-   * @returns - boolean value indicating if the area was removed successfully
-   */
-  removeArea(area: Area): boolean {
-    if (this.subAreas.includes(area)) {
-      this.subAreas.splice(this.subAreas.indexOf(area), 1);
-      return true;
-    }
-    return false;
-  }
-
-  /**
    * Function to convert the collapsible area to a string
    * @param {OutputConfig} config - Configuration for the output
    * @returns - String representation of the collapsible area
@@ -379,104 +366,6 @@ class ProofFlowDocument {
       }
       lastIndex = newLastIndex;
     }
-  }
-
-  /**
-   * Function to add an area before the area with the given id
-   * @param {Area} area - Area to be added
-   * @param {number} beforeId - Id of the area before which the area should be added
-   * @returns - boolean value indicating if the area was added successfully
-   */
-  addAreaBefore(area: Area, beforeId: number): boolean {
-    let beforeArea = this.getAreaById(beforeId);
-    if (beforeArea === undefined) return false;
-    if (beforeArea.parent !== undefined) {
-      beforeArea.parent.subAreas.splice(
-        beforeArea.parent.subAreas.indexOf(beforeArea),
-        1,
-        area,
-        beforeArea,
-      );
-      area.parent = beforeArea.parent;
-      return true;
-    }
-    this.areas.splice(this.areas.indexOf(beforeArea), 0, area);
-    return true;
-  }
-
-  /**
-   * Function to add an area after the area with the given id
-   * @param {Area} area - Area to be added
-   * @param {number} afterId - Id of the area after which the area should be added
-   * @returns - boolean value indicating if the area was added successfully
-   */
-  addAreaAfter(area: Area, afterId: number): boolean {
-    let afterArea = this.getAreaById(afterId);
-    if (afterArea === undefined) return false;
-    if (afterArea.parent !== undefined) {
-      afterArea.parent.subAreas.splice(
-        afterArea.parent.subAreas.indexOf(afterArea),
-        0,
-        area,
-      );
-      area.parent = afterArea.parent;
-      return true;
-    }
-    this.areas.splice(this.areas.indexOf(afterArea), 0, area);
-    return true;
-  }
-
-  /**
-   * Function to replace an area with the given id with a new area
-   * @param {Area} newArea - New area to be added
-   * @param {number} replaceId - Id of the area to be replaced
-   * @returns - boolean value indicating if the area was replaced successfully
-   */
-  replaceArea(newArea: Area, replaceId: number): boolean {
-    let replacedArea = this.getAreaById(replaceId);
-    if (replacedArea === undefined) return false;
-    if (replacedArea.parent !== undefined) {
-      replacedArea.parent.subAreas.splice(
-        replacedArea.parent.subAreas.indexOf(replacedArea),
-        1,
-        newArea,
-      );
-      newArea.parent = replacedArea.parent;
-      return true;
-    }
-    this.areas.splice(this.areas.indexOf(replacedArea), 1, newArea);
-    return true;
-  }
-
-  /**
-   * Function to remove an area with the given id
-   * @param {number} id - Id of the area to be removed
-   * @returns - boolean value indicating if the area was removed successfully
-   */
-  removeAreaById(id: number): boolean {
-    for (let area of this.areas) {
-      switch (area.type) {
-        case AreaType.Collapsible:
-          let collapsible = area as CollapsibleArea;
-          for (let otherarea of collapsible.subAreas) {
-            if (otherarea.id === id) return collapsible.removeArea(otherarea);
-          }
-          break;
-        case AreaType.Input:
-          let input = area as InputArea;
-          for (let otherarea of input.subAreas) {
-            if (otherarea.id === id) return input.removeArea(otherarea);
-          }
-          break;
-        default:
-          if (area.id === id) {
-            this.areas.splice(this.areas.indexOf(area), 1);
-            return true;
-          }
-          break;
-      }
-    }
-    return false;
   }
 
   /**
