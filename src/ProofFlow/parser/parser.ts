@@ -2,12 +2,15 @@ export { SimpleParser };
 
 import {
   ProofFlowDocument,
+  OutputConfig,
+} from "../editor/ProofFlowDocument";
+
+import{
   AreaType,
   Area,
   CollapsibleArea,
   InputArea,
-  OutputConfig,
-} from "../editor/ProofFlowDocument";
+} from "../editor/ProofFlowArea.ts";
 
 /**
  * Interface for a parser.

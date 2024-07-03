@@ -15,7 +15,7 @@ import {
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { ProofFlowSchema } from "../editor/proofFlowSchema";
-import { getNextAreaId } from "../editor/ProofFlowDocument";
+import { getNextAreaId } from "../editor/ProofFlowArea.ts";
 
 /**
  * Returns a command function for inserting a node of the specified type.

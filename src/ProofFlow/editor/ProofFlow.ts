@@ -23,13 +23,8 @@ import { UserMode, handleUserModeSwitch } from "../UserMode/userMode.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
 import {
-  Area,
-  AreaType,
-  CollapsibleArea,
-  InputArea,
   OutputConfig,
   ProofFlowDocument,
-  docToPFDocument,
 } from "./ProofFlowDocument.ts";
 
 import { Parser, SimpleParser } from "../parser/parser.ts";
@@ -56,6 +51,7 @@ import { ProofFlowSaver } from "../fileHandlers/proofFlowSaver.ts";
 import { adjustLeftDivWidth, firefoxUsed } from "../../main.ts";
 import { LSPClientManager } from "../lspClient/lspClientManager.ts";
 import { undo, redo, undoDepth, redoDepth } from "prosemirror-history";
+import {AreaType, docToPFDocument, InputArea, CollapsibleArea, Area} from "./ProofFlowArea.ts";
 // CSS
 
 export type ProofFlowOptions = {

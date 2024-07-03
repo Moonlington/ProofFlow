@@ -11,9 +11,8 @@ import { defaultMarkdownParser } from "prosemirror-markdown";
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
 import { ProofStatus } from "../editor/proofFlowSchema";
-import { getNextAreaId } from "../editor/ProofFlowDocument";
+import { getNextAreaId } from "../editor/ProofFlowArea.ts";
 //import { mathSerializer } from "@benrbray/prosemirror-math";
-import { vscode } from "../extension/vscode";
 /**
  * Represents the possible places where an insertion can occur.
  */
