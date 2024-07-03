@@ -142,6 +142,9 @@ export function insertUnder(
     // If the selection is invalid, add a node at the end of the document
     const pos = state.doc.content.size;
     let counter = pos;
+
+    trans = insertion(trans, nodeType, counter);
+
   }
 
   // Close the history event to prevent further steps from being appended to it
