@@ -17,7 +17,8 @@ export function createAddButton(
   // Set the id of the button
   if (label === "line nr") {
     button.id = "line-nr-button";
-  } else { // Set the id of the button
+  } else {
+    // Set the id of the button
     button.id = label.toLowerCase() + "-button";
   }
 

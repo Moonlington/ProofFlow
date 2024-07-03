@@ -1,11 +1,8 @@
-import {Position} from "../editor/ProofFlowPosition.ts";
+import { Position } from "../editor/ProofFlowPosition.ts";
 
 export { ProofFlowLSPClient, ProofFlowLSPClientFileType };
 
-import {
-  ProofFlowDocument,
-  Range,
-} from "../editor/ProofFlowDocument";
+import { ProofFlowDocument, Range } from "../editor/ProofFlowDocument";
 import { LSPClientHandler } from "./lspClientHandler";
 import {
   InitializeResult,

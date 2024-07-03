@@ -10,7 +10,7 @@ import {
   Transaction as CMTransaction,
 } from "@codemirror/state";
 import { EditorView as CMView } from "@codemirror/view";
-import type { CodeMirrorViewOptions, ComputeChange } from "./types.ts";
+import {CodeMirrorViewOptions, computeChange} from "./types.ts";
 import { proofFlow } from "../../main.ts";
 import { Diagnostic, setDiagnostics } from "@codemirror/lint";
 import { LSPDiagnostic } from "../lspClient/models.ts";
@@ -158,7 +158,7 @@ export class CodeMirrorView implements NodeView {
       CodeMirrorView.focused instanceof CodeMirrorView &&
       CodeMirrorView.focused != this
     ) {
-      CodeMirrorView.focused.blurInstance();
+      CodeMirrorView.focused.deselectNode();
     }
 
     CodeMirrorView.focused = this;
@@ -185,17 +185,6 @@ export class CodeMirrorView implements NodeView {
   forceforwardSelection() {
     this.cm.focus();
     this.forwardSelection();
-  }
-
-  /**
-   * Method to blur the CodeMirror instance when other instances are focused
-   */
-  blurInstance() {
-    this.setSelection(
-      this.cm.state.selection.main.head,
-      this.cm.state.selection.main.head,
-    );
-    CodeMirrorView.focused = null;
   }
 
   /**
@@ -290,16 +279,6 @@ export class CodeMirrorView implements NodeView {
   }
 
   /**
-   * Sets the focus on the CodeMirrorView instance.
-   * Moves the cursor to the editor and updates the focused instance.
-   */
-  focus() {
-    this.cm.focus();
-    this.forwardSelection();
-    CodeMirrorView.focused = this;
-  }
-
-  /**
    * Destroys the CodeMirrorView instance.
    * This method destroys the underlying CodeMirror instance and removes the current instance from the list of instances.
    */
@@ -386,49 +365,5 @@ export class CodeMirrorView implements NodeView {
     this.cm.dispatch(tr);
   }
 }
-
-/**
- * Computes the change between two strings.
- *
- * @param oldVal - The old string value.
- * @param newVal - The new string value.
- *
- * @returns The computed change object or null if there is no change.
- */
-const computeChange = (
-  oldVal: string,
-  newVal: string,
-): ComputeChange | null => {
-  // If the old and new values are the same, return null
-  if (oldVal === newVal) {
-    return null;
-  }
-
-  // Find the start and end positions of the change
-  let start = 0;
-  let oldEnd = oldVal.length;
-  let newEnd = newVal.length;
-
-  // Find the start position of the change
-  while (
-    start < oldEnd &&
-    oldVal.charCodeAt(start) === newVal.charCodeAt(start)
-  ) {
-    start += 1;
-  }
-
-  // Find the end position of the change
-  while (
-    oldEnd > start &&
-    newEnd > start &&
-    oldVal.charCodeAt(oldEnd - 1) === newVal.charCodeAt(newEnd - 1)
-  ) {
-    oldEnd -= 1;
-    newEnd -= 1;
-  }
-
-  // Return the change object
-  return { from: start, to: oldEnd, text: newVal.slice(start, newEnd) };
-};
 
 export default CodeMirrorView;

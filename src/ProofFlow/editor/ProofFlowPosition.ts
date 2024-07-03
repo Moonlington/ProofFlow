@@ -1,6 +1,6 @@
 export type Position = {
-    line: number;
-    character: number;
+  line: number;
+  character: number;
 };
 
 /**
@@ -10,12 +10,8 @@ export type Position = {
  * @returns - Position of the character in the document
  */
 export function indexToPosition(index: number, str: string): Position {
-    let lineNumber = str.substring(0, index).split("\n").length - 1;
-    let characterNumber =
-        index - str.split("\n").slice(0, lineNumber).toString().length;
-    return { line: lineNumber, character: characterNumber };
+  let lineNumber = str.substring(0, index).split("\n").length - 1;
+  let characterNumber =
+    index - str.split("\n").slice(0, lineNumber).toString().length;
+  return { line: lineNumber, character: characterNumber };
 }
-
-
-
-

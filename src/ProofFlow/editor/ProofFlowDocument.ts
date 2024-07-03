@@ -1,16 +1,8 @@
-
 import { CoqMDOutput } from "../parser/outputconfigs";
-import {indexToPosition, Position} from "./ProofFlowPosition.ts";
-import {Area, AreaType, CollapsibleArea, InputArea} from "./ProofFlowArea.ts";
+import { indexToPosition, Position } from "./ProofFlowPosition.ts";
+import { Area, AreaType, CollapsibleArea, InputArea } from "./ProofFlowArea.ts";
 
-export {
-  ProofFlowDocument,
-  NOPConfig,
-  Range,
-};
-
-
-
+export { ProofFlowDocument, NOPConfig, Range };
 
 /**
  * Class for representing a range in the document
@@ -39,10 +31,6 @@ class Range {
     return true;
   }
 }
-
-
-
-
 
 // OutputConfig is a type for the configuration of the output
 export type OutputConfig = {
@@ -233,5 +221,3 @@ class ProofFlowDocument {
     return undefined;
   }
 }
-
-
