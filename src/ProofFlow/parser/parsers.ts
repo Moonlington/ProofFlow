@@ -11,13 +11,12 @@ import { SimpleParser } from "./parser";
  */
 export { CoqParser, CoqMDParser, LeanParser, PureLeanParser };
 
-
 /**
  * Parser for purely Coq documents
  */
 const CoqParser = new SimpleParser(
   {
-      // Regular expressions
+    // Regular expressions
     text: [/\n\(\*\*/, /\*\)\n/],
     math: [/\$\$/, /\$\$/],
     collapsible: [
@@ -34,7 +33,7 @@ const CoqParser = new SimpleParser(
  */
 const CoqMDParser = new SimpleParser(
   {
-      // Regular expressions
+    // Regular expressions
     code: [/\n```coq\n/, /\n```\n/],
     math: [/\$\$/, /\$\$/],
     collapsible: [/<hint(?: title="(.*?)")?>/, /<\/hint>/],
@@ -48,7 +47,7 @@ const CoqMDParser = new SimpleParser(
  */
 const LeanParser = new SimpleParser(
   {
-      // Regular expressions
+    // Regular expressions
     code: [/\n```lean\n/, /\n```\n/],
     math: [/\n:::math\n/, /\n:::\n/],
     collapsible: [/\n:::collapsible\n(?:#(.*?)\n)?/, /\n:::\n/],
@@ -62,7 +61,7 @@ const LeanParser = new SimpleParser(
  */
 const PureLeanParser = new SimpleParser(
   {
-      // Regular expressions
+    // Regular expressions
     text: [/\n\/-\n/, /\n-\/\n/],
     math: [/\n\/-\$\$\n/, /\n\$\$-\/\n/],
     collapsible: [/\n-- <hint(?: title="(.*?)")?>\n?/, /\n-- <\/hint>\n/],
