@@ -4,7 +4,7 @@ SEP Group 12 - 2024 - ProofFlow
 
 ## Introduction
 ProofFlow is an abstract editor designed to help users in writing mathematical proofs,
-with the help of theorem prover languages such as Coq and Lean4 using the Language Server Protocol . It works as a standalone editor,
+with the help of theorem prover languages such as Coq and Lean4 using the Language Server Protocol. It works as a standalone editor,
 but additional repositories are necessary to be installed in order for features such as language support and VS Code support to function; refer to the section
 **Supporting Repositories** for more information.
 
@@ -42,21 +42,20 @@ if `Git` was installed correctly
 
 ## How to use ProofFlow on the browser:
 
-Clone the repository for ProofFlow browser version: The repository for ProofFlow browser version
-can be cloned by running the following command:
+Clone the repository for ProofFlow browser version by running the following command:
 ```
 git clone https://github.com/Moonlington/ProofFlow.git
 ```
-Navigate to the directory: To navigate to the directory run the following command:
+Navigate to the directory by running the following command:
 ```
 cd ProofFlow
 ```
-Install dependencies To install the node dependencies of ProofFlow the following command must be
+To install the node dependencies of ProofFlow the following command must be
 run:
 ```
 npm install
 ```
-Build and deploy ProofFlow browser version. The program can be built and deployed locally with the command:
+The program can be built and deployed locally with the command:
 ```
 npm run dev
 ``` 
@@ -69,7 +68,7 @@ To use ProofFlow with the language server, follow the steps listed here:
 
 [ProofFlow LSP repository](https://github.com/jochem06/Proofflow-lsp.git)
 
-To use ProofFlow as a VS Code extension: follow the steps listed here:
+To use ProofFlow as a VS Code extension, follow the steps listed here:
 
 [ProofFlow VS Code repositpry](https://github.com/kaa-vz/ProofFlowExtension.git)
 
