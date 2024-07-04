@@ -29,7 +29,7 @@ If the version of `npm` is displayed, it is installed correctly:
 
 3. Git
     - Download `Git` from: https://git-scm.com/
-      Run the downloaded installer.
+    - Run the downloaded installer.
     - After installing, open a command prompt and type:
 
 ```
@@ -71,6 +71,11 @@ To use ProofFlow with the language server, follow the steps listed here:
 To use ProofFlow as a VS Code extension, follow the steps listed here:
 
 [ProofFlow VS Code repositpry](https://github.com/kaa-vz/ProofFlowExtension.git)
+
+## Files to be checked for Code Quality Assesment:
+
+All `TypeScript` files (`xxx.ts`) in the `src` directory, excluding any styling or asset files in the `src/ProofFlow/assets` and `src/styles`
+
 
 
 
