@@ -11,7 +11,6 @@ import {
 } from "@codemirror/state";
 import { EditorView as CMView } from "@codemirror/view";
 import { CodeMirrorViewOptions, computeChange } from "./types.ts";
-import { proofFlow } from "../../main.ts";
 import { Diagnostic, setDiagnostics } from "@codemirror/lint";
 import { LSPDiagnostic } from "../lspClient/models.ts";
 import { ProofFlow } from "../editor/ProofFlow.ts";
@@ -111,7 +110,7 @@ export class CodeMirrorView implements NodeView {
       if (clickedInsideCodeMirror) {
         // If we clicked inside a locked CodeMirror editor, deselect all nodes to prevent editing.
         if (this.cm.contentDOM.contentEditable === "false") {
-          proofFlow.deselectAll();
+          this.proofflow.deselectAll();
         }
         return;
       }

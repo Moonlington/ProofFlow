@@ -1,14 +1,14 @@
-import { EditorView } from "prosemirror-view";
 import { selectParentNode } from "prosemirror-commands";
 import {
   getCollapsibleInsertCommand,
   getInputInsertCommand,
 } from "./insert-commands";
-import { proofFlow, showOverlay } from "../../main";
+import { showOverlay } from "../../main";
 import { UserMode } from "../UserMode/userMode";
 import { cmdInsertCode, cmdInsertMarkdown, cmdInsertMath } from "./commands";
 import { InsertionPlace } from "./helpers";
 import { markdownRenderedClickFix } from "../plugins/markdown-extra";
+import { ProofFlow } from "../editor/ProofFlow";
 
 // Helper function to generate unique key combination strings
 function getKeyCombination(event: KeyboardEvent) {
@@ -21,11 +21,11 @@ function getKeyCombination(event: KeyboardEvent) {
 
 /**
  * Applies global key bindings to the editor view.
- * @param editorView - The editor view to apply key bindings to.
+ * @param proofFlow.getEditorView() - The editor view to apply key bindings to.
  *
  * @returns function to remove the keybindings
  */
-export function applyGlobalKeyBindings(editorView: EditorView): () => void {
+export function applyGlobalKeyBindings(proofFlow: ProofFlow): () => void {
   // Mapping of key combinations to actions
   // Add comments here to describe the purpose of each key binding
   // "Ctrl + B" or "Cmd + B" for collapsible insert command (only for teacher mode)
@@ -44,44 +44,44 @@ export function applyGlobalKeyBindings(editorView: EditorView): () => void {
   const keyBindings: { [key: string]: () => void } = {
     "Ctrl+b": () => {
       if (proofFlow.getUserMode() === UserMode.Teacher) {
-        let command = getCollapsibleInsertCommand();
-        command(editorView.state, editorView.dispatch);
+        let command = getCollapsibleInsertCommand(proofFlow, );
+        command(proofFlow.getEditorView().state, proofFlow.getEditorView().dispatch);
       }
     },
     "Ctrl+e": () => {
-      let command = cmdInsertCode(InsertionPlace.Underneath);
-      command(editorView.state, editorView.dispatch);
+      let command = cmdInsertCode(proofFlow, InsertionPlace.Underneath);
+      command(proofFlow.getEditorView().state, proofFlow.getEditorView().dispatch);
     },
     "Ctrl+Shift+e": () => {
-      let command = cmdInsertCode(InsertionPlace.Above);
-      command(editorView.state, editorView.dispatch);
+      let command = cmdInsertCode(proofFlow, InsertionPlace.Above);
+      command(proofFlow.getEditorView().state, proofFlow.getEditorView().dispatch);
     },
     "Ctrl+i": () => {
       if (proofFlow.getUserMode() === UserMode.Teacher) {
-        let command = getInputInsertCommand();
-        command(editorView.state, editorView.dispatch);
+        let command = getInputInsertCommand(proofFlow, );
+        command(proofFlow.getEditorView().state, proofFlow.getEditorView().dispatch);
       }
     },
     "Ctrl+l": () => {
-      let command = cmdInsertMath(InsertionPlace.Underneath);
-      command(editorView.state, editorView.dispatch);
+      let command = cmdInsertMath(proofFlow, InsertionPlace.Underneath);
+      command(proofFlow.getEditorView().state, proofFlow.getEditorView().dispatch);
     },
     "Ctrl+Shift+l": () => {
-      let command = cmdInsertMath(InsertionPlace.Above);
-      command(editorView.state, editorView.dispatch);
+      let command = cmdInsertMath(proofFlow, InsertionPlace.Above);
+      command(proofFlow.getEditorView().state, proofFlow.getEditorView().dispatch);
     },
     "Ctrl+m": () => {
-      let command = cmdInsertMarkdown(InsertionPlace.Underneath);
-      command(editorView.state, editorView.dispatch);
+      let command = cmdInsertMarkdown(proofFlow, InsertionPlace.Underneath);
+      command(proofFlow.getEditorView().state, proofFlow.getEditorView().dispatch);
       markdownRenderedClickFix();
     },
     "Ctrl+Shift+m": () => {
-      let command = cmdInsertMarkdown(InsertionPlace.Above);
-      command(editorView.state, editorView.dispatch);
+      let command = cmdInsertMarkdown(proofFlow, InsertionPlace.Above);
+      command(proofFlow.getEditorView().state, proofFlow.getEditorView().dispatch);
       markdownRenderedClickFix();
     },
     "Ctrl+p": () => {
-      selectParentNode(editorView.state, editorView.dispatch);
+      selectParentNode(proofFlow.getEditorView().state, proofFlow.getEditorView().dispatch);
     },
     "Ctrl+s": () => {
       proofFlow.saveFile();

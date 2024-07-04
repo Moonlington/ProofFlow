@@ -60,7 +60,7 @@ const settingsOverlay = new SettingsOverlay(container);
 export { proofFlow };
 
 // Ensure that the user mode is correctly set
-handleUserModeSwitch();
+handleUserModeSwitch(proofFlow);
 
 // Update the color scheme
 reloadColorScheme();
@@ -132,7 +132,7 @@ export async function readSingleFile(e: Event) {
       proofFlow.reset();
       proofFlow.setFileName(file.name);
       proofFlow.openFile(result, fileType);
-      handleUserModeSwitch();
+      handleUserModeSwitch(proofFlow);
     }
   };
 }

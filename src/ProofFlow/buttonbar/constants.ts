@@ -97,7 +97,7 @@ export function createButtonsList(editorView: EditorView) {
       // Create the button for inserting an input node
       name: "Input",
       command: () => {
-        let command = getInputInsertCommand();
+        let command = getInputInsertCommand(proofFlow);
         command(editorView.state, editorView.dispatch);
       },
       hoverText: "Place the current node in an input node(Ctrl-i)",
@@ -106,7 +106,7 @@ export function createButtonsList(editorView: EditorView) {
       // Create the button for inserting a collapsible node
       name: "Collapse",
       command: () => {
-        let command = getCollapsibleInsertCommand();
+        let command = getCollapsibleInsertCommand(proofFlow);
         command(editorView.state, editorView.dispatch);
       },
       hoverText: "Place the current node in an colapsible node(Ctrl-b)",

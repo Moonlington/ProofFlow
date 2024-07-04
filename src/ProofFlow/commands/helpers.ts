@@ -7,11 +7,10 @@ import {
   Transaction,
 } from "prosemirror-state";
 import { closeHistory } from "prosemirror-history";
-
-import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
 import { ProofStatus } from "../editor/Schema/proofFlowSchema.ts";
 import { getNextAreaId } from "../editor/ProofFlowArea.ts";
+import { ProofFlow } from "../editor/ProofFlow.ts";
 //import { mathSerializer } from "@benrbray/prosemirror-math";
 
 /**
@@ -213,8 +212,8 @@ export function getContainingNode(sel: Selection): Node | undefined {
  * @param state The editor state.
  * @returns A boolean indicating whether insertion is allowed.
  */
-export function allowedToInsert(state: EditorState): boolean {
-  let selection = state.selection;
+export function allowedToInsert(proofFlow: ProofFlow): boolean {
+  let selection = proofFlow.getEditorView().state.selection;
   let selectionType = getSelectionType(selection);
   let parent = getContainingNode(selection);
   let parentType = parent?.type.name;
@@ -255,6 +254,7 @@ export function isClickedNode(node: Node, nodePos: number, clickedPos: number) {
  * @param pos - The position of the input node in the document.
  */
 export function inputProof(
+  proofFlow: ProofFlow,
   inputNode: Node,
   newProof: ProofStatus,
   pos: number,
