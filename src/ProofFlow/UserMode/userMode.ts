@@ -1,4 +1,4 @@
-import { proofFlow } from "../../main.ts";
+import { ProofFlow } from "../editor/ProofFlow.ts";
 import { renderAllMarkdown } from "../plugins/markdown-extra.ts";
 
 // Enum representing whether a textbox is locked or open to alter
@@ -10,7 +10,7 @@ export enum UserMode {
 /**
  * Handles the user mode switch.
  */
-export function handleUserModeSwitch() {
+export function handleUserModeSwitch(proofFlow: ProofFlow) {
   // render all Markdown
   renderAllMarkdown(proofFlow);
 

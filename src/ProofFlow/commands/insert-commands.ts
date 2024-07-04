@@ -16,6 +16,7 @@ import {
 import { EditorView } from "prosemirror-view";
 import { ProofFlowSchema } from "../editor/Schema/proofFlowSchema.ts";
 import { getNextAreaId } from "../editor/ProofFlowArea.ts";
+import { ProofFlow } from "../editor/ProofFlow.ts";
 
 /**
  * Returns a command function for inserting a node of the specified type.
@@ -24,6 +25,7 @@ import { getNextAreaId } from "../editor/ProofFlowArea.ts";
  * @returns The command function.
  */
 function getInsertCommand(
+  proofFlow: ProofFlow,
   insertionFunction: InsertionFunction,
   nodeType: NodeType,
 ): Command {
@@ -32,7 +34,7 @@ function getInsertCommand(
     dispatch?: (tr: Transaction) => void,
     _view?: EditorView,
   ): boolean => {
-    if (!allowedToInsert(state)) return false;
+    if (!allowedToInsert(proofFlow)) return false;
 
     const trans = insertionFunction(state, state.tr, nodeType);
     if (dispatch && trans) dispatch(trans);
@@ -41,19 +43,22 @@ function getInsertCommand(
 }
 
 export const getMdInsertCommand = (
+  proofFlow: ProofFlow,
   insertionFunction: InsertionFunction,
   nodeType: NodeType,
-) => getInsertCommand(insertionFunction, nodeType);
+) => getInsertCommand(proofFlow, insertionFunction, nodeType);
 
 export const getMathInsertCommand = (
+  proofFlow: ProofFlow,
   insertionFunction: InsertionFunction,
   nodeType: NodeType,
-) => getInsertCommand(insertionFunction, nodeType);
+) => getInsertCommand(proofFlow, insertionFunction, nodeType);
 
 export const getCodeInsertCommand = (
+  proofFlow: ProofFlow,
   insertionFunction: InsertionFunction,
   nodeType: NodeType,
-) => getInsertCommand(insertionFunction, nodeType);
+) => getInsertCommand(proofFlow, insertionFunction, nodeType);
 
 /**
  * Combines some common operations for inserting wrapper nodes.
@@ -65,10 +70,10 @@ export const getCodeInsertCommand = (
  *          The third element is the selection.
  *          The fourth element is the selection type.
  */
-function wrapperCombined(state: EditorState): [boolean, Node?, any?, any?] {
-  if (!allowedToInsert(state)) return [false];
+function wrapperCombined(proofFlow: ProofFlow): [boolean, Node?, any?, any?] {
+  if (!allowedToInsert(proofFlow)) return [false];
 
-  const selection = state.selection;
+  const selection = proofFlow.getEditorView().state.selection;
   const parent = getContainingNode(selection);
   if (parent == undefined || parent.type.name != "doc") return [false];
 
@@ -87,14 +92,14 @@ function wrapperCombined(state: EditorState): [boolean, Node?, any?, any?] {
  * Returns a command function that inserts a collapsible node at the current selection.
  * @returns A command function that takes EditorState, dispatch, and view as parameters and returns a boolean.
  */
-export function getCollapsibleInsertCommand(): Command {
+export function getCollapsibleInsertCommand(proofFlow: ProofFlow): Command {
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
     _view?: EditorView,
   ): boolean => {
     const [allowedToGo, oldNode, selection, selectionType] =
-      wrapperCombined(state);
+      wrapperCombined(proofFlow);
     if (!allowedToGo || !oldNode || !selection || !selectionType) return false;
 
     const textNode: Node = ProofFlowSchema.node("collapsible_title", null, [
@@ -125,14 +130,14 @@ export function getCollapsibleInsertCommand(): Command {
  *
  * @returns A command function that inserts an input command.
  */
-export function getInputInsertCommand(): Command {
+export function getInputInsertCommand(proofFlow: ProofFlow): Command {
   return (
     state: EditorState,
     dispatch?: (tr: Transaction) => void,
     _view?: EditorView,
   ): boolean => {
     const [allowedToGo, oldNode, selection, selectionType] =
-      wrapperCombined(state);
+      wrapperCombined(proofFlow);
     if (!allowedToGo || !oldNode || !selection || !selectionType) return false;
 
     let { posStart, posEnd } = getSelectionPositions(selection);

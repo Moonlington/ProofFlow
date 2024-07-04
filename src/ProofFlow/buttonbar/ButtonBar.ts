@@ -8,6 +8,7 @@ import { EditorView } from "prosemirror-view";
 import { readSingleFile } from "../../main.ts";
 import { createAddButton, CreateButton } from "./elementCreation.ts";
 import { createButtonsList, createSettingCommands } from "./constants.ts";
+import { ProofFlow } from "../editor/ProofFlow.ts";
 
 /**
  * Represents a button bar for interacting with an editor.
@@ -16,12 +17,14 @@ export class ButtonBar {
   private _editorView: EditorView;
   public _bar: HTMLElement;
   private _cellBar: HTMLElement;
+  private _proofFlow: ProofFlow;
 
   /**
    * Creates an instance of ButtonBar.
    * @param {EditorView} editorView - The EditorView instance.
    */
-  constructor(editorView: EditorView) {
+  constructor(proofFlow: ProofFlow, editorView: EditorView) {
+    this._proofFlow = proofFlow;
     this._editorView = editorView;
     this._bar = document.createElement("div");
     this._cellBar = document.createElement("div");
@@ -79,7 +82,7 @@ export class ButtonBar {
       const buttonAbove = createAddButton(
         above,
         () =>
-          cmd(InsertionPlace.Above)(
+          cmd(this._proofFlow, InsertionPlace.Above)(
             this._editorView.state,
             this._editorView.dispatch,
           ),
@@ -92,7 +95,7 @@ export class ButtonBar {
       const buttonBelow = createAddButton(
         below,
         () =>
-          cmd(InsertionPlace.Underneath)(
+          cmd(this._proofFlow, InsertionPlace.Underneath)(
             this._editorView.state,
             this._editorView.dispatch,
           ),

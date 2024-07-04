@@ -6,13 +6,14 @@ import {
   getMdInsertCommand,
 } from "./insert-commands";
 import { ProofFlowSchema } from "../editor/Schema/proofFlowSchema";
+import { ProofFlow } from "../editor/ProofFlow";
 
 /**
  * Returns the appropriate insertion function based on the specified place.
  * @param place - The insertion place.
  * @returns The insertion function.
  */
-function getInsertionFunction(place: InsertionPlace) {
+export function getInsertionFunction(place: InsertionPlace) {
   return place == InsertionPlace.Above ? insertAbove : insertUnder;
 }
 
@@ -22,9 +23,10 @@ function getInsertionFunction(place: InsertionPlace) {
  * @param insertionPlace - The place where the code should be inserted.
  * @returns The command to insert the code.
  */
-export function cmdInsertCode(insertionPlace: InsertionPlace): Command {
+export function cmdInsertCode(proofFlow: ProofFlow, insertionPlace: InsertionPlace): Command {
   const codeblockNodeType = ProofFlowSchema.nodes["code_mirror"];
   return getCodeInsertCommand(
+    proofFlow,
     getInsertionFunction(insertionPlace),
     codeblockNodeType,
   );
@@ -36,9 +38,10 @@ export function cmdInsertCode(insertionPlace: InsertionPlace): Command {
  * @param insertionPlace - The insertion place where the markdown node should be inserted.
  * @returns The command object representing the insertion of the markdown node.
  */
-export function cmdInsertMarkdown(insertionPlace: InsertionPlace): Command {
+export function cmdInsertMarkdown(proofFlow: ProofFlow, insertionPlace: InsertionPlace): Command {
   const mdNodeType = ProofFlowSchema.nodes["markdown"];
-  return getMdInsertCommand(getInsertionFunction(insertionPlace), mdNodeType);
+  return getMdInsertCommand(
+    proofFlow,getInsertionFunction(insertionPlace), mdNodeType);
 }
 
 /**
@@ -47,9 +50,10 @@ export function cmdInsertMarkdown(insertionPlace: InsertionPlace): Command {
  * @param insertionPlace - The insertion place where the math node should be inserted.
  * @returns The command to insert the math node.
  */
-export function cmdInsertMath(insertionPlace: InsertionPlace): Command {
+export function cmdInsertMath(proofFlow: ProofFlow, insertionPlace: InsertionPlace): Command {
   const mathNodeType = ProofFlowSchema.nodes["math_display"];
   return getMathInsertCommand(
+    proofFlow,
     getInsertionFunction(insertionPlace),
     mathNodeType,
   );

@@ -130,7 +130,7 @@ export class ProofFlow {
     this.editorView = this.createEditorView();
 
     // Apply global key bindings
-    this.removeGlobalKeyBindings = applyGlobalKeyBindings(this.editorView);
+    this.removeGlobalKeyBindings = applyGlobalKeyBindings(this);
   }
 
   /**
@@ -180,7 +180,7 @@ export class ProofFlow {
     this.minimap = new Minimap();
 
     // Create the button bar and render it
-    this._buttonBar = new ButtonBar(editorView);
+    this._buttonBar = new ButtonBar(this, editorView);
     this._buttonBar.render(this._containerElem);
 
     return editorView;
@@ -364,7 +364,7 @@ export class ProofFlow {
         if (diagnosticCount == 0) {
           correctInputOffsets.push(offset);
         } else {
-          inputProof(node, ProofStatus.Incorrect, offset);
+          inputProof(this, node, ProofStatus.Incorrect, offset);
         }
         return false;
       } else if (node.type.name == "code_mirror") {
@@ -375,7 +375,7 @@ export class ProofFlow {
           let correctIndex = correctInputOffsets.indexOf(prevOffset);
           if (correctIndex > -1) {
             correctInputOffsets.splice(correctIndex, 1);
-            inputProof(prevInput, ProofStatus.Incorrect, prevOffset);
+            inputProof(this, prevInput, ProofStatus.Incorrect, prevOffset);
           }
         }
         // Reset previous input
@@ -388,7 +388,7 @@ export class ProofFlow {
     correctInputOffsets.forEach((offset) => {
       let node = this.getState().doc.nodeAt(offset);
       if (node == null) return;
-      inputProof(node, ProofStatus.Correct, offset);
+      inputProof(this, node, ProofStatus.Correct, offset);
     });
 
     if (focusedInstance != null) {
@@ -727,10 +727,10 @@ export class ProofFlow {
 
     // Create a new editor view
     this.editorView = this.createEditorView();
-    this.removeGlobalKeyBindings = applyGlobalKeyBindings(this.editorView);
+    this.removeGlobalKeyBindings = applyGlobalKeyBindings(this);
 
     // Ensure that the usermode and color scheme and size are loaded correctly.
-    handleUserModeSwitch();
+    handleUserModeSwitch(this);
     reloadColorScheme();
     adjustLeftDivWidth();
     const on = localStorage.getItem("minimap") === "true";
@@ -770,7 +770,7 @@ export class ProofFlow {
       "teacherMode",
       newUserMode === UserMode.Teacher ? "true" : "false",
     );
-    handleUserModeSwitch();
+    handleUserModeSwitch(this);
   }
 
   /**
@@ -921,7 +921,7 @@ export class ProofFlow {
    */
   public resetButtonBar() {
     this._buttonBar?.destroy();
-    this._buttonBar = new ButtonBar(this.editorView);
+    this._buttonBar = new ButtonBar(this, this.editorView);
     this._buttonBar.render(this._containerElem);
   }
 
