@@ -180,7 +180,7 @@ export class ProofFlow {
     this.minimap = new Minimap();
 
     // Create the button bar and render it
-    this._buttonBar = new ButtonBar(editorView);
+    this._buttonBar = new ButtonBar(this, editorView);
     this._buttonBar.render(this._containerElem);
 
     return editorView;
@@ -921,7 +921,7 @@ export class ProofFlow {
    */
   public resetButtonBar() {
     this._buttonBar?.destroy();
-    this._buttonBar = new ButtonBar(this.editorView);
+    this._buttonBar = new ButtonBar(this, this.editorView);
     this._buttonBar.render(this._containerElem);
   }
 
