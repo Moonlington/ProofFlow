@@ -70,7 +70,7 @@ To use ProofFlow with the language server, follow the steps listed here:
 
 To use ProofFlow as a VS Code extension, follow the steps listed here:
 
-[ProofFlow VS Code repositpry](https://github.com/kaa-vz/ProofFlowExtension.git)
+[ProofFlow VS Code repository](https://github.com/kaa-vz/ProofFlowExtension.git)
 
 ## Files to be checked for Code Quality Assesment:
 
