@@ -1,6 +1,6 @@
 import { EditorState, Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { ProofFlowSchema } from "../editor/proofFlowSchema.ts";
+import { ProofFlowSchema } from "../editor/Schema/proofFlowSchema.ts";
 import { getSelectionType } from "../commands/helpers.ts";
 
 // Helper function to check if a node type is valid in ProofFlowSchema

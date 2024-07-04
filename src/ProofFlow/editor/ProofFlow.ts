@@ -1,7 +1,7 @@
 import { Schema, Node } from "prosemirror-model";
 import { CodeMirrorView } from "../codemirror/codemirrorview.ts";
 import type { GetPos } from "../codemirror/types.ts";
-import { ProofFlowSchema, ProofStatus } from "./proofFlowSchema.ts";
+import { ProofFlowSchema, ProofStatus } from "./Schema/proofFlowSchema.ts";
 import {
   EditorState,
   EditorStateConfig,
@@ -14,7 +14,7 @@ import { DirectEditorProps, EditorView } from "prosemirror-view";
 import { ProofFlowPlugins } from "./plugins.ts";
 import { mathSerializer } from "@benrbray/prosemirror-math";
 // import { AreaType } from "../parser/area.ts";
-import { ButtonBar } from "./ButtonBar.ts";
+import { ButtonBar } from "../buttonbar/ButtonBar.ts";
 import { linter } from "@codemirror/lint";
 
 import { applyGlobalKeyBindings } from "../commands/shortcuts";
@@ -22,15 +22,7 @@ import { applyGlobalKeyBindings } from "../commands/shortcuts";
 import { UserMode, handleUserModeSwitch } from "../UserMode/userMode.ts";
 import { AcceptedFileType } from "../parser/accepted-file-types.ts";
 import { Minimap } from "../minimap.ts";
-import {
-  Area,
-  AreaType,
-  CollapsibleArea,
-  InputArea,
-  OutputConfig,
-  ProofFlowDocument,
-  docToPFDocument,
-} from "./ProofFlowDocument.ts";
+import { OutputConfig, ProofFlowDocument } from "./ProofFlowDocument.ts";
 
 import { Parser, SimpleParser } from "../parser/parser.ts";
 import {
@@ -49,13 +41,20 @@ import { LSPClientHandler } from "../lspClient/lspClientHandler.ts";
 import { DiagnosticsMessageData } from "../lspClient/models.ts";
 import { ProofFlowLSPClientFileType } from "../lspClient/ProofFlowLSPClient.ts";
 import { reloadColorScheme } from "../settings/updateColors.ts";
-import { markdownToRendered } from "../commands/helpers.ts";
 import { basicSetupNoHistory } from "../codemirror/basicSetupNoHistory.ts";
 import { inputProof } from "../commands/helpers.ts";
 import { ProofFlowSaver } from "../fileHandlers/proofFlowSaver.ts";
 import { adjustLeftDivWidth, firefoxUsed } from "../../main.ts";
 import { LSPClientManager } from "../lspClient/lspClientManager.ts";
 import { undo, redo, undoDepth, redoDepth } from "prosemirror-history";
+import {
+  AreaType,
+  docToPFDocument,
+  InputArea,
+  CollapsibleArea,
+  Area,
+} from "./ProofFlowArea.ts";
+import { markdownToRendered } from "../plugins/markdown-extra.ts";
 // CSS
 
 export type ProofFlowOptions = {
@@ -181,7 +180,7 @@ export class ProofFlow {
     this.minimap = new Minimap();
 
     // Create the button bar and render it
-    this._buttonBar = new ButtonBar(this._schema, editorView);
+    this._buttonBar = new ButtonBar(editorView);
     this._buttonBar.render(this._containerElem);
 
     return editorView;
@@ -260,7 +259,7 @@ export class ProofFlow {
 
       // Check for not null (TypeScript mandates)
       if (currentCodeMirror) {
-        currentCodeMirror.blurInstance();
+        currentCodeMirror.deselectNode();
       }
     }
   }
@@ -922,7 +921,7 @@ export class ProofFlow {
    */
   public resetButtonBar() {
     this._buttonBar?.destroy();
-    this._buttonBar = new ButtonBar(this._schema, this.editorView);
+    this._buttonBar = new ButtonBar(this.editorView);
     this._buttonBar.render(this._containerElem);
   }
 

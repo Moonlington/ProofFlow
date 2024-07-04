@@ -14,8 +14,8 @@ import {
   Selection,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { ProofFlowSchema } from "../editor/proofFlowSchema";
-import { getNextAreaId } from "../editor/ProofFlowDocument";
+import { ProofFlowSchema } from "../editor/Schema/proofFlowSchema.ts";
+import { getNextAreaId } from "../editor/ProofFlowArea.ts";
 
 /**
  * Returns a command function for inserting a node of the specified type.
@@ -113,13 +113,9 @@ export function getCollapsibleInsertCommand(): Command {
 
     let { posStart, posEnd } = getSelectionPositions(selection);
 
-    const trans: Transaction = state.tr.replaceWith(
-      posStart,
-      posEnd,
-      collapsibleNode,
-    );
+    // Replace the old node with the new collapsible node
+    dispatchNode(posStart, posEnd, collapsibleNode, state, dispatch);
 
-    if (dispatch && trans) dispatch(trans);
     return true;
   };
 }
@@ -170,15 +166,31 @@ export function getInputInsertCommand(): Command {
       [contentNode],
     );
 
-    const trans: Transaction = state.tr.replaceWith(
-      posStart,
-      posEnd,
-      inputNode,
-    );
+    // Replace the old nodes with the new input node
+    dispatchNode(posStart, posEnd, inputNode, state, dispatch);
 
-    if (dispatch && trans) dispatch(trans);
     return true;
   };
+}
+
+/**
+ * Replaces a range of nodes in the editor state with a new node and dispatches the transaction.
+ *
+ * @param postStart - The position to start replacing the nodes.
+ * @param posEnd - The position to end replacing the nodes.
+ * @param newNode - The new node to replace the existing nodes.
+ * @param state - The current editor state.
+ * @param dispatch - An optional function to dispatch the transaction.
+ */
+function dispatchNode(
+  postStart: number,
+  posEnd: number,
+  newNode: Node,
+  state: EditorState,
+  dispatch?: (tr: Transaction) => void,
+) {
+  const trans: Transaction = state.tr.replaceWith(postStart, posEnd, newNode);
+  if (dispatch && trans) dispatch(trans);
 }
 
 /**

@@ -7,12 +7,16 @@ import {
 import { SimpleParser } from "./parser";
 
 /**
- * regexes for parsing Coq and Lean documents with ProofFlow
+ * Regexes for parsing Coq and Lean documents with ProofFlow
  */
 export { CoqParser, CoqMDParser, LeanParser, PureLeanParser };
 
+/**
+ * Parser for purely Coq documents
+ */
 const CoqParser = new SimpleParser(
   {
+    // Regular expressions
     text: [/\n\(\*\*/, /\*\)\n/],
     math: [/\$\$/, /\$\$/],
     collapsible: [
@@ -24,8 +28,12 @@ const CoqParser = new SimpleParser(
   CoqOutput,
 );
 
+/**
+ * Parser for Coq documents with Markdown
+ */
 const CoqMDParser = new SimpleParser(
   {
+    // Regular expressions
     code: [/\n```coq\n/, /\n```\n/],
     math: [/\$\$/, /\$\$/],
     collapsible: [/<hint(?: title="(.*?)")?>/, /<\/hint>/],
@@ -34,8 +42,12 @@ const CoqMDParser = new SimpleParser(
   CoqMDOutput,
 );
 
+/**
+ * Parser for Lean documents that can contain Verso genre
+ */
 const LeanParser = new SimpleParser(
   {
+    // Regular expressions
     code: [/\n```lean\n/, /\n```\n/],
     math: [/\n:::math\n/, /\n:::\n/],
     collapsible: [/\n:::collapsible\n(?:#(.*?)\n)?/, /\n:::\n/],
@@ -44,8 +56,12 @@ const LeanParser = new SimpleParser(
   LeanOutput,
 );
 
+/**
+ * Parser for purely Lean documents
+ */
 const PureLeanParser = new SimpleParser(
   {
+    // Regular expressions
     text: [/\n\/-\n/, /\n-\/\n/],
     math: [/\n\/-\$\$\n/, /\n\$\$-\/\n/],
     collapsible: [/\n-- <hint(?: title="(.*?)")?>\n?/, /\n-- <\/hint>\n/],

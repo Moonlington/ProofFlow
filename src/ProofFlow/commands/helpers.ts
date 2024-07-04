@@ -1,4 +1,4 @@
-import { NodeType, Node, Schema } from "prosemirror-model";
+import { NodeType, Node } from "prosemirror-model";
 import {
   EditorState,
   NodeSelection,
@@ -7,13 +7,13 @@ import {
   Transaction,
 } from "prosemirror-state";
 import { closeHistory } from "prosemirror-history";
-import { defaultMarkdownParser } from "prosemirror-markdown";
+
 import { proofFlow } from "../../main";
 import { UserMode } from "../UserMode/userMode";
-import { ProofStatus } from "../editor/proofFlowSchema";
-import { getNextAreaId } from "../editor/ProofFlowDocument";
+import { ProofStatus } from "../editor/Schema/proofFlowSchema.ts";
+import { getNextAreaId } from "../editor/ProofFlowArea.ts";
 //import { mathSerializer } from "@benrbray/prosemirror-math";
-import { vscode } from "../extension/vscode";
+
 /**
  * Represents the possible places where an insertion can occur.
  */
@@ -22,6 +22,10 @@ export enum InsertionPlace {
   Underneath, // Insert underneath the current selection
 }
 
+/**
+ * Array of high-level cells.
+ * These cells represent different types of content in ProofFlow.
+ */
 export const highLevelCells: string[] = new Array(
   "code_mirror",
   "math_display",
@@ -79,28 +83,15 @@ export function insertAbove(
     const pos = sel.from; // Get the position of the selection
     let counter = pos;
 
-    nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
-      counter++;
-    });
+    trans = insertionTrans(trans, nodeType, counter);
   } else if (isTextSelection) {
     // If the selection is a text selection, insert above the parent node
     const parentPos = sel.$from.depth ? sel.$from.before(sel.$from.depth) : 0; // Get the position of the parent node or 0 if it doesn't exist
     let counter = parentPos;
 
-    nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
-      counter++;
-    });
+    trans = insertionTrans(trans, nodeType, counter);
   } else {
-    // If the selection is invalid, add a node at the end of the document
-    const pos = state.doc.content.size;
-    let counter = pos;
-
-    nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
-      counter++;
-    });
+    trans = invalidSelectionTrans(state, trans, nodeType);
   }
 
   // Close the history event to prevent further steps from being appended to it
@@ -134,10 +125,7 @@ export function insertUnder(
     const pos = sel.to;
     let counter = pos;
 
-    nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
-      counter++;
-    });
+    trans = insertionTrans(trans, nodeType, counter);
   } else if (isTextSelection) {
     // If the selection is a text selection, insert the specified node types under the current selection
     const textSel = sel as TextSelection;
@@ -150,24 +138,53 @@ export function insertUnder(
     }
     let counter = to;
 
-    nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
-      counter++;
-    });
+    trans = insertionTrans(trans, nodeType, counter);
   } else {
-    // If the selection is invalid, add a node at the end of the document
-    const pos = state.doc.content.size;
-    let counter = pos;
-    nodeType.forEach((type) => {
-      trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
-      counter++;
-    });
+    trans = invalidSelectionTrans(state, trans, nodeType);
   }
 
   // Close the history event to prevent further steps from being appended to it
   trans = closeHistory(trans);
 
   return trans;
+}
+
+/**
+ * Inserts nodes of specified types into a transaction at a given position.
+ *
+ * @param trans - The transaction to insert nodes into.
+ * @param nodeType - An array of node types to insert.
+ * @param counter - The starting position for insertion.
+ * @returns The updated transaction after insertion.
+ */
+function insertionTrans(
+  trans: Transaction,
+  nodeType: NodeType[],
+  counter: number,
+): Transaction {
+  nodeType.forEach((type) => {
+    trans = trans.insert(counter, type.create({ id: getNextAreaId() }));
+    counter++;
+  });
+  return trans;
+}
+
+/**
+ * Adds a node at the end of the document if the selection is invalid.
+ * 
+ * @param state - The current editor state.
+ * @param trans - The transaction to modify.
+ * @param nodeType - An array of node types.
+ * @returns The modified transaction.
+ */
+function invalidSelectionTrans(state: EditorState, trans: Transaction, nodeType: NodeType[]): Transaction {
+    // If the selection is invalid, add a node at the end of the document
+    const pos = state.doc.content.size;
+    let counter = pos;
+
+    trans = insertionTrans(trans, nodeType, counter);
+
+    return trans;
 }
 
 /**
@@ -219,81 +236,24 @@ export function allowedToInsert(state: EditorState): boolean {
   return true;
 }
 
+/**
+ * Checks if a position is within the range of a node.
+ * @param node - The node to check.
+ * @param nodePos - The starting position of the node.
+ * @param clickedPos - The position to check.
+ * @returns True if the position is within the range of the node, false otherwise.
+ */
 export function isClickedNode(node: Node, nodePos: number, clickedPos: number) {
   return nodePos <= clickedPos && clickedPos <= nodePos + node.nodeSize - 1;
 }
 
 /**
- * Turns a markdown node into a rendered markdown node.
- * @param node The node to transform.
- * @param schema The schema that the node belongs to.
- * @returns The transformed node.
+ * Updates the proof status of an input node in the editor.
+ *
+ * @param inputNode - The input node to update.
+ * @param newProof - The new proof status to set.
+ * @param pos - The position of the input node in the document.
  */
-export function markdownToRendered(node: Node, schema: Schema) {
-  const parsedContent = defaultMarkdownParser.parse(node.textContent);
-  const mathInlineBlockNodeType = schema.nodes["math_inline_block"];
-  const mathInlineNodeType = schema.nodes["math_inline"];
-  const markdownRenderedNodeType = schema.nodes["markdown_rendered"];
-  const markdownRenderedChildNodeType = schema.nodes["markdown_rendered_child"];
-
-  let renderedNode: Node = node; // Default to the original node if parsing fails
-  let parsedParts: Node[] = Array<Node>();
-
-  const regex = /\$(.*?)\$/g; // The regex string for getting the math content
-  const result = node.textContent.split(regex);
-  for (let i = 0; i < result.length; i++) {
-    // Since the regex is capturing the math content, the odd indexes will contain the math content
-    if (i % 2 == 1) {
-      // Make a math_inline node with the math content
-      let mathNode = mathInlineNodeType.create(null, schema.text(result[i]));
-      let wrappedMathNode = mathInlineBlockNodeType.create(null, mathNode);
-      parsedParts.push(wrappedMathNode);
-    } else {
-      // Make a markdown child node with the text content
-      if (result[i] == "") continue; // If the content is empty, skip it (the last element of result[] is always empty)
-      let parsedChildContent = defaultMarkdownParser.parse(result[i]);
-      if (parsedChildContent)
-        parsedParts.push(
-          markdownRenderedChildNodeType.create(
-            null,
-            parsedChildContent.content,
-          ),
-        );
-    }
-  }
-
-  if (parsedContent) {
-    renderedNode = markdownRenderedNodeType.create(
-      { id: node.attrs.id, original_text: node.textContent },
-      // If the content was splittable into parts, used the parsed parts, otherwise use the original content
-      parsedParts.length != 0 ? parsedParts : parsedContent.content,
-    );
-  }
-
-  return renderedNode;
-}
-
-/**
- * Turns a rendered markdown node into a markdown (plain text) node.
- * @param node The node to transform.
- * @param schema The schema that the node belongs to.
- * @returns The transformed node.
- */
-export function renderedToMarkdown(node: Node, schema: Schema) {
-  // const serializedContent = defaultMarkdownSerializer.serialize(node);
-
-  // Create a new markdown node with the serialized content (a.k.a the raw text)
-  // Make sure the text is not empty, since creating an empty text cell is not allowed
-
-  let text =
-    node.attrs.original_text == ""
-      ? undefined
-      : schema.text(node.attrs.original_text);
-  let markdownNode: Node = schema.node("markdown", { id: node.attrs.id }, text);
-
-  return markdownNode;
-}
-
 export function inputProof(
   inputNode: Node,
   newProof: ProofStatus,
